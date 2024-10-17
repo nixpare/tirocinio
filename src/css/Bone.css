@@ -1,0 +1,32 @@
+.split {
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	grid-template-rows: auto;
+	gap: .5em;
+}
+
+.split > * {
+	background: rgba(255, 0, 0, .1);
+	padding: 1em;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.props-table {
+	background: rgba(255, 0, 0, .1);
+	width: 100%;
+	text-align: center;
+}
+
+.bone-name {
+	font-size: 2em;
+	background-color: rgba(0, 0, 0, .2);
+	width: 100%;
+	text-align: center;
+}
+
+.bone-form {
+	flex-direction: column;
+	gap: 1em;
+}
