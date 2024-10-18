@@ -17,7 +17,7 @@ export type BonePropertyPageSection = {
 export type BonePropertyTable = {
 	headers: string[]
 	template: BonePropertyTemplate[]
-	indexes: string[]
+	indexes: string[][]
 }
 
 export type BonePropertyTemplate = {

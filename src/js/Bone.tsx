@@ -102,10 +102,15 @@ function PropertyPageSection({ section, update }: { section: BonePropertyPageSec
 				</tr>
 			</thead>
 			<tbody>
-				{section.table.indexes.map((rowName, rowIdx) => {
+				{section.table.indexes.map((row, rowIdx) => {
+					const rowName = row[0]
+					const colOffset = row.length;
+
 					return (
 						<tr key={rowName}>
-							<td key={rowName}>{rowName}</td>
+							{row.map((rowConst, rowConstIdx) => {
+								return <td key={`${rowName}-${rowConstIdx}`}>{rowConst}</td>
+							})}
 
 							{section.table.template.map((template, fieldIdx) => {
 								function updatePropertyRow(fn: (state?: BoneProperty) => BoneProperty): void {
@@ -128,7 +133,7 @@ function PropertyPageSection({ section, update }: { section: BonePropertyPageSec
 									value = section.props[rowIdx][fieldIdx]
 								}
 
-								return <td key={`${rowName}-${fieldIdx}`}><Property value={value} template={template} update={updatePropertyRow} /></td>
+								return <td key={`${rowName}-${fieldIdx + colOffset}`}><Property value={value} template={template} update={updatePropertyRow} /></td>
 							})}
 						</tr>
 					)
