@@ -1,4 +1,5 @@
 import { ChangeEvent, FormEvent, useState } from 'react'
+import { produce } from 'immer'
 import { Bone as BoneTyp, BoneProperty, InputMode } from './models/Bone'
 
 import '../css/Bone.css'
@@ -68,22 +69,9 @@ function PropertyInput({ name, prop, state, setState }: { name: string, prop: Bo
 	switch (prop.mode) {
 		case InputMode.Text:
 			function handleTextInput(ev: ChangeEvent<HTMLInputElement>) {
-				console.log(ev.target.value)
-				//prop.value = ev.target.value
-				state.props[name] = {
-					...state.props[name],
-					value: ev.target.value
-				}
-				setState({
-					...state,
-					props: {
-						...state.props,
-						name: {
-							...state.props[name],
-							value: ev.target.value
-						}
-					}
-				})
+				setState(produce(state, (state) => {
+					state.props[name].value = ev.target.value
+				}))
 			}
 
 			return (<tr>
@@ -97,6 +85,9 @@ function PropertyInput({ name, prop, state, setState }: { name: string, prop: Bo
 			const [number, setNumber] = useState(prop.value as number)
 
 			function handleNumberInput(ev: ChangeEvent<HTMLInputElement>) {
+				setState(produce(state, (state) => {
+					state.props[name].value = ev.target.value
+				}))
 				setNumber(Number(ev.target.value))
 			}
 
