@@ -5,10 +5,10 @@ import '../css/App.css'
 function App() {
   return (
     <div className="container">
-      <h1>Hello, World!</h1>
+      <h1>Peccato</h1>
       <Bone
         props={{
-          name: "Omero",
+          name: "Il tuo braccio",
           image: "https://www.my-personaltrainer.it/imgs/2018/01/03/omero-anatomia-orig.jpeg",
           props: {
             state: { value: "good", mode: InputMode.Text },
