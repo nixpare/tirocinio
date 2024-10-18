@@ -1,6 +1,6 @@
 import { ChangeEvent, FormEvent, MouseEvent, useState } from 'react'
 import { produce } from 'immer'
-import { Bone as BoneType, BoneProperty, InputMode, BonePropertyPage, BonePropertyTemplate } from './models/Bone'
+import { Bone as BoneType, BoneProperty, InputMode, BonePropertyPage, BonePropertyTemplate, BonePropertyPageSection } from './models/Bone'
 
 import { Dropdown } from './Dropdown'
 
@@ -75,51 +75,66 @@ function PropertyPage({ page, visible, update }: { page: BonePropertyPage, visib
 	return (
 		<div className="split" style={visible ? {} : { display: 'none' }}>
 			<div>
-				<table className="props-table">
-					<thead>
-						<tr>
-							{page.table.headers.map(th => {
-								return <th key={th}>{th}</th>
-							})}
-						</tr>
-					</thead>
-					<tbody>
-						{page.table.indexes.map((rowName, rowIdx) => {
-							return (
-								<tr key={rowName}>
-									<td key={rowName}>{rowName}</td>
-									
-									{page.table.template.map((template, fieldIdx) => {
-										const updatePropertyRow: (fn: (state?: BoneProperty) => BoneProperty) => void = (fn) => {
-											update(page => {
-												if (!page.props) {
-													page.props = []
-												}
+				{page.sections.map((section, sectionIdx) => {
+					function updateSection(fn: (section: BonePropertyPageSection) => BonePropertyPageSection): void {
+						update(page => {
+							page.sections[sectionIdx] = fn(page.sections[sectionIdx])
+							return page
+						})
+					}
 
-												if (!page.props[rowIdx]) {
-													page.props[rowIdx] = []
-												}
-
-												page.props[rowIdx][fieldIdx] = fn(page.props[rowIdx][fieldIdx])
-												return page
-											})
-										}
-
-										let value: string | undefined;
-										if (page.props && page.props[rowIdx]) {
-											value = page.props[rowIdx][fieldIdx]
-										}
-
-										return <td key={`${rowName}-${fieldIdx}`}><Property value={value} template={template} update={updatePropertyRow} /></td>
-									})}
-								</tr>
-							)
-						})}
-					</tbody>
-				</table>
+					return <div className="bone-section" key={`${page.title}-${sectionIdx}`}><PropertyPageSection section={section} update={updateSection} /></div>
+				})}
 			</div>
 			<div><img className="bone-page-image" src={page.image} alt={page.title} /></div>
 		</div>
+	)
+}
+
+function PropertyPageSection({ section, update }: { section: BonePropertyPageSection, update: (fn: (section: BonePropertyPageSection) => BonePropertyPageSection) => void }) {
+	return (
+		<table className="props-table">
+			<thead>
+				<tr>
+					{section.table.headers.map(th => {
+						return <th key={th}>{th}</th>
+					})}
+				</tr>
+			</thead>
+			<tbody>
+				{section.table.indexes.map((rowName, rowIdx) => {
+					return (
+						<tr key={rowName}>
+							<td key={rowName}>{rowName}</td>
+
+							{section.table.template.map((template, fieldIdx) => {
+								function updatePropertyRow(fn: (state?: BoneProperty) => BoneProperty): void {
+									update(section => {
+										if (!section.props) {
+											section.props = []
+										}
+
+										if (!section.props[rowIdx]) {
+											section.props[rowIdx] = []
+										}
+
+										section.props[rowIdx][fieldIdx] = fn(section.props[rowIdx][fieldIdx])
+										return section
+									})
+								}
+
+								let value: string | undefined;
+								if (section.props && section.props[rowIdx]) {
+									value = section.props[rowIdx][fieldIdx]
+								}
+
+								return <td key={`${rowName}-${fieldIdx}`}><Property value={value} template={template} update={updatePropertyRow} /></td>
+							})}
+						</tr>
+					)
+				})}
+			</tbody>
+		</table>
 	)
 }
 

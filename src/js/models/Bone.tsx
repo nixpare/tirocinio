@@ -6,6 +6,10 @@ export type Bone = {
 export type BonePropertyPage = {
 	title: string
 	image: string
+	sections: BonePropertyPageSection[]
+}
+
+export type BonePropertyPageSection = {
 	table: BonePropertyTable
 	props?: BoneProperty[][]
 }

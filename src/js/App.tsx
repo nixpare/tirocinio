@@ -11,36 +11,59 @@ const bone: BoneType = {
     {
       title: "Centri di ossificazione: presenza/assenza, fusione lunghezza diafisi",
       image: slideImage1,
-      table: {
-        headers: ["Nucleo", "Stato", "Lunghezza (cm)"],
-        template: [
-          {
-            mode: InputMode.Dropdown,
-            options: ["assente", "presente non valutabile PND", "presente non fuso PN", "presente in fusione PIF", "presente fuso PF"]
-          },
-          {
-            mode: InputMode.Text
+      sections: [
+        {
+          table: {
+            headers: ["Nucleo", "Stato", "Lunghezza (cm)"],
+            template: [
+              {
+                mode: InputMode.Dropdown,
+                options: ["assente", "presente non valutabile PND", "presente non fuso PN", "presente in fusione PIF", "presente fuso PF"]
+              },
+              {
+                mode: InputMode.Text
+              }
+            ],
+            indexes: ["A", "B", "C", "D", "E", "F"]
           }
-        ],
-        indexes: ["A", "B", "C", "D", "E", "F"]
-      }
+        }
+      ]
     },
     {
       title: "Completezza, qualità, colore generale",
       image: slideImage2,
-      table: {
-        headers: ["Settore", "Presente/Assente", "Note"],
-        template: [
-          {
-            mode: InputMode.Dropdown,
-            options: ["Assente", "Presente"]
-          },
-          {
-            mode: InputMode.Text
+      sections: [
+        {
+          table: {
+            headers: ["Settore", "Presente/Assente", "Note"],
+            template: [
+              {
+                mode: InputMode.Dropdown,
+                options: ["Assente", "Presente"]
+              },
+              {
+                mode: InputMode.Text
+              }
+            ],
+            indexes: ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12"]
           }
-        ],
-        indexes: ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12"]
-      }
+        },
+        {
+          table: {
+            headers: ["Area", "Dettagli", "Colore"],
+            template: [
+              {
+                mode: InputMode.Text
+              },
+              {
+                mode: InputMode.Dropdown,
+                options: ["da marrone a marrone scuro", "grigio", "naturale", "da arancione a marrone", "da giallo ad arancione"]
+              }
+            ],
+            indexes: ["A", "B", "C"]
+          }
+        }
+      ]
     }
   ]
 }
