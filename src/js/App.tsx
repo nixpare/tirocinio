@@ -2,17 +2,13 @@ import { Bone } from './Bone'
 import { Bone as BoneType, InputMode } from './models/Bone'
 import '../css/App.css'
 
-import slideImage1 from '../images/slide-image-1.png'
-import slideImage2 from '../images/slide-image-2.png'
-import slideImage3 from '../images/slide-image-3.png'
-
 const bone: BoneType = {
   name: "OSSO INNOMINATO",
   pages: [
     // Page 1
     {
       title: "Centri di ossificazione: presenza/assenza, fusione lunghezza diafisi",
-      image: slideImage1,
+      image: '/images/slide-image-1.png',
       sections: [
         {
           table: {
@@ -34,7 +30,7 @@ const bone: BoneType = {
     // Page 2
     {
       title: "Completezza, qualità, colore generale",
-      image: slideImage2,
+      image: '/images/slide-image-2.png',
       sections: [
         {
           table: {
@@ -71,7 +67,7 @@ const bone: BoneType = {
     // Page 3
     {
       title: "Caratteri metrici",
-      image: slideImage3,
+      image: '/images/slide-image-3.png',
       sections: [
         {
           table: {
