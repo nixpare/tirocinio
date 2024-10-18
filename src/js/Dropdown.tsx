@@ -4,7 +4,6 @@ import '../css/Dropdown.css'
 
 export function Dropdown({ options, selectedField, setSelectedField }: { options: string[], selectedField: string, setSelectedField: (selected: string) => void }) {
 	const [active, setActive] = useState(false)
-	//const [selected, setSelected] = useState(selectedField)
 
 	function handleDropdownButton(ev: MouseEvent<HTMLButtonElement, PointerEvent>) {
 		ev.preventDefault()

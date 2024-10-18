@@ -1,4 +1,4 @@
-import { ChangeEvent, FormEvent, useState } from 'react'
+import { ChangeEvent, FormEvent, MouseEvent, useState } from 'react'
 import { produce } from 'immer'
 import { Bone as BoneType, BoneProperty, InputMode, BonePropertyPage, BonePropertyTemplate } from './models/Bone'
 
@@ -18,9 +18,7 @@ export function Bone({ bone, editMode }: { bone: BoneType, editMode?: boolean })
 	
 	const [state, setState] = useState(bone)
 	function updateState(fn: (prev: BoneType) => BoneType): void {
-		const newState = produce(state, fn)
-		console.log(newState)
-		setState(newState)
+		setState(produce(state, fn))
 	}
 
 	function handleSubmit(ev: FormEvent) {
@@ -28,29 +26,54 @@ export function Bone({ bone, editMode }: { bone: BoneType, editMode?: boolean })
 		console.log(state)
 	}
 
+	const pages = state.pages.length
+	const [visiblePage, setVisiblePage] = useState(0)
+
+	function slideLeft(ev: MouseEvent<HTMLButtonElement, PointerEvent>) {
+		ev.preventDefault();
+
+		if (visiblePage > 0) {
+			setVisiblePage(visiblePage - 1)
+		}
+	}
+
+	function slideRight(ev: MouseEvent<HTMLButtonElement, PointerEvent>) {
+		ev.preventDefault();
+
+		if (visiblePage < pages-1) {
+			setVisiblePage(visiblePage + 1)
+		}
+	}
+
 	return (
 		<div className="container">
 			<h4 className="bone-name">{state.name}</h4>
 			<form className="bone-form" onSubmit={handleSubmit}>
-				{state.pages.map((page, pageIdx) => {
-					function updatePage(fn: (page: BonePropertyPage) => BonePropertyPage) {
-						updateState(state => {
-							state.pages[pageIdx] = fn(state.pages[pageIdx])
-							return state
-						})
-					}
+				<div className="carousel">
+					<button onClick={slideLeft}>Left</button>
+					<div>
+						{state.pages.map((page, pageIdx) => {
+							function updatePage(fn: (page: BonePropertyPage) => BonePropertyPage) {
+								updateState(state => {
+									state.pages[pageIdx] = fn(state.pages[pageIdx])
+									return state
+								})
+							}
 
-					return <PropertyPage key={page.title} page={page} update={updatePage} />;
-				})}
+							return <PropertyPage key={page.title} page={page} visible={visiblePage === pageIdx} update={updatePage} />;
+						})}
+					</div>
+					<button onClick={slideRight}>Right</button>
+				</div>
 				<button type="submit">Invia</button>
 			</form>
 		</div>
 	);
 }
 
-function PropertyPage({ page, update }: { page: BonePropertyPage, update: (fn: (page: BonePropertyPage) => BonePropertyPage) => void }) {
+function PropertyPage({ page, visible, update }: { page: BonePropertyPage, visible: boolean, update: (fn: (page: BonePropertyPage) => BonePropertyPage) => void }) {
 	return (
-		<div className="split">
+		<div className="split" style={visible ? {} : { display: 'none' }}>
 			<div>
 				<table className="props-table">
 					<thead>
@@ -64,7 +87,7 @@ function PropertyPage({ page, update }: { page: BonePropertyPage, update: (fn: (
 						{page.table.indexes.map((rowName, rowIdx) => {
 							return (
 								<tr key={rowName}>
-									<td>{rowName}</td>
+									<td key={rowName}>{rowName}</td>
 									
 									{page.table.template.map((template, fieldIdx) => {
 										const updatePropertyRow: (fn: (state?: BoneProperty) => BoneProperty) => void = (fn) => {
@@ -87,7 +110,7 @@ function PropertyPage({ page, update }: { page: BonePropertyPage, update: (fn: (
 											value = page.props[rowIdx][fieldIdx]
 										}
 
-										return <td><Property value={value} template={template} update={updatePropertyRow} /></td>
+										return <td key={`${rowName}-${fieldIdx}`}><Property value={value} template={template} update={updatePropertyRow} /></td>
 									})}
 								</tr>
 							)
@@ -95,7 +118,7 @@ function PropertyPage({ page, update }: { page: BonePropertyPage, update: (fn: (
 					</tbody>
 				</table>
 			</div>
-			<div className="container"><img src={page.image} alt={page.title} /></div>
+			<div><img className="bone-page-image" src={page.image} alt={page.title} /></div>
 		</div>
 	)
 }

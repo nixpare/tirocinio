@@ -66,4 +66,27 @@ button:focus-visible {
   justify-content: center;
   margin: 2em 3em;
   gap: 1em;
+  background: rgba(255, 0, 0, .1)
+}
+
+.split {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: auto;
+  gap: .5em;
+}
+
+.split > * {
+  padding: 1em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 0, 0, .1);
+}
+
+.carousel {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 2em;
 }

@@ -1,20 +1,4 @@
-.split {
-	display: grid;
-	grid-template-columns: 1fr 1fr;
-	grid-template-rows: auto;
-	gap: .5em;
-}
-
-.split > * {
-	background: rgba(255, 0, 0, .1);
-	padding: 1em;
-	display: flex;
-	align-items: center;
-	justify-content: center;
-}
-
 .props-table {
-	background: rgba(255, 0, 0, .1);
 	width: 100%;
 	text-align: center;
 }
@@ -27,6 +11,17 @@
 }
 
 .bone-form {
+	display: flex;
 	flex-direction: column;
-	gap: 1em;
+	align-items: center;
+	gap: 2em;
+}
+
+.bone-form > button {
+	width: fit-content;
+}
+
+.bone-page-image {
+	width: 100%;
+	height: fit-content;
 }
