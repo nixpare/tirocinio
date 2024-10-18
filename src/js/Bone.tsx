@@ -1,11 +1,27 @@
 import { ChangeEvent, FormEvent, useState } from 'react'
 import { produce } from 'immer'
-import { Bone as BoneTyp, BoneProperty, InputMode } from './models/Bone'
+import { Bone as BoneType, BoneProperty, InputMode, BonePropertyPage, BonePropertyTemplate } from './models/Bone'
+
+import { Dropdown } from './Dropdown'
 
 import '../css/Bone.css'
 
-export function Bone({ props }: { props: BoneTyp }) {
-	const [state, setState] = useState(props)
+export function Bone({ bone, editMode }: { bone: BoneType, editMode?: boolean }) {
+	if (!editMode) {
+		return (
+			<div className="container">
+				<h4 className="bone-name">{bone.name}</h4>
+				<p>To be implemented</p>
+			</div>
+		)
+	}
+	
+	const [state, setState] = useState(bone)
+	function updateState(fn: (prev: BoneType) => BoneType): void {
+		const newState = produce(state, fn)
+		console.log(newState)
+		setState(newState)
+	}
 
 	function handleSubmit(ev: FormEvent) {
 		ev.preventDefault()
@@ -15,115 +31,96 @@ export function Bone({ props }: { props: BoneTyp }) {
 	return (
 		<div className="container">
 			<h4 className="bone-name">{state.name}</h4>
+			<form className="bone-form" onSubmit={handleSubmit}>
+				{state.pages.map((page, pageIdx) => {
+					function updatePage(fn: (page: BonePropertyPage) => BonePropertyPage) {
+						updateState(state => {
+							state.pages[pageIdx] = fn(state.pages[pageIdx])
+							return state
+						})
+					}
 
-			<div className="split">
-				<div>
-					<table className="props-table">
-						<thead>
-							<tr>
-								<th>Proprietà</th>
-								<th>Valore</th>
-							</tr>
-						</thead>
-						<tbody>
-							{Object.entries(state.props).map(([propName, prop]) => {
-								return <PropertyView key={propName} name={propName} prop={prop} />;
-							})}
-						</tbody>
-					</table>
-				</div>
-				<div><img src={props.image} alt={props.name} /></div>
-			</div>
-
-			<div className="split">
-				<form className="bone-form" onSubmit={handleSubmit}>
-					<table className="props-table">
-						<thead>
-							<tr>
-								<th>Proprietà</th>
-								<th>Valore</th>
-							</tr>
-						</thead>
-						<tbody>
-							{Object.entries(state.props).map(([propName, prop]) => {
-								return <PropertyInput key={propName} name={propName} prop={prop} state={state} setState={setState} />;
-							})}
-						</tbody>
-					</table>
-					<button type="submit">Invia</button>
-				</form>
-				<div><img src={props.image} alt={props.name} /></div>
-			</div>
+					return <PropertyPage key={page.title} page={page} update={updatePage} />;
+				})}
+				<button type="submit">Invia</button>
+			</form>
 		</div>
 	);
 }
 
-function PropertyView({ name, prop }: { name: string, prop: BoneProperty }) {
-	return (<tr>
-		<td>{name}</td>
-		<td>{prop.value.toString()}</td>
-	</tr>);
+function PropertyPage({ page, update }: { page: BonePropertyPage, update: (fn: (page: BonePropertyPage) => BonePropertyPage) => void }) {
+	return (
+		<div className="split">
+			<div>
+				<table className="props-table">
+					<thead>
+						<tr>
+							{page.table.headers.map(th => {
+								return <th key={th}>{th}</th>
+							})}
+						</tr>
+					</thead>
+					<tbody>
+						{page.table.indexes.map((rowName, rowIdx) => {
+							return (
+								<tr key={rowName}>
+									<td>{rowName}</td>
+									
+									{page.table.template.map((template, fieldIdx) => {
+										const updatePropertyRow: (fn: (state?: BoneProperty) => BoneProperty) => void = (fn) => {
+											update(page => {
+												if (!page.props) {
+													page.props = []
+												}
+
+												if (!page.props[rowIdx]) {
+													page.props[rowIdx] = []
+												}
+
+												page.props[rowIdx][fieldIdx] = fn(page.props[rowIdx][fieldIdx])
+												return page
+											})
+										}
+
+										let value: string | undefined;
+										if (page.props && page.props[rowIdx]) {
+											value = page.props[rowIdx][fieldIdx]
+										}
+
+										return <td><Property value={value} template={template} update={updatePropertyRow} /></td>
+									})}
+								</tr>
+							)
+						})}
+					</tbody>
+				</table>
+			</div>
+			<div className="container"><img src={page.image} alt={page.title} /></div>
+		</div>
+	)
 }
 
-function PropertyInput({ name, prop, state, setState }: { name: string, prop: BoneProperty, state: BoneTyp, setState: (state: BoneTyp) => void }) {
-	switch (prop.mode) {
+function Property({ template, value, update }: { template: BonePropertyTemplate, value?: BoneProperty, update: (fn: (value?: BoneProperty) => BoneProperty) => void }) {
+	switch (template.mode) {
 		case InputMode.Text:
 			function handleTextInput(ev: ChangeEvent<HTMLInputElement>) {
-				setState(produce(state, (state) => {
-					state.props[name].value = ev.target.value
-				}))
+				update(() => {
+					return ev.target.value
+				})
 			}
 
-			return (<tr>
-				<td><label htmlFor={name}>{name}</label></td>
-				<td><input
-					type="text" name={name} placeholder={name}
-					value={prop.value as string} onChange={handleTextInput}
-				/></td>
-			</tr>)
-		case InputMode.Number:
-			const [number, setNumber] = useState(prop.value as number)
-
-			function handleNumberInput(ev: ChangeEvent<HTMLInputElement>) {
-				setState(produce(state, (state) => {
-					state.props[name].value = ev.target.value
-				}))
-				setNumber(Number(ev.target.value))
+			return <input type="text" value={value ? value : ''} onChange={handleTextInput} />;
+		case InputMode.Dropdown:
+			function setSelected(selected: string) {
+				update(() => {
+					return selected
+				})
 			}
 
-			return (<tr>
-				<td><label htmlFor={name}>{name}</label></td>
-				<td><input
-					type="number" name={name} placeholder={name}
-					value={number !== 0 ? number : ""} onChange={handleNumberInput} /></td>
-			</tr>)
-		case InputMode.Checkbox:
-			const [checked, setChecked] = useState(prop.value as boolean)
-
-			function handleCheckbox() {
-				setChecked(!checked)
-			}
-
-			return (<tr>
-				<td><label htmlFor={name}>{name}</label></td>
-				<td><input
-					type="checkbox" name={name} placeholder={name}
-					checked={checked} onChange={handleCheckbox}
-				/></td >
-			</tr>)
-		case InputMode.MultilineText:
-			const [multiline, setMultiline] = useState(prop.value as string)
-
-			function handleMultilineInput(ev: ChangeEvent<HTMLTextAreaElement>) {
-				setMultiline(ev.target.value)
-			}
-
-			return (<tr>
-				<td><label htmlFor={name}>{name}</label></td>
-				<td><textarea
-					name={name} placeholder={name}
-					value={multiline} onChange={handleMultilineInput}
-				></textarea></td>
-			</tr>)
+			return <Dropdown
+				options={template.options || []}
+				selectedField={value || 'Non selezionato' }
+				setSelectedField={setSelected}
+			/>
 	}
 }
