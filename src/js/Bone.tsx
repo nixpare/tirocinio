@@ -86,38 +86,44 @@ export function Bone({ bone, editMode }: { bone: BoneType, editMode?: boolean })
  * @return ReactNode
  */
 function PropertyPage({ page, update }: { page: BonePropertyPage, update: (fn: (page: BonePropertyPage) => BonePropertyPage) => void }) {
-	function PageSection() {
-		return page.sections.map((section, sectionIdx) => {
-			// updateSection è la funzione di produzione sullo stato per la sezione specifica della pagina
-			function updateSection(fn: (section: BonePropertyPageSection) => BonePropertyPageSection): void {
-				update(page => {
-					page.sections[sectionIdx] = fn(page.sections[sectionIdx])
-					return page
-				})
-			}
-
-			return <div className="bone-section" key={`${page.title}-${sectionIdx}`}><PropertyPageSection section={section} update={updateSection} /></div>
-		})
-	}
-
-	function PageImage() {
-		return (
-			<Carousel>
-				{page.image?.map((image, imageIdx) => {
-					return <img key={`${page.title}-${imageIdx}`} className="bone-page-image" src={image} alt={page.title} />
-				})}
-			</Carousel>
-		)
-	}
-
 	if (!page.image) {
-		return <div><PageSection /></div>
+		return <div>
+			{page.sections.map((section, sectionIdx) => {
+				// updateSection è la funzione di produzione sullo stato per la sezione specifica della pagina
+				function updateSection(fn: (section: BonePropertyPageSection) => BonePropertyPageSection): void {
+					update(page => {
+						page.sections[sectionIdx] = fn(page.sections[sectionIdx])
+						return page
+					})
+				}
+
+				return <div className="bone-section" key={`${page.title}-${sectionIdx}`}><PropertyPageSection section={section} update={updateSection} /></div>
+			})}
+		</div>
 	}
 
 	return (
 		<div className="split">
-			<div><PageSection /></div>
-			<div><PageImage /></div>
+			<div>
+				{page.sections.map((section, sectionIdx) => {
+					// updateSection è la funzione di produzione sullo stato per la sezione specifica della pagina
+					function updateSection(fn: (section: BonePropertyPageSection) => BonePropertyPageSection): void {
+						update(page => {
+							page.sections[sectionIdx] = fn(page.sections[sectionIdx])
+							return page
+						})
+					}
+
+					return <div className="bone-section" key={`${page.title}-${sectionIdx}`}><PropertyPageSection section={section} update={updateSection} /></div>
+				})}
+			</div>
+			<div>
+				<Carousel>
+					{page.image?.map((image, imageIdx) => {
+						return <img key={`${page.title}-${imageIdx}`} className="bone-page-image" src={image} alt={page.title} />
+					})}
+				</Carousel>
+			</div>
 		</div>
 	)
 }
@@ -206,7 +212,9 @@ function Property({ template, value, update }: { template: BonePropertyTemplate,
 				})
 			}
 
-			return <td><input type="text" value={value as (string | undefined)} onChange={handleTextInput} /></td>;
+			value = (value as (string | undefined)) || ''
+
+			return <td><input type="text" value={value} onChange={handleTextInput} /></td>;
 		case InputMode.Dropdown:
 			function setSelected(selected: string) {
 				update(() => {
