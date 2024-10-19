@@ -11,9 +11,6 @@ import '../css/Bone.css'
  * Bone è il macro elemento che gestisce la visualizzazione e la modifica / inserimento
  * di un osso. Il parametro `editMode` permette questa impostazione.
  * 
- * Il parametro `bone` invece è lo stato utilizzato per la creazione del componente,
- * dal quale verrà creato un react state, per eventuali modifiche.
- * 
  * Il form all'interno è composto da un carosello di pagine, dove ogni pagina contiene
  * delle tabelle per impostare i vari campi.
  * 
@@ -25,6 +22,9 @@ import '../css/Bone.css'
  * che si va in profondità, per tenere traccia dei vari indici delle proprietà. Inoltre
  * questo approccio puà permettere una ricorsione delle proprietà più flessibile (proprietà
  * che in base al loro valore determinano la natura delle proprietà successive)
+ * @param bone stato utilizzato per la creazione del componente
+ * @param editMode (opzionale) flag per indicare se abilitare la possibilità di modificare i campi
+ * @return ReactNode
  */
 export function Bone({ bone, editMode }: { bone: BoneType, editMode?: boolean }) {
 	// La editMode dovrebbe permettere la visualizzazione di un osso
@@ -59,7 +59,7 @@ export function Bone({ bone, editMode }: { bone: BoneType, editMode?: boolean })
 			<form className="bone-form" onSubmit={handleSubmit}>
 				<Carousel>
 					{state.pages.map((page, pageIdx) => {
-						// updatePage è la funzione di produzione sullo state per la pagina specifica
+						// updatePage è la funzione di produzione sullo stato per la pagina specifica
 						function updatePage(fn: (page: BonePropertyPage) => BonePropertyPage) {
 							updateState(state => {
 								state.pages[pageIdx] = fn(state.pages[pageIdx])
@@ -76,10 +76,19 @@ export function Bone({ bone, editMode }: { bone: BoneType, editMode?: boolean })
 	);
 }
 
-
+/**
+ * PropertyPage rappresenta una pagina di opzioni per l'osso, la quale contiene, eventualmente, una o più immagini
+ * relative alle opzioni della pagina e una o più sezioni (ogni sezione coincide con una tabella di opzioni).
+ * Se non ci sono immagini associate alla pagina, vengono mostrare solo le sezioni, altrimenti la schermata è divisa
+ * in due.
+ * @param page attributo derivato dallo stato globale
+ * @param update funzione di produzione per informare lo stato globale dei cambiamenti
+ * @return ReactNode
+ */
 function PropertyPage({ page, update }: { page: BonePropertyPage, update: (fn: (page: BonePropertyPage) => BonePropertyPage) => void }) {
 	function PageSection() {
 		return page.sections.map((section, sectionIdx) => {
+			// updateSection è la funzione di produzione sullo stato per la sezione specifica della pagina
 			function updateSection(fn: (section: BonePropertyPageSection) => BonePropertyPageSection): void {
 				update(page => {
 					page.sections[sectionIdx] = fn(page.sections[sectionIdx])
@@ -113,11 +122,21 @@ function PropertyPage({ page, update }: { page: BonePropertyPage, update: (fn: (
 	)
 }
 
+/**
+ * PropertyPageSection rappresenta la sezione di una pagina con la tabella di opzioni.
+ * L'attributo `section` contiene il template della tabella, quindi genera prima gli header della tabella,
+ * poi per ogni riga della tabella prima genera i campi fissi di ogni riga, quindi a seguire i vari input segnati
+ * nel template.
+ * @param section attributo derivato dallo stato globale
+ * @param update funzione di produzione per informare lo stato globale dei cambiamenti
+ * @return ReactNode
+ */
 function PropertyPageSection({ section, update }: { section: BonePropertyPageSection, update: (fn: (section: BonePropertyPageSection) => BonePropertyPageSection) => void }) {
 	return (
 		<table className="props-table">
 			<thead>
 				<tr>
+					{/* Generazione degli header della tabella */}
 					{section.table.headers.map(th => {
 						return <th key={th}>{th}</th>
 					})}
@@ -130,11 +149,14 @@ function PropertyPageSection({ section, update }: { section: BonePropertyPageSec
 
 					return (
 						<tr key={rowName}>
+							{/* Generazione dei campi fissi di ogni riga della tabella */}
 							{row.map((rowConst, rowConstIdx) => {
 								return <td key={`${rowName}-${rowConstIdx}`}>{rowConst}</td>
 							})}
 
+							{/* Generazione degli input della tabella dal template */}
 							{section.table.template.map((template, fieldIdx) => {
+								// updatePropertyRow è la funzione di produzione sullo stato per la proprietà specifica
 								function updatePropertyRow(fn: (state?: BoneProperty) => BoneProperty): void {
 									update(section => {
 										if (!section.props) {
@@ -165,6 +187,14 @@ function PropertyPageSection({ section, update }: { section: BonePropertyPageSec
 	)
 }
 
+/**
+ * Property rappresenta un'opzione della tabella. In base al valore `mode` in `template` il componente genera l'input sottostante
+ * corretto.
+ * @param template attributo derivato dallo stato globale
+ * @param value (opzionale) attributo derivato dallo stato globale
+ * @param update funzione di produzione per informare lo stato globale dei cambiamenti
+ * @return ReactNode
+ */
 function Property({ template, value, update }: { template: BonePropertyTemplate, value?: BoneProperty, update: (fn: (value?: BoneProperty) => BoneProperty) => void }) {
 	switch (template.mode) {
 		case InputMode.Text:
