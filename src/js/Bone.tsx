@@ -50,37 +50,37 @@ export function Bone({ bone, editMode }: { bone: BoneType, editMode?: boolean })
 }
 
 function PropertyPage({ page, update }: { page: BonePropertyPage, update: (fn: (page: BonePropertyPage) => BonePropertyPage) => void }) {
-	function PageImage() {
-		if (!Array.isArray(page.image)) {
-			return <img className="bone-page-image" src={page.image} alt={page.title} />
-		}
+	function PageSection() {
+		return page.sections.map((section, sectionIdx) => {
+			function updateSection(fn: (section: BonePropertyPageSection) => BonePropertyPageSection): void {
+				update(page => {
+					page.sections[sectionIdx] = fn(page.sections[sectionIdx])
+					return page
+				})
+			}
 
+			return <div className="bone-section" key={`${page.title}-${sectionIdx}`}><PropertyPageSection section={section} update={updateSection} /></div>
+		})
+	}
+	
+	function PageImage() {
 		return (
 			<Carousel>
-				{page.image.map((image, imageIdx) => {
+				{page.image?.map((image, imageIdx) => {
 					return <img key={`${page.title}-${imageIdx}`} className="bone-page-image" src={image} alt={page.title} />
 				})}
 			</Carousel>
 		)
 	}
+
+	if (!page.image) {
+		return <div><PageSection /></div>
+	}
 	
 	return (
 		<div className="split">
-			<div>
-				{page.sections.map((section, sectionIdx) => {
-					function updateSection(fn: (section: BonePropertyPageSection) => BonePropertyPageSection): void {
-						update(page => {
-							page.sections[sectionIdx] = fn(page.sections[sectionIdx])
-							return page
-						})
-					}
-
-					return <div className="bone-section" key={`${page.title}-${sectionIdx}`}><PropertyPageSection section={section} update={updateSection} /></div>
-				})}
-			</div>
-			<div>
-				<PageImage />
-			</div>
+			<div><PageSection /></div>
+			<div><PageImage /></div>
 		</div>
 	)
 }

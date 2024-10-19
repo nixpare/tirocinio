@@ -5,7 +5,7 @@ export type Bone = {
 
 export type BonePropertyPage = {
 	title: string
-	image: string | string[]
+	image?: string[]
 	sections: BonePropertyPageSection[]
 }
 
