@@ -2,6 +2,13 @@ import React, { ReactNode, MouseEvent, useState } from 'react'
 
 import '../css/Carousel.css'
 
+/**
+ * Carousel implementa un semplice componente per mostrare più contenuti in successione,
+ * uno alla volta. Se viene passato un elemento soltanto, in automatico non mostrerà i
+ * controlli. Ogni figlio viene incapsulato in una `<div>` da usare per nascondere i vari
+ * elementi, ogni div eredita la proprietà `key` per gestire le liste in React
+ * @returns ReactNode
+ */
 export function Carousel({ children }: { children: ReactNode }) {
 	const childs = React.Children.toArray(children)
 	

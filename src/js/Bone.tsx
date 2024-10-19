@@ -184,7 +184,7 @@ function Property({ template, value, update }: { template: BonePropertyTemplate,
 
 			return <Dropdown
 				options={template.options || []}
-				selectedField={value || 'Non selezionato'}
+				selectedField={value}
 				setSelectedField={setSelected}
 			/>
 	}
