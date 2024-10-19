@@ -50,15 +50,29 @@ export type BonePropertyTemplate = {
 	/** il tipo di input sottostante alla proprietà */
 	mode: InputMode
 	/** presente quando l'input è del tipo `Dropdown`, contiene la lista di valori possibili */
-	options?: string[]
+	dropdownArgs?: string[]
+	/** presente quando l'input è del tipo `Multistage`, contiene la lista di valori possibili */
+	multistageArgs?: MultistageArg[]
 }
 
 /** BoneProperty è il tipo che può avere una proprietà, per ora tutto è basato su stringhe */
-export type BoneProperty = string
+export type BoneProperty = string | BonePropertyMultistage
 
 export enum InputMode {
 	/** un semplice <input type="text" /> */
 	Text,
 	/** un componente che simula un elemento <select> */
-	Dropdown
+	Dropdown,
+	/**  */
+	Multistage
+}
+
+export type BonePropertyMultistage = {
+	value?: string
+	next?: BoneProperty
+}
+
+export type MultistageArg = {
+	value: string
+	next: BonePropertyTemplate
 }

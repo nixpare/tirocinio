@@ -1,6 +1,6 @@
 import { ChangeEvent, FormEvent, useState } from 'react'
 import { produce } from 'immer'
-import { Bone as BoneType, BoneProperty, InputMode, BonePropertyPage, BonePropertyTemplate, BonePropertyPageSection } from './models/Bone'
+import { Bone as BoneType, BoneProperty, InputMode, BonePropertyPage, BonePropertyTemplate, BonePropertyPageSection, BonePropertyMultistage } from './models/Bone'
 
 import { Dropdown } from './Dropdown'
 import { Carousel } from './Carousel'
@@ -99,7 +99,7 @@ function PropertyPage({ page, update }: { page: BonePropertyPage, update: (fn: (
 			return <div className="bone-section" key={`${page.title}-${sectionIdx}`}><PropertyPageSection section={section} update={updateSection} /></div>
 		})
 	}
-	
+
 	function PageImage() {
 		return (
 			<Carousel>
@@ -113,7 +113,7 @@ function PropertyPage({ page, update }: { page: BonePropertyPage, update: (fn: (
 	if (!page.image) {
 		return <div><PageSection /></div>
 	}
-	
+
 	return (
 		<div className="split">
 			<div><PageSection /></div>
@@ -172,12 +172,14 @@ function PropertyPageSection({ section, update }: { section: BonePropertyPageSec
 									})
 								}
 
-								let value: string | undefined;
+								let value: BoneProperty | undefined;
 								if (section.props && section.props[rowIdx]) {
 									value = section.props[rowIdx][fieldIdx]
 								}
 
-								return <td key={`${rowName}-${fieldIdx + colOffset}`}><Property value={value} template={template} update={updatePropertyRow} /></td>
+								const key = `${rowName}-${fieldIdx + colOffset}`
+
+								return <Property key={key} value={value} template={template} update={updatePropertyRow} />
 							})}
 						</tr>
 					)
@@ -204,7 +206,7 @@ function Property({ template, value, update }: { template: BonePropertyTemplate,
 				})
 			}
 
-			return <input type="text" value={value ? value : ''} onChange={handleTextInput} />;
+			return <td><input type="text" value={value as (string | undefined)} onChange={handleTextInput} /></td>;
 		case InputMode.Dropdown:
 			function setSelected(selected: string) {
 				update(() => {
@@ -212,10 +214,79 @@ function Property({ template, value, update }: { template: BonePropertyTemplate,
 				})
 			}
 
-			return <Dropdown
-				options={template.options || []}
-				selectedField={value}
+			return <td><Dropdown
+				options={template.dropdownArgs || []}
+				selectedField={value as (string | undefined)}
+				setSelectedField={setSelected}
+			/></td>
+		case InputMode.Multistage:
+			function updateMultistage(fn: (value?: BonePropertyMultistage) => BonePropertyMultistage) {
+				update(value => {
+					return fn(value as (BonePropertyMultistage | undefined))
+				})
+			}
+
+			return <MultistageProperty template={template} multistage={value as (BonePropertyMultistage | undefined)} update={updateMultistage} />
+	}
+}
+
+function MultistageProperty({ template, multistage, update }: { template: BonePropertyTemplate, multistage?: BonePropertyMultistage, update: (fn: (value?: BonePropertyMultistage) => BonePropertyMultistage) => void }) {
+	const options: string[] | undefined = template.multistageArgs?.map(arg => arg.value)
+
+	function setSelected(selected: string) {
+		update(multistage => {
+			if (!multistage) {
+				return { value: selected }
+			}
+
+			if (multistage.value === selected) {
+				return multistage
+			}
+
+			multistage.value = selected
+			multistage.next = undefined
+			return multistage
+		})
+	}
+	
+	if (!multistage) {
+		return <td>
+			<Dropdown
+				options={options || []}
 				setSelectedField={setSelected}
 			/>
+		</td>
 	}
+
+	function FirstStage() {
+		return <td><Dropdown
+			options={options || []}
+			selectedField={multistage?.value}
+			setSelectedField={setSelected}
+		/></td>
+	}
+
+	const nextTemplate = template.multistageArgs?.filter(arg => arg.value === multistage.value)[0].next
+	if (!nextTemplate) {
+		return <>
+			<FirstStage />
+			<td>Errore, template non trovato</td>
+		</>
+	}
+	const nextValue = multistage.next
+	function nextUpdate(fn: (value?: BoneProperty) => BoneProperty) {
+		update(multistage => {
+			if (!multistage) {
+				throw new Error('multistage is undefined after the first stage')
+			}
+
+			multistage.next = fn(multistage?.next)
+			return multistage
+		})
+	}
+
+	return <>
+		<FirstStage />
+		<Property template={nextTemplate} value={nextValue} update={nextUpdate} />
+	</>
 }

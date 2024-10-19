@@ -16,7 +16,7 @@ const bone: BoneType = {
             template: [
               {
                 mode: InputMode.Dropdown,
-                options: ["assente", "presente non valutabile PND", "presente non fuso PN", "presente in fusione PIF", "presente fuso PF"]
+                dropdownArgs: ["assente", "presente non valutabile PND", "presente non fuso PN", "presente in fusione PIF", "presente fuso PF"]
               },
               {
                 mode: InputMode.Text
@@ -38,7 +38,7 @@ const bone: BoneType = {
             template: [
               {
                 mode: InputMode.Dropdown,
-                options: ["Assente", "Presente"]
+                dropdownArgs: ["Assente", "Presente"]
               },
               {
                 mode: InputMode.Text
@@ -56,10 +56,10 @@ const bone: BoneType = {
               },
               {
                 mode: InputMode.Dropdown,
-                options: ["da marrone a marrone scuro", "grigio", "naturale", "da arancione a marrone", "da giallo ad arancione"]
+                dropdownArgs: ["da marrone a marrone scuro", "grigio", "naturale", "da arancione a marrone", "da giallo ad arancione"]
               }
             ],
-            indexes: [["A"], ["B"], ["C"]]
+            indexes: [["A"], ["B"], ["C"], ["D"], ["E"], ["F"]]
           }
         }
       ]
@@ -104,7 +104,7 @@ const bone: BoneType = {
             template: [
               {
                 mode: InputMode.Dropdown,
-                options: ["Assente", "Non valutabile", "Presente"]
+                dropdownArgs: ["Assente", "Non valutabile", "Presente"]
               }
             ],
             indexes: [["Accessory Sacroiliac Facet"], ["Pubic Spine"], ["Acetabular Crease"], ["Cotyloid bone"]]
@@ -112,6 +112,44 @@ const bone: BoneType = {
         }
       ]
     },
+    // Page 5
+    // Page 6
+    // Page 7
+    {
+      title: "Lesività - Descrizione",
+      image: ["/images/slide-image-5.png"],
+      sections: [
+        {
+          table: {
+            headers: ["#", "Classe", "Descrizione segni"],
+            template: [
+              {
+                mode: InputMode.Multistage,
+                multistageArgs: [
+                  {
+                    value: "Soluzione di continuo",
+                    next: {
+                      mode: InputMode.Dropdown,
+                      dropdownArgs: []
+                    }
+                  },
+                  {
+                    value: "Perdita di sostanza",
+                    next: {
+                      mode: InputMode.Text
+                    }
+                  }
+                  /* "Aspetto margine",
+                  "Aspetto della superficie di frattura (indicare la localizzazione - mediale, laterale, anteriore e posteriore)",
+                  "Aspetto superficie di taglio (indicare la localizzazione - mediale, laterale, anteriore e posteriore)" */
+                ]
+              }
+            ],
+            indexes: [["1"], ["2"], ["3"]]
+          }
+        }
+      ]
+    }
   ]
 }
 
@@ -120,7 +158,7 @@ function App() {
     <div className="container">
       <h1>Tirocinio</h1>
       <Bone bone={bone} editMode={true} />
-      <Bone bone={bone} />
+      {/* <Bone bone={bone} /> */}
     </div>
   )
 }
