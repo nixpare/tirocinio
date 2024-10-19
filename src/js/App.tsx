@@ -142,13 +142,24 @@ const bone: BoneType = {
                   },
                   {
                     value: "Perdita di sostanza",
+                    next: { mode: InputMode.Text }
+                  },
+                  {
+                    value: "Aspetto margine (esempio nested multistage)",
                     next: {
-                      mode: InputMode.Text
+                      mode: InputMode.Multistage,
+                      multistageArgs: [
+                        {
+                          value: "Aspetto della superficie di frattura (indicare la localizzazione - mediale, laterale, anteriore e posteriore)",
+                          next: { mode: InputMode.Text }
+                        },
+                        {
+                          value: "Aspetto superficie di taglio (indicare la localizzazione - mediale, laterale, anteriore e posteriore)",
+                          next: { mode: InputMode.Text }
+                        }
+                      ]
                     }
                   }
-                  /* "Aspetto margine",
-                  "Aspetto della superficie di frattura (indicare la localizzazione - mediale, laterale, anteriore e posteriore)",
-                  "Aspetto superficie di taglio (indicare la localizzazione - mediale, laterale, anteriore e posteriore)" */
                 ]
               }
             ],
