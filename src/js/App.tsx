@@ -130,7 +130,14 @@ const bone: BoneType = {
                     value: "Soluzione di continuo",
                     next: {
                       mode: InputMode.Dropdown,
-                      dropdownArgs: []
+                      dropdownArgs: [
+                        "A tutto spessore e tutta circonferenza",
+                        "A tutto spessore e parziale circonferenza",
+                        "Soluzione di continuo interessante lo strato corticale a tutta circonferenza",
+                        "Soluzione di continuo interessante lo strato corticale a parziale circonferenza",
+                        "Soluzione di continuo interessante lo strato di osso trabecolare (visibili in RX e TC)",
+                        "Multiple soluzioni di continuo (comminuzione)"
+                      ]
                     }
                   },
                   {
