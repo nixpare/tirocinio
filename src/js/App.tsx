@@ -67,7 +67,7 @@ const bone: BoneType = {
     // Page 3
     {
       title: "Caratteri metrici",
-      image: '/images/slide-image-3.png',
+      image: ['/images/slide-image-3.png', '/images/slide-image-4.png'],
       sections: [
         {
           table: {

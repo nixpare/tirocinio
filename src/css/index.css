@@ -84,10 +84,3 @@ button:focus-visible {
   justify-content: center;
   background: rgba(255, 0, 0, .1);
 }
-
-.carousel {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 2em;
-}
