@@ -8,7 +8,7 @@ const bone: BoneType = {
     // Page 1
     {
       title: "Centri di ossificazione: presenza/assenza, fusione lunghezza diafisi",
-      image: '/images/slide-image-1.png',
+      image: ['/images/slide-image-1.png'],
       sections: [
         {
           table: {
@@ -30,7 +30,7 @@ const bone: BoneType = {
     // Page 2
     {
       title: "Completezza, qualità, colore generale",
-      image: '/images/slide-image-2.png',
+      image: ['/images/slide-image-2.png'],
       sections: [
         {
           table: {
@@ -67,7 +67,7 @@ const bone: BoneType = {
     // Page 3
     {
       title: "Caratteri metrici",
-      image: '/images/slide-image-3.png',
+      image: ['/images/slide-image-3.png', '/images/slide-image-4.png'],
       sections: [
         {
           table: {
@@ -93,7 +93,25 @@ const bone: BoneType = {
           }
         }
       ]
-    }
+    },
+    // Page 4
+    {
+      title: "Caratteri non metrici",
+      sections: [
+        {
+          table: {
+            headers: ["Caratteri non metrici", "Stato"],
+            template: [
+              {
+                mode: InputMode.Dropdown,
+                options: ["Assente", "Non valutabile", "Presente"]
+              }
+            ],
+            indexes: [["Accessory Sacroiliac Facet"], ["Pubic Spine"], ["Acetabular Crease"], ["Cotyloid bone"]]
+          }
+        }
+      ]
+    },
   ]
 }
 
