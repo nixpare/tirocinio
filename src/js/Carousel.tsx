@@ -33,7 +33,7 @@ export function Carousel({ children }: { children: ReactNode }) {
 			<button style={buttonStyle} onClick={slideLeft} disabled={visible === 0}>&lt;</button>
 			<div>
 				{childs.map((child, childIdx) => {
-					const key = child.key ?? childIdx
+					const key: string = React.isValidElement(child) && child.key ? child.key : childIdx.toString()
 					const style = childIdx === visible ? {} : {
 						display: 'none',
 					}
