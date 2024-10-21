@@ -130,18 +130,36 @@ const bone: BoneType = {
                     value: "Soluzione di continuo",
                     next: {
                       mode: InputMode.Dropdown,
-                      dropdownArgs: []
+                      dropdownArgs: [
+                        "A tutto spessore e tutta circonferenza",
+                        "A tutto spessore e parziale circonferenza",
+                        "Soluzione di continuo interessante lo strato corticale a tutta circonferenza",
+                        "Soluzione di continuo interessante lo strato corticale a parziale circonferenza",
+                        "Soluzione di continuo interessante lo strato di osso trabecolare (visibili in RX e TC)",
+                        "Multiple soluzioni di continuo (comminuzione)"
+                      ]
                     }
                   },
                   {
                     value: "Perdita di sostanza",
+                    next: { mode: InputMode.Text }
+                  },
+                  {
+                    value: "Aspetto margine (esempio nested multistage)",
                     next: {
-                      mode: InputMode.Text
+                      mode: InputMode.Multistage,
+                      multistageArgs: [
+                        {
+                          value: "Aspetto della superficie di frattura (indicare la localizzazione - mediale, laterale, anteriore e posteriore)",
+                          next: { mode: InputMode.Text }
+                        },
+                        {
+                          value: "Aspetto superficie di taglio (indicare la localizzazione - mediale, laterale, anteriore e posteriore)",
+                          next: { mode: InputMode.Text }
+                        }
+                      ]
                     }
                   }
-                  /* "Aspetto margine",
-                  "Aspetto della superficie di frattura (indicare la localizzazione - mediale, laterale, anteriore e posteriore)",
-                  "Aspetto superficie di taglio (indicare la localizzazione - mediale, laterale, anteriore e posteriore)" */
                 ]
               }
             ],
