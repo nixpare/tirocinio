@@ -249,6 +249,9 @@ function PropertyPage({ page, state, update }: { page: BonePropertyPage, state: 
 					<Carousel visibleState={{ visible: activeImage, setVisible: setActiveImage }} >
 						{page.image?.map((image, imageIdx) => {
 							const handleImageClick = (ev: MouseEvent<HTMLImageElement, PointerEvent>): void => {
+								if (page.tables[activeTable].type !== PropertyTableType.VariadicMouse)
+									return
+								
 								const img = ev.nativeEvent.target as HTMLImageElement
 								const imageLeft = Math.round(ev.nativeEvent.offsetX / img.offsetWidth * 100)
 								const imageTop = Math.round(ev.nativeEvent.offsetY / img.offsetHeight * 100)
