@@ -1,14 +1,15 @@
 import { Bone } from './Bone'
 import { BoneState, BoneTemplate, InputMode, PropertyTableType } from './models/Bone'
-import '../css/App.css'
 import { useState } from 'react'
+
+import '../css/App.css'
 
 const boneTemplate: BoneTemplate = {
   name: "OSSO INNOMINATO",
   pages: [
     // Page Test
     {
-      title: "Centri di ossificazione: presenza/assenza, fusione lunghezza diafisi",
+      title: "Test variadic",
       image: ['/images/slide-image-1.png'],
       tables: [
         {
@@ -208,9 +209,9 @@ const boneState: BoneState = {
   ]
 }
 
-const [state, setState] = useState(boneState)
-
 function App() {
+  const [state, setState] = useState(boneState)
+
   return (
     <div className="container">
       <h1>Tirocinio</h1>

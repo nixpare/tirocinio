@@ -21,11 +21,16 @@
 	width: fit-content;
 }
 
+.bone-page h3 {
+	text-align: center;
+	margin-bottom: 1em;
+}
+
 .bone-page-image {
 	width: 100%;
 	height: fit-content;
 }
 
-.bone-section {
+.bone-table {
 	margin: 2em 0;
 }

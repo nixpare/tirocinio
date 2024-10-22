@@ -1,15 +1,15 @@
 import { ChangeEvent, FormEvent } from 'react'
 import { produce } from 'immer'
-import { BoneProperty, InputMode, BonePropertyPage, BonePropertyPageTable, BonePropertyMultistage, BoneTemplate, BoneState, BonePropertyInput, PropertyTableType } from './models/Bone'
+import { BoneProperty, InputMode, BonePropertyPage, BonePropertyPageTable, BonePropertyMultistage, BoneTemplate, BoneState, BonePropertyInput, PropertyTableType, BonePageState, BoneTableState } from './models/Bone'
 
 import { Dropdown } from './Dropdown'
 import { Carousel } from './Carousel'
 
 import '../css/Bone.css'
 
-type UpdatePageFunc = (fn: (page?: BoneProperty[][][]) => BoneProperty[][][]) => void
-type UpdateTableFunc = (fn: (table?: BoneProperty[][]) => BoneProperty[][]) => void
-type UpdatePropertyFunc = (fn: (prop?: BoneProperty) => BoneProperty) => void
+type UpdatePageFunc = (fn: (page: BonePageState) => BonePageState) => void
+type UpdateTableFunc = (fn: (table: BoneTableState) => BoneTableState) => void
+type UpdatePropertyFunc = (fn: (prop: BoneProperty) => BoneProperty) => void
 
 /**
  * Bone è il macro elemento che gestisce la visualizzazione e la modifica / inserimento
@@ -65,11 +65,15 @@ export function Bone({ template, state, setState, editMode }: { template: BoneTe
 						// updatePage è la funzione di produzione sullo stato per la pagina specifica
 						const updatePage: UpdatePageFunc = (fn) => {
 							updateState(state => {
+								const newPage = fn(state.props?.[pageIdx])
+								if (!newPage)
+									return state
+
 								if (!state.props) {
 									state.props = []
 								}
 
-								state.props[pageIdx] = fn(state.props[pageIdx])
+								state.props[pageIdx] = newPage
 								return state
 							})
 						}
@@ -92,16 +96,20 @@ export function Bone({ template, state, setState, editMode }: { template: BoneTe
  * @param update funzione di produzione per informare lo stato globale dei cambiamenti
  * @return ReactNode
  */
-function PropertyPage({ page, state, update }: { page: BonePropertyPage, state?: BoneProperty[][][], update: UpdatePageFunc }) {
-	const section = page.tables.map((table, sectionIdx) => {
+function PropertyPage({ page, state, update }: { page: BonePropertyPage, state: BonePageState, update: UpdatePageFunc }) {
+	const table = page.tables.map((table, tableIdx) => {
 		// updateSection è la funzione di produzione sullo stato per la sezione specifica della pagina
 		const updateTable: UpdateTableFunc = (fn) => {
 			update(page => {
+				const newTable = fn(page?.[tableIdx])
+				if (!newTable)
+					return page
+
 				if (!page) {
 					page = []
 				}
 
-				page[sectionIdx] = fn(page[sectionIdx])
+				page[tableIdx] = newTable
 				return page
 			})
 		}
@@ -109,38 +117,42 @@ function PropertyPage({ page, state, update }: { page: BonePropertyPage, state?:
 		let tableElem: any;
 		switch (table.type) {
 			case PropertyTableType.Default:
-				tableElem = <PropertyPageTableDefault table={table} state={state?.[sectionIdx]} update={updateTable} />
+				tableElem = <PropertyPageTableDefault table={table} state={state?.[tableIdx]} update={updateTable} />
 				break;
 			case PropertyTableType.VariadicButton:
-				tableElem = <PropertyPageTableVariadicButton table={table} state={state?.[sectionIdx]} update={updateTable} />
+				tableElem = <PropertyPageTableVariadicButton table={table} state={state?.[tableIdx]} update={updateTable} />
 				break;
 			case PropertyTableType.VariadicMouse:
 				tableElem = <div>To be implemented</div>
 				break;
 		}
 
-		return <div className="bone-section" key={`${page.title}-${sectionIdx}`}>
+		return <div className="bone-table" key={`${page.title}-${tableIdx}`}>
 			{tableElem}
 		</div>
 	})
 
 	if (!page.image) {
-		return <div>
-			{section}
+		return <div className="bone-page">
+			<h3>{page.title}</h3>
+			{table}
 		</div>
 	}
 
 	return (
-		<div className="split">
-			<div>
-				{section}
-			</div>
-			<div>
-				<Carousel>
-					{page.image?.map((image, imageIdx) => {
-						return <img key={`${page.title}-${imageIdx}`} className="bone-page-image" src={image} alt={page.title} />
-					})}
-				</Carousel>
+		<div className="bone-page">
+			<h3>{page.title}</h3>
+			<div className="split">
+				<div>
+					{table}
+				</div>
+				<div>
+					<Carousel>
+						{page.image?.map((image, imageIdx) => {
+							return <img key={`${page.title}-${imageIdx}`} className="bone-page-image" src={image} alt={page.title} />
+						})}
+					</Carousel>
+				</div>
 			</div>
 		</div>
 	)
@@ -153,7 +165,7 @@ function PropertyPage({ page, state, update }: { page: BonePropertyPage, state?:
  * @param update funzione di produzione per informare lo stato globale dei cambiamenti
  * @return ReactNode
  */
-function PropertyPageTableDefault({ table, state, update }: { table: BonePropertyPageTable, state?: BoneProperty[][], update: UpdateTableFunc }) {
+function PropertyPageTableDefault({ table, state, update }: { table: BonePropertyPageTable, state: BoneTableState, update: UpdateTableFunc }) {
 	return (
 		<table className="props-table">
 			<thead>
@@ -181,6 +193,10 @@ function PropertyPageTableDefault({ table, state, update }: { table: BonePropert
 								// updatePropertyRow è la funzione di produzione sullo stato per la proprietà specifica
 								const updateProperty: UpdatePropertyFunc = (fn) => {
 									update(table => {
+										const newProp = fn(table?.[rowIdx][fieldIdx])
+										if (!newProp)
+											return table
+
 										if (!table) {
 											table = []
 										}
@@ -189,7 +205,7 @@ function PropertyPageTableDefault({ table, state, update }: { table: BonePropert
 											table[rowIdx] = []
 										}
 
-										table[rowIdx][fieldIdx] = fn(table[rowIdx][fieldIdx])
+										table[rowIdx][fieldIdx] = newProp
 										return table
 									})
 								}
@@ -218,48 +234,80 @@ function PropertyPageTableDefault({ table, state, update }: { table: BonePropert
  * @param update funzione di produzione per informare lo stato globale dei cambiamenti
  * @return ReactNode
  */
-function PropertyPageTableVariadicButton({ table, state, update }: { table: BonePropertyPageTable, state?: BoneProperty[][], update: UpdateTableFunc }) {
+function PropertyPageTableVariadicButton({ table, state, update }: { table: BonePropertyPageTable, state: BoneTableState, update: UpdateTableFunc }) {
+	function addRow() {
+		update(table => {
+			if (!table) {
+				table = []
+			}
+
+			table.push([])
+			return table
+		})
+	}
+	
 	return (
-		<table className="props-table">
-			<thead>
-				<tr>
-					<th key={-1}>#</th>
-					{/* Generazione degli header della tabella */}
-					{table.headers.map((th, thIdx) => {
-						return <th key={thIdx}>{th}</th>
-					})}
-				</tr>
-			</thead>
-			<tbody>
-				{/* Generazione dei valori già esistenti della tabella */}
-				{state?.map((row, rowIdx) => {
-					return <tr key={rowIdx}>
-						<td>{rowIdx + 1}</td>
-						{table.inputs.map((input, fieldIdx) => {
-							// updatePropertyRow è la funzione di produzione sullo stato per la proprietà specifica
-							const updateProperty: UpdatePropertyFunc = (fn) => {
-								update(table => {
-									if (!table) {
-										table = []
-									}
-
-									if (!table[rowIdx]) {
-										table[rowIdx] = []
-									}
-
-									table[rowIdx][fieldIdx] = fn(table[rowIdx][fieldIdx])
-									return table
-								})
-							}
-
-							const propertyState = row?.[fieldIdx] || undefined
-
-							return <Property key={fieldIdx} state={propertyState} template={input} update={updateProperty} />
+		<div>
+			<table className="props-table">
+				<thead>
+					<tr>
+						<th key={0}></th>
+						<th key={1}>#</th>
+						{/* Generazione degli header della tabella */}
+						{table.headers.map((th, thIdx) => {
+							return <th key={thIdx + 2}>{th}</th>
 						})}
 					</tr>
-				})}
-			</tbody>
-		</table>
+				</thead>
+				<tbody>
+					{/* Generazione dei valori già esistenti della tabella */}
+					{state?.map((row, rowIdx) => {
+						const deleteRow: () => void = () => {
+							update(table => {
+								if (!table)
+									return table
+
+								return table.filter((_, index) => {
+									return index !== rowIdx
+								})
+							})
+						}
+
+						return <tr key={rowIdx}>
+							<td>
+								<button onClick={deleteRow}>-</button>
+							</td>
+							<td>
+								{rowIdx + 1}
+							</td>
+							{table.inputs.map((input, fieldIdx) => {
+								// updatePropertyRow è la funzione di produzione sullo stato per la proprietà specifica
+								const updateProperty: UpdatePropertyFunc = (fn) => {
+									update(table => {
+										if (!table) {
+											table = []
+										}
+
+										if (!table[rowIdx]) {
+											table[rowIdx] = []
+										}
+
+										table[rowIdx][fieldIdx] = fn(table[rowIdx][fieldIdx])
+										return table
+									})
+								}
+
+								const key = `${rowIdx}-${fieldIdx}`
+								const propertyState = row?.[fieldIdx] || undefined
+
+								return <Property key={key} state={propertyState} template={input} update={updateProperty} />
+							})}
+						</tr>
+					})}
+				</tbody>
+			</table>
+			<button onClick={addRow}>Add</button>
+		</div>
 	)
 }
 

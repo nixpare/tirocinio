@@ -2,8 +2,11 @@ export type BoneState = {
 	/** il nome dell'osso */
 	name: string
 	/** quadrivettore: pagina x tabella x riga x colonna */
-	props?: BoneProperty[][][][]
+	props?: BonePageState[]
 }
+
+export type BonePageState = BoneTableState[] | undefined
+export type BoneTableState = BoneProperty[][] | undefined
 
 export type BoneTemplate = {
 	/** il nome dell'osso */
@@ -59,7 +62,7 @@ export type BonePropertyInput = {
 }
 
 /** BoneProperty è il tipo che può avere una proprietà, per ora tutto è basato su stringhe */
-export type BoneProperty = string | BonePropertyMultistage
+export type BoneProperty = string | BonePropertyMultistage | undefined
 
 export enum InputMode {
 	/** un semplice <input type="text" /> */
