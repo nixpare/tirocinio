@@ -306,7 +306,7 @@ function PropertyPageTableVariadicButton({ table, state, update }: { table: Bone
 					})}
 				</tbody>
 			</table>
-			<button onClick={addRow}>Add</button>
+			<button onClick={addRow}>{table.variadicPlaceholder || '+'}</button>
 		</div>
 	)
 }

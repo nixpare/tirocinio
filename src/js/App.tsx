@@ -8,7 +8,7 @@ const boneTemplate: BoneTemplate = {
   name: "OSSO INNOMINATO",
   pages: [
     // Page Test
-    {
+    /* {
       title: "Test variadic",
       image: ['/images/slide-image-1.png'],
       tables: [
@@ -26,7 +26,7 @@ const boneTemplate: BoneTemplate = {
           ]
         }
       ]
-    },
+    }, */
     // Page 1
     {
       title: "Centri di ossificazione: presenza/assenza, fusione lunghezza diafisi",
@@ -126,6 +126,20 @@ const boneTemplate: BoneTemplate = {
             }
           ],
           indexes: [["Accessory Sacroiliac Facet"], ["Pubic Spine"], ["Acetabular Crease"], ["Cotyloid bone"]]
+        },
+        {
+          type: PropertyTableType.VariadicButton,
+          headers: ["Caratteri non metrici", "Stato"],
+          variadicPlaceholder: 'Aggiungi Carattere non Metrico',
+          inputs: [
+            {
+              mode: InputMode.Text
+            },
+            {
+              mode: InputMode.Dropdown,
+              dropdownArgs: ["Assente", "Non valutabile", "Presente"]
+            }
+          ]
         }
       ]
     },
@@ -189,7 +203,7 @@ const boneTemplate: BoneTemplate = {
 
 const boneState: BoneState = {
   name: "OSSO INNOMINATO",
-  props: [
+  /* props: [
     // Page Test
     [
       // Table 0
@@ -206,7 +220,7 @@ const boneState: BoneState = {
         ]
       ]
     ]
-  ]
+  ] */
 }
 
 function App() {

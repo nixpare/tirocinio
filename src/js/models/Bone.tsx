@@ -41,8 +41,10 @@ export type BonePropertyPageTable = {
 	headers: string[]
 	/** elenco dei vari input presenti per ogni riga della tabella */
 	inputs: BonePropertyInput[]
-	/**  elenco dei campi fissi per ogni riga, presente se la tabella è di tipo Default */
+	/** elenco dei campi fissi per ogni riga, presente se la tabella è di tipo Default */
 	indexes?: string[][]
+	/** valore da dare al bottone per aggiungere elementi alla tabella */
+	variadicPlaceholder?: string
 }
 
 export enum PropertyTableType {
