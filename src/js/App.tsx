@@ -4,17 +4,48 @@ import { useState } from 'react'
 
 import '../css/App.css'
 
+const boneState: BoneState = {
+  name: "OSSO INNOMINATO",
+  props: [
+    // Page Test
+    [
+      // Table 0
+      [
+        // Row 0
+        [
+          { imageIdx: 0, x: 50, y: 50 },
+          "assente",
+          "Ciao"
+        ]
+      ]
+    ]
+  ]
+}
+
 const boneTemplate: BoneTemplate = {
   name: "OSSO INNOMINATO",
   pages: [
     // Page Test
     {
       title: "Test variadic mouse",
-      image: ['/images/slide-image-1.png'],
+      image: ['/images/slide-image-1.png', '/images/slide-image-2.png'],
       tables: [
         {
           type: PropertyTableType.VariadicMouse,
           headers: ["Nucleo", "Stato"],
+          inputs: [
+            {
+              mode: InputMode.Dropdown,
+              dropdownArgs: ["assente", "presente non valutabile PND", "presente non fuso PN", "presente in fusione PIF", "presente fuso PF"]
+            },
+            {
+              mode: InputMode.Text
+            }
+          ]
+        },
+        {
+          type: PropertyTableType.VariadicMouse,
+          headers: ["Nucleo 2", "Stato 2"],
           inputs: [
             {
               mode: InputMode.Dropdown,
@@ -199,28 +230,6 @@ const boneTemplate: BoneTemplate = {
       ]
     }
   ]
-}
-
-const boneState: BoneState = {
-  name: "OSSO INNOMINATO",
-  /* props: [
-    // Page Test
-    [
-      // Table 0
-      [
-        // Row 0
-        [
-          "assente",
-          "Ciao"
-        ],
-        // Row 1
-        [
-          "presente non valutabile PND",
-          "Bella"
-        ]
-      ]
-    ]
-  ] */
 }
 
 function App() {

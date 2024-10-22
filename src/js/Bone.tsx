@@ -1,6 +1,6 @@
 import { ChangeEvent, FormEvent, MouseEvent, useState } from 'react'
 import { produce } from 'immer'
-import { BoneProperty, InputMode, BonePropertyPage, BonePropertyPageTable, BonePropertyMultistage, BoneTemplate, BoneState, BonePropertyInput, PropertyTableType, BonePageState, BoneTableState } from './models/Bone'
+import { BoneProperty, InputMode, BonePropertyPage, BonePropertyPageTable, BonePropertyMultistage, BoneTemplate, BoneState, BonePropertyInput, PropertyTableType, BonePageState, BoneTableState, BonePropertyImageRef } from './models/Bone'
 
 import { Dropdown } from './Dropdown'
 import { Carousel } from './Carousel'
@@ -11,8 +11,13 @@ type UpdatePageFunc = (fn: (page: BonePageState) => BonePageState) => void
 type UpdateTableFunc = (fn: (table: BoneTableState) => BoneTableState) => void
 type UpdatePropertyFunc = (fn: (prop: BoneProperty) => BoneProperty) => void
 
-type VariadicTableMouseCallbackFunc = (img: number, x: number, y: number) => void
-type CreateImageCircleFunc = (img: number, x: number, y: number, color: any) => Element
+type CreateImageCircleGenericFunc = (tableIdx: number, imageIdx: number, circleIdx: number, x: number, y: number, shouldUpdate: boolean) => void
+type DeleteImageCircleGenericFunc = (tableIdx: number, imageIdx: number, circleIdx: number) => void
+type HighlightImageCircleGenericFunc = (tableIdx: number, imageIdx: number, circleIdx: number) => void
+
+type CreateImageCircleFunc = (imageIdx: number, circleIdx: number, x: number, y: number) => void
+type DeleteImageCircleFunc = (imageIdx: number, circleIdx: number) => void
+type HighlightImageCircleFunc = (imageIdx: number, circleIdx: number) => void
 
 /**
  * Bone è il macro elemento che gestisce la visualizzazione e la modifica / inserimento
@@ -100,9 +105,72 @@ export function Bone({ template, state, setState, editMode }: { template: BoneTe
  * @return ReactNode
  */
 function PropertyPage({ page, state, update }: { page: BonePropertyPage, state: BonePageState, update: UpdatePageFunc }) {
-	const [circles, setCircles] = useState([] as React.JSX.Element[][])
+	const [circles, setCircles] = useState([] as { x: number, y: number }[][][])
+	const [activeTable, setActiveTable] = useState(0)
+	const [activeCircles, setActiveCircles] = useState([] as boolean[][][])
+	const [activeImage, setActiveImage] = useState(0)
+
+	const createCircleGeneric: CreateImageCircleGenericFunc = (tableIdx, imageIdx, circleIdx, x, y, shouldUpdate) => {
+		if (circles[tableIdx] && circles[tableIdx][imageIdx] && circles[tableIdx][imageIdx][circleIdx])
+			return
+
+		setCircles(produce(circles => {
+			if (!circles[tableIdx])
+				circles[tableIdx] = []
+
+			if (!circles[tableIdx][imageIdx])
+				circles[tableIdx][imageIdx] = []
+
+			circles[tableIdx][imageIdx][circleIdx] = { x: x, y: y }
+		}))
+
+		if (!shouldUpdate)
+			return
+
+		update(page => {
+			if (!page)
+				page = []
+
+			if (!page[tableIdx])
+				page[tableIdx] = []
+
+			page[tableIdx][circleIdx] = [{
+				imageIdx: imageIdx,
+				x: x,
+				y: y
+			}]
+
+			return page
+		})
+	}
+
+	const deleteCircleGeneric: DeleteImageCircleGenericFunc = (tableIdx, imageIdx, circleIdx) => {
+		setCircles(produce(circles => {
+			if (!circles[tableIdx] || !circles[tableIdx][imageIdx])
+				return
+
+			circles[tableIdx][imageIdx] = circles[tableIdx][imageIdx].filter((_, index) => index !== circleIdx)
+			return circles
+		}))
+	}
+
+	const highlightCircleGeneric: HighlightImageCircleGenericFunc = (tableIdx, imageIdx, circleIdx) => {
+		setActiveCircles(produce(activeCircles => {
+			if (!circles[tableIdx] || !circles[tableIdx][imageIdx] || !circles[tableIdx][imageIdx][circleIdx])
+				return
+
+			activeCircles = []
+			activeCircles[tableIdx] = []
+			activeCircles[tableIdx][imageIdx] = []
+
+			activeCircles[tableIdx][imageIdx][circleIdx] = true
+			return activeCircles
+		}))
+		
+		setActiveImage(imageIdx)
+	}
 	
-	const tables = page.tables.map((table: BonePropertyPageTable, tableIdx: number): [React.JSX.Element, VariadicTableMouseCallbackFunc | undefined] => {
+	const tables = page.tables.map((table, tableIdx) => {
 		// updateSection è la funzione di produzione sullo stato per la sezione specifica della pagina
 		const updateTable: UpdateTableFunc = (fn) => {
 			update(page => {
@@ -119,59 +187,54 @@ function PropertyPage({ page, state, update }: { page: BonePropertyPage, state: 
 			})
 		}
 
-		let tableElem: React.JSX.Element
-		let variadicMouseCallback: VariadicTableMouseCallbackFunc | undefined
+		const setActive = () => {
+			setActiveTable(tableIdx)
+		}
 
+		let tableElem: React.JSX.Element
 		switch (table.type) {
 			case PropertyTableType.Default:
-				tableElem = <PropertyPageTableDefault table={table} state={state?.[tableIdx]} update={updateTable} />
+				tableElem = <PropertyPageTableDefault
+					table={table} state={state?.[tableIdx]} update={updateTable}
+					active={activeTable === tableIdx} setActive={setActive}
+				/>
 				break;
 			case PropertyTableType.VariadicButton:
-				tableElem = <PropertyPageTableVariadicButton table={table} state={state?.[tableIdx]} update={updateTable} />
+				tableElem = <PropertyPageTableVariadicButton
+					table={table} state={state?.[tableIdx]} update={updateTable}
+					active={activeTable === tableIdx} setActive={setActive}
+				/>
 				break;
 			case PropertyTableType.VariadicMouse:
-				variadicMouseCallback = (img, x, y) => {
-					updateTable(table => {
-						if (!table) {
-							table = []
-						}
-
-						table.push([{
-							img: img,
-							x: x,
-							y: y
-						}])
-
-						setCircles(produce(circles => {
-							if (!circles[img])
-								circles[img] = []
-
-							circles[img].push(<div className='bone-page-image-tracker' style={{
-								left: `${x}%`,
-								top: `${y}%`,
-								borderColor: 'red'
-							}}></div>)
-						}))
-						return table
-					})
+				const createCircle: CreateImageCircleFunc = (imageIdx, circleIdx, x, y) => {
+					createCircleGeneric(tableIdx, imageIdx, circleIdx, x, y, false)
 				}
 
-				tableElem = <PropertyPageTableVariadicMouse table={table} state={state?.[tableIdx]} update={updateTable} />
+				const deleteCircle: DeleteImageCircleFunc = (imageIdx, circleIdx) => {
+					deleteCircleGeneric(tableIdx, imageIdx, circleIdx)
+				}
+
+				const highlightCircle: HighlightImageCircleFunc = (imageIdx, circleIdx) => {
+					highlightCircleGeneric(tableIdx, imageIdx, circleIdx)
+				}
+
+				tableElem = <PropertyPageTableVariadicMouse
+					table={table} state={state?.[tableIdx]} update={updateTable}
+					active={activeTable === tableIdx} setActive={setActive}
+					createCircle={createCircle} deleteCircle={deleteCircle} highlightCircle={highlightCircle}
+				/>
 				break;
 		}
 
-		return [
-			<div className="bone-table" key={`${page.title}-${tableIdx}`}>
-				{tableElem}
-			</div>,
-			variadicMouseCallback
-		]
+		return <div className="bone-table" key={`${page.title}-${tableIdx}`}>
+			{tableElem}
+		</div>
 	})
 
 	if (!page.image) {
 		return <div className="bone-page">
 			<h3>{page.title}</h3>
-			{tables.map(([table, _]) => table)}
+			{tables}
 		</div>
 	}
 
@@ -180,20 +243,19 @@ function PropertyPage({ page, state, update }: { page: BonePropertyPage, state: 
 			<h3>{page.title}</h3>
 			<div className="split">
 				<div>
-					{tables.map(([table, _]) => table)}
+					{tables}
 				</div>
 				<div>
-					<Carousel>
+					<Carousel visibleState={{ visible: activeImage, setVisible: setActiveImage }} >
 						{page.image?.map((image, imageIdx) => {
-							const listeners = tables.map(([_, callback]) => callback).filter(callback => callback != undefined)
 							const handleImageClick = (ev: MouseEvent<HTMLImageElement, PointerEvent>): void => {
 								const img = ev.nativeEvent.target as HTMLImageElement
 								const imageLeft = Math.round(ev.nativeEvent.offsetX / img.offsetWidth * 100)
 								const imageTop = Math.round(ev.nativeEvent.offsetY / img.offsetHeight * 100)
-								
-								for (const callback of listeners) {
-									callback(imageIdx, imageLeft, imageTop)
-								}
+
+								const rowIdx = state?.[activeTable]?.length || 0
+
+								createCircleGeneric(activeTable, imageIdx, rowIdx, imageLeft, imageTop, true)
 							}
 
 							return <div className="bone-page-image">
@@ -203,7 +265,17 @@ function PropertyPage({ page, state, update }: { page: BonePropertyPage, state: 
 									alt={page.title}
 									onClick={handleImageClick}
 								/>
-								{circles[imageIdx]?.map(circle => circle)}
+								{circles.map((imageCircles, tableIdx) => {
+									return imageCircles[imageIdx]?.map((circle, circleIdx) => {
+										const activeClassName = activeCircles[tableIdx]?.[imageIdx]?.[circleIdx] ? ' active' : ''
+										const className = 'bone-page-image-tracker' + activeClassName
+
+										return <div key={`${tableIdx}-${imageIdx}-${circleIdx}`} className={className} style={{
+											left: `${circle.x}%`,
+											top: `${circle.y}%`,
+										}}></div>
+									})
+								})}
 							</div>
 						})}
 					</Carousel>
@@ -220,9 +292,12 @@ function PropertyPage({ page, state, update }: { page: BonePropertyPage, state: 
  * @param update funzione di produzione per informare lo stato globale dei cambiamenti
  * @return ReactNode
  */
-function PropertyPageTableDefault({ table, state, update }: { table: BonePropertyPageTable, state: BoneTableState, update: UpdateTableFunc }) {
+function PropertyPageTableDefault({ table, state, update, active, setActive }: {
+	table: BonePropertyPageTable, state: BoneTableState, update: UpdateTableFunc,
+	active: boolean, setActive: () => void
+}) {
 	return (
-		<table className="props-table">
+		<table className={`${active ? 'active' : ''}`} onMouseEnter={setActive}>
 			<thead>
 				<tr>
 					{/* Generazione degli header della tabella */}
@@ -289,7 +364,10 @@ function PropertyPageTableDefault({ table, state, update }: { table: BonePropert
  * @param update funzione di produzione per informare lo stato globale dei cambiamenti
  * @return ReactNode
  */
-function PropertyPageTableVariadicButton({ table, state, update }: { table: BonePropertyPageTable, state: BoneTableState, update: UpdateTableFunc }) {
+function PropertyPageTableVariadicButton({ table, state, update, active, setActive }: {
+	table: BonePropertyPageTable, state: BoneTableState, update: UpdateTableFunc,
+	active: boolean, setActive: () => void
+}) {
 	function addRow() {
 		update(table => {
 			if (!table) {
@@ -303,7 +381,7 @@ function PropertyPageTableVariadicButton({ table, state, update }: { table: Bone
 	
 	return (
 		<div>
-			<table className="props-table">
+			<table className={`${active ? 'active' : ''}`} onMouseEnter={setActive}>
 				<thead>
 					<tr>
 						<th key={0}></th>
@@ -377,9 +455,13 @@ function PropertyPageTableVariadicButton({ table, state, update }: { table: Bone
  * @param update funzione di produzione per informare lo stato globale dei cambiamenti
  * @return ReactNode
  */
-function PropertyPageTableVariadicMouse({ table, state, update }: { table: BonePropertyPageTable, state: BoneTableState, update: UpdateTableFunc }) {
+function PropertyPageTableVariadicMouse({ table, state, update, active, setActive, createCircle, deleteCircle, highlightCircle }: {
+	table: BonePropertyPageTable, state: BoneTableState, update: UpdateTableFunc,
+	active: boolean, setActive: () => void,
+	createCircle: CreateImageCircleFunc, deleteCircle: DeleteImageCircleFunc, highlightCircle: HighlightImageCircleFunc
+}) {
 	return (
-		<table className="props-table">
+		<table className={`${active ? 'active' : ''}`} onMouseEnter={setActive}>
 			<thead>
 				<tr>
 					<th key={0}></th>
@@ -394,6 +476,9 @@ function PropertyPageTableVariadicMouse({ table, state, update }: { table: BoneP
 				{/* Generazione dei valori già esistenti della tabella */}
 				{state?.map((row, rowIdx) => {
 					const deleteRow: () => void = () => {
+						const circle = row[0] as BonePropertyImageRef
+						deleteCircle(circle.imageIdx, rowIdx)
+
 						update(table => {
 							if (!table)
 								return table
@@ -404,7 +489,14 @@ function PropertyPageTableVariadicMouse({ table, state, update }: { table: BoneP
 						})
 					}
 
-					return <tr key={rowIdx}>
+					const circle = row[0] as BonePropertyImageRef
+					createCircle(circle.imageIdx, rowIdx, circle.x, circle.y)
+
+					const onRowHover = () => {
+						highlightCircle(circle.imageIdx, rowIdx)
+					}
+
+					return <tr key={rowIdx} onMouseEnter={onRowHover}>
 						<td>
 							<button onClick={deleteRow}>-</button>
 						</td>
@@ -433,7 +525,7 @@ function PropertyPageTableVariadicMouse({ table, state, update }: { table: BoneP
 							}
 
 							const key = `${rowIdx}-${fieldIdx}`
-							const propertyState = row?.[fieldIdx + 1] || undefined  // fieldIdx+1 perchè il primo field contiene le informazioni per l'immagine
+							const propertyState = row?.[fieldIdx + 1]  // fieldIdx+1 perchè il primo field contiene le informazioni per l'immagine
 
 							return <Property key={key} state={propertyState} template={input} update={updateProperty} />
 						})}

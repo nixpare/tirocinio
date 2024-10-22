@@ -9,25 +9,29 @@ import '../css/Carousel.css'
  * elementi, ogni div eredita la proprietà `key` per gestire le liste in React
  * @returns ReactNode
  */
-export function Carousel({ children }: { children: ReactNode }) {
+export function Carousel({ children, visibleState }: { children: ReactNode, visibleState?: { visible: number, setVisible: (newState: number) => void } }) {
 	const childs = React.Children.toArray(children)
 	
 	const pages = childs.length
-	const [visible, setVisible] = useState(0)
 
-	function slideLeft(ev: MouseEvent<HTMLButtonElement, PointerEvent>) {
+	if (!visibleState) {
+		const [visible, setVisible] = useState(0)
+		visibleState = { visible: visible, setVisible: setVisible }
+	}
+
+	const slideLeft = (ev: MouseEvent<HTMLButtonElement, PointerEvent>): void => {
 		ev.preventDefault();
 
-		if (visible > 0) {
-			setVisible(visible - 1)
+		if (visibleState.visible > 0) {
+			visibleState.setVisible(visibleState.visible - 1)
 		}
 	}
 
-	function slideRight(ev: MouseEvent<HTMLButtonElement, PointerEvent>) {
+	const slideRight = (ev: MouseEvent<HTMLButtonElement, PointerEvent>): void => {
 		ev.preventDefault();
 
-		if (visible < pages - 1) {
-			setVisible(visible + 1)
+		if (visibleState.visible < pages - 1) {
+			visibleState.setVisible(visibleState.visible + 1)
 		}
 	}
 
@@ -37,11 +41,11 @@ export function Carousel({ children }: { children: ReactNode }) {
 	
 	return (
 		<div className="carousel">
-			<button style={buttonStyle} onClick={slideLeft} disabled={visible === 0}>&lt;</button>
+			<button style={buttonStyle} onClick={slideLeft} disabled={visibleState.visible === 0}>&lt;</button>
 			<div>
 				{childs.map((child, childIdx) => {
 					const key: string = React.isValidElement(child) && child.key ? child.key : childIdx.toString()
-					const style = childIdx === visible ? {} : {
+					const style = childIdx === visibleState.visible ? {} : {
 						display: 'none',
 					}
 
@@ -52,7 +56,7 @@ export function Carousel({ children }: { children: ReactNode }) {
 					);
 				})}
 			</div>
-			<button style={buttonStyle} onClick={slideRight} disabled={visible === pages-1}>&gt;</button>
+			<button style={buttonStyle} onClick={slideRight} disabled={visibleState.visible === pages-1}>&gt;</button>
 		</div>
 	)
 }

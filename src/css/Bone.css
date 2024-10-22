@@ -1,8 +1,3 @@
-.props-table {
-	width: 100%;
-	text-align: center;
-}
-
 .bone-name {
 	font-size: 2em;
 	background-color: rgba(0, 0, 0, .2);
@@ -39,11 +34,21 @@
 	position: absolute;
 	width: 50px;
 	aspect-ratio: 1 / 1;
-	border: 2px solid black;
+	border: 2px solid red;
 	border-radius: 50%;
 	transform: translate(-50%, -50%);
 }
 
+.bone-page-image-tracker.active {
+	border-color: green;
+}
+
 .bone-table {
+	width: 100%;
+	text-align: center;
 	margin: 2em 0;
+}
+
+.bone-table table.active {
+	border: 1px solid black;
 }

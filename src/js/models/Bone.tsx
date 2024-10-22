@@ -86,7 +86,7 @@ export type BonePropertyMultistage = {
 }
 
 export type BonePropertyImageRef = {
-	img: number
+	imageIdx: number
 	x: number
 	y: number
 }

@@ -14,7 +14,7 @@ import '../css/Dropdown.css'
 export function Dropdown({ options, selectedField = 'Non selezionato', setSelectedField }: { options: string[], selectedField?: string, setSelectedField: (selected: string) => void }) {
 	const [active, setActive] = useState(false)
 
-	function handleDropdownButton(ev: MouseEvent<HTMLButtonElement, PointerEvent>) {
+	const handleDropdownButton = (ev: MouseEvent<HTMLButtonElement, PointerEvent>): void => {
 		ev.preventDefault()
 		setActive(!active)
 	}
