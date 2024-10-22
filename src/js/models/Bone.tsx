@@ -1,13 +1,3 @@
-export type BoneState = {
-	/** il nome dell'osso */
-	name: string
-	/** quadrivettore: pagina x tabella x riga x colonna */
-	props?: BonePageState[]
-}
-
-export type BonePageState = BoneTableState[] | undefined
-export type BoneTableState = BoneProperty[][] | undefined
-
 export type BoneTemplate = {
 	/** il nome dell'osso */
 	name: string
@@ -63,9 +53,6 @@ export type BonePropertyInput = {
 	multistageArgs?: MultistageArg[]
 }
 
-/** BoneProperty è il tipo che può avere una proprietà, per ora tutto è basato su stringhe */
-export type BoneProperty = string | BonePropertyMultistage | undefined
-
 export enum InputMode {
 	/** un semplice <input type="text" /> */
 	Text,
@@ -75,12 +62,31 @@ export enum InputMode {
 	Multistage
 }
 
+export type MultistageArg = {
+	value: string
+	next: BonePropertyInput
+}
+
+export type BoneState = {
+	/** il nome dell'osso */
+	name: string
+	/** quadrivettore: pagina x tabella x riga x colonna */
+	props?: BonePageState[]
+}
+
+export type BonePageState = BoneTableState[] | undefined
+export type BoneTableState = BoneProperty[][] | undefined
+
+/** BoneProperty è il tipo che può avere una proprietà, per ora tutto è basato su stringhe */
+export type BoneProperty = string | BonePropertyMultistage | BonePropertyImageRef | undefined
+
 export type BonePropertyMultistage = {
 	value?: string
 	next?: BoneProperty
 }
 
-export type MultistageArg = {
-	value: string
-	next: BonePropertyInput
+export type BonePropertyImageRef = {
+	img: number
+	x: number
+	y: number
 }

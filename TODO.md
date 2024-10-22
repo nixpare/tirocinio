@@ -3,6 +3,7 @@
 + [x] Slice 6 del Prototipo -> Aggiungere colonne a piacimento
 + [x] Ridurre code duplication nella funzione `PropertyPage` senza introdurre problemi nel rendering loop
 + [ ] Implementare una tabella variadica che si basi sugli input del mouse sull'immagine
++ [ ] Rivedere la documentazione dopo un redesign pesante
 
 # Idee
 

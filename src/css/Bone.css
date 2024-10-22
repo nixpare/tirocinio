@@ -17,7 +17,7 @@
 	gap: 2em;
 }
 
-.bone-form > button {
+.bone-form>button {
 	width: fit-content;
 }
 
@@ -27,8 +27,21 @@
 }
 
 .bone-page-image {
+	position: relative;
+}
+
+.bone-page-image img {
 	width: 100%;
 	height: fit-content;
+}
+
+.bone-page-image-tracker {
+	position: absolute;
+	width: 50px;
+	aspect-ratio: 1 / 1;
+	border: 2px solid black;
+	border-radius: 50%;
+	transform: translate(-50%, -50%);
 }
 
 .bone-table {

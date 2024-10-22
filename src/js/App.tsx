@@ -8,12 +8,12 @@ const boneTemplate: BoneTemplate = {
   name: "OSSO INNOMINATO",
   pages: [
     // Page Test
-    /* {
-      title: "Test variadic",
+    {
+      title: "Test variadic mouse",
       image: ['/images/slide-image-1.png'],
       tables: [
         {
-          type: PropertyTableType.VariadicButton,
+          type: PropertyTableType.VariadicMouse,
           headers: ["Nucleo", "Stato"],
           inputs: [
             {
@@ -26,7 +26,7 @@ const boneTemplate: BoneTemplate = {
           ]
         }
       ]
-    }, */
+    },
     // Page 1
     {
       title: "Centri di ossificazione: presenza/assenza, fusione lunghezza diafisi",
