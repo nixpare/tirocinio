@@ -1,11 +1,15 @@
-import { ChangeEvent, FormEvent, useState } from 'react'
+import { ChangeEvent, FormEvent } from 'react'
 import { produce } from 'immer'
-import { Bone as BoneType, BoneProperty, InputMode, BonePropertyPage, BonePropertyTemplate, BonePropertyPageSection, BonePropertyMultistage } from './models/Bone'
+import { BoneProperty, InputMode, BonePropertyPage, BonePropertyPageTable, BonePropertyMultistage, BoneTemplate, BoneState, BonePropertyInput, PropertyTableType } from './models/Bone'
 
 import { Dropdown } from './Dropdown'
 import { Carousel } from './Carousel'
 
 import '../css/Bone.css'
+
+type UpdatePageFunc = (fn: (page?: BoneProperty[][][]) => BoneProperty[][][]) => void
+type UpdateTableFunc = (fn: (table?: BoneProperty[][]) => BoneProperty[][]) => void
+type UpdatePropertyFunc = (fn: (prop?: BoneProperty) => BoneProperty) => void
 
 /**
  * Bone è il macro elemento che gestisce la visualizzazione e la modifica / inserimento
@@ -26,7 +30,7 @@ import '../css/Bone.css'
  * @param editMode (opzionale) flag per indicare se abilitare la possibilità di modificare i campi
  * @return ReactNode
  */
-export function Bone({ bone, editMode }: { bone: BoneType, editMode?: boolean }) {
+export function Bone({ template, state, setState, editMode }: { template: BoneTemplate, state: BoneState, setState: (newState: BoneState) => void, editMode?: boolean }) {
 	// La editMode dovrebbe permettere la visualizzazione di un osso
 	// già inserito senza la presenza degli input, con la possibilità
 	// di passare nella modalità di modifica con un pulsante esterno
@@ -37,14 +41,13 @@ export function Bone({ bone, editMode }: { bone: BoneType, editMode?: boolean })
 	if (!editMode) {
 		return (
 			<div className="container">
-				<h4 className="bone-name">{bone.name}</h4>
+				<h4 className="bone-name">{template.name}</h4>
 				<p>To be implemented</p>
 			</div>
 		)
 	}
 
-	const [state, setState] = useState(bone)
-	function updateState(fn: (prev: BoneType) => BoneType): void {
+	function updateState(fn: (prev: BoneState) => BoneState): void {
 		setState(produce(state, fn))
 	}
 
@@ -58,16 +61,20 @@ export function Bone({ bone, editMode }: { bone: BoneType, editMode?: boolean })
 			<h4 className="bone-name">{state.name}</h4>
 			<form className="bone-form" onSubmit={handleSubmit}>
 				<Carousel>
-					{state.pages.map((page, pageIdx) => {
+					{template.pages.map((page, pageIdx) => {
 						// updatePage è la funzione di produzione sullo stato per la pagina specifica
-						function updatePage(fn: (page: BonePropertyPage) => BonePropertyPage) {
+						const updatePage: UpdatePageFunc = (fn) => {
 							updateState(state => {
-								state.pages[pageIdx] = fn(state.pages[pageIdx])
+								if (!state.props) {
+									state.props = []
+								}
+
+								state.props[pageIdx] = fn(state.props[pageIdx])
 								return state
 							})
 						}
 
-						return <PropertyPage key={page.title} page={page} update={updatePage} />;
+						return <PropertyPage key={page.title} page={page} state={state.props?.[pageIdx]} update={updatePage} />;
 					})}
 				</Carousel>
 				<button type="submit">Invia</button>
@@ -85,37 +92,48 @@ export function Bone({ bone, editMode }: { bone: BoneType, editMode?: boolean })
  * @param update funzione di produzione per informare lo stato globale dei cambiamenti
  * @return ReactNode
  */
-function PropertyPage({ page, update }: { page: BonePropertyPage, update: (fn: (page: BonePropertyPage) => BonePropertyPage) => void }) {
-	if (!page.image) {
-		return <div>
-			{page.sections.map((section, sectionIdx) => {
-				// updateSection è la funzione di produzione sullo stato per la sezione specifica della pagina
-				function updateSection(fn: (section: BonePropertyPageSection) => BonePropertyPageSection): void {
-					update(page => {
-						page.sections[sectionIdx] = fn(page.sections[sectionIdx])
-						return page
-					})
+function PropertyPage({ page, state, update }: { page: BonePropertyPage, state?: BoneProperty[][][], update: UpdatePageFunc }) {
+	const section = page.tables.map((table, sectionIdx) => {
+		// updateSection è la funzione di produzione sullo stato per la sezione specifica della pagina
+		const updateTable: UpdateTableFunc = (fn) => {
+			update(page => {
+				if (!page) {
+					page = []
 				}
 
-				return <div className="bone-section" key={`${page.title}-${sectionIdx}`}><PropertyPageSection section={section} update={updateSection} /></div>
-			})}
+				page[sectionIdx] = fn(page[sectionIdx])
+				return page
+			})
+		}
+
+		let tableElem: any;
+		switch (table.type) {
+			case PropertyTableType.Default:
+				tableElem = <PropertyPageTableDefault table={table} state={state?.[sectionIdx]} update={updateTable} />
+				break;
+			case PropertyTableType.VariadicButton:
+				tableElem = <PropertyPageTableVariadicButton table={table} state={state?.[sectionIdx]} update={updateTable} />
+				break;
+			case PropertyTableType.VariadicMouse:
+				tableElem = <div>To be implemented</div>
+				break;
+		}
+
+		return <div className="bone-section" key={`${page.title}-${sectionIdx}`}>
+			{tableElem}
+		</div>
+	})
+
+	if (!page.image) {
+		return <div>
+			{section}
 		</div>
 	}
 
 	return (
 		<div className="split">
 			<div>
-				{page.sections.map((section, sectionIdx) => {
-					// updateSection è la funzione di produzione sullo stato per la sezione specifica della pagina
-					function updateSection(fn: (section: BonePropertyPageSection) => BonePropertyPageSection): void {
-						update(page => {
-							page.sections[sectionIdx] = fn(page.sections[sectionIdx])
-							return page
-						})
-					}
-
-					return <div className="bone-section" key={`${page.title}-${sectionIdx}`}><PropertyPageSection section={section} update={updateSection} /></div>
-				})}
+				{section}
 			</div>
 			<div>
 				<Carousel>
@@ -129,27 +147,25 @@ function PropertyPage({ page, update }: { page: BonePropertyPage, update: (fn: (
 }
 
 /**
- * PropertyPageSection rappresenta la sezione di una pagina con la tabella di opzioni.
- * L'attributo `section` contiene il template della tabella, quindi genera prima gli header della tabella,
- * poi per ogni riga della tabella prima genera i campi fissi di ogni riga, quindi a seguire i vari input segnati
- * nel template.
- * @param section attributo derivato dallo stato globale
+ * PropertyPageTable rappresenta la sezione di una pagina con la tabella di opzioni.
+ * TODO
+ * @param table attributo derivato dallo stato globale
  * @param update funzione di produzione per informare lo stato globale dei cambiamenti
  * @return ReactNode
  */
-function PropertyPageSection({ section, update }: { section: BonePropertyPageSection, update: (fn: (section: BonePropertyPageSection) => BonePropertyPageSection) => void }) {
+function PropertyPageTableDefault({ table, state, update }: { table: BonePropertyPageTable, state?: BoneProperty[][], update: UpdateTableFunc }) {
 	return (
 		<table className="props-table">
 			<thead>
 				<tr>
 					{/* Generazione degli header della tabella */}
-					{section.table.headers.map(th => {
+					{table.headers.map(th => {
 						return <th key={th}>{th}</th>
 					})}
 				</tr>
 			</thead>
 			<tbody>
-				{section.table.indexes.map((row, rowIdx) => {
+				{table.indexes?.map((row, rowIdx) => {
 					const rowName = row[0]
 					const colOffset = row.length;
 
@@ -161,31 +177,31 @@ function PropertyPageSection({ section, update }: { section: BonePropertyPageSec
 							})}
 
 							{/* Generazione degli input della tabella dal template */}
-							{section.table.template.map((template, fieldIdx) => {
+							{table.inputs.map((input, fieldIdx) => {
 								// updatePropertyRow è la funzione di produzione sullo stato per la proprietà specifica
-								function updatePropertyRow(fn: (state?: BoneProperty) => BoneProperty): void {
-									update(section => {
-										if (!section.props) {
-											section.props = []
+								const updateProperty: UpdatePropertyFunc = (fn) => {
+									update(table => {
+										if (!table) {
+											table = []
 										}
 
-										if (!section.props[rowIdx]) {
-											section.props[rowIdx] = []
+										if (!table[rowIdx]) {
+											table[rowIdx] = []
 										}
 
-										section.props[rowIdx][fieldIdx] = fn(section.props[rowIdx][fieldIdx])
-										return section
+										table[rowIdx][fieldIdx] = fn(table[rowIdx][fieldIdx])
+										return table
 									})
 								}
 
-								let value: BoneProperty | undefined;
-								if (section.props && section.props[rowIdx]) {
-									value = section.props[rowIdx][fieldIdx]
+								let propertyState: BoneProperty | undefined;
+								if (state && state[rowIdx]) {
+									propertyState = state[rowIdx][fieldIdx]
 								}
 
 								const key = `${rowName}-${fieldIdx + colOffset}`
 
-								return <Property key={key} value={value} template={template} update={updatePropertyRow} />
+								return <Property key={key} state={propertyState} template={input} update={updateProperty} />
 							})}
 						</tr>
 					)
@@ -196,14 +212,66 @@ function PropertyPageSection({ section, update }: { section: BonePropertyPageSec
 }
 
 /**
- * Property rappresenta un'opzione della tabella. In base al valore `mode` in `template` il componente genera l'input sottostante
- * corretto.
- * @param template attributo derivato dallo stato globale
- * @param value (opzionale) attributo derivato dallo stato globale
+ * PropertyPageTable rappresenta la sezione di una pagina con la tabella di opzioni.
+ * TODO
+ * @param table attributo derivato dallo stato globale
  * @param update funzione di produzione per informare lo stato globale dei cambiamenti
  * @return ReactNode
  */
-function Property({ template, value, update }: { template: BonePropertyTemplate, value?: BoneProperty, update: (fn: (value?: BoneProperty) => BoneProperty) => void }) {
+function PropertyPageTableVariadicButton({ table, state, update }: { table: BonePropertyPageTable, state?: BoneProperty[][], update: UpdateTableFunc }) {
+	return (
+		<table className="props-table">
+			<thead>
+				<tr>
+					<th key={-1}>#</th>
+					{/* Generazione degli header della tabella */}
+					{table.headers.map((th, thIdx) => {
+						return <th key={thIdx}>{th}</th>
+					})}
+				</tr>
+			</thead>
+			<tbody>
+				{/* Generazione dei valori già esistenti della tabella */}
+				{state?.map((row, rowIdx) => {
+					return <tr key={rowIdx}>
+						<td>{rowIdx + 1}</td>
+						{table.inputs.map((input, fieldIdx) => {
+							// updatePropertyRow è la funzione di produzione sullo stato per la proprietà specifica
+							const updateProperty: UpdatePropertyFunc = (fn) => {
+								update(table => {
+									if (!table) {
+										table = []
+									}
+
+									if (!table[rowIdx]) {
+										table[rowIdx] = []
+									}
+
+									table[rowIdx][fieldIdx] = fn(table[rowIdx][fieldIdx])
+									return table
+								})
+							}
+
+							const propertyState = row?.[fieldIdx] || undefined
+
+							return <Property key={fieldIdx} state={propertyState} template={input} update={updateProperty} />
+						})}
+					</tr>
+				})}
+			</tbody>
+		</table>
+	)
+}
+
+/**
+ * Property rappresenta un'opzione della tabella. In base al valore `mode` in `template` il componente genera l'input sottostante
+ * corretto.
+ * @param template attributo derivato dallo stato globale
+ * @param state (opzionale) attributo derivato dallo stato globale
+ * @param update funzione di produzione per informare lo stato globale dei cambiamenti
+ * @return ReactNode
+ */
+function Property({ template, state, update }: { template: BonePropertyInput, state?: BoneProperty, update: (fn: (value?: BoneProperty) => BoneProperty) => void }) {
 	switch (template.mode) {
 		case InputMode.Text:
 			function handleTextInput(ev: ChangeEvent<HTMLInputElement>) {
@@ -212,9 +280,9 @@ function Property({ template, value, update }: { template: BonePropertyTemplate,
 				})
 			}
 
-			value = (value as (string | undefined)) || ''
+			state = (state as (string | undefined)) || ''
 
-			return <td><input type="text" value={value} onChange={handleTextInput} /></td>;
+			return <td><input type="text" value={state} onChange={handleTextInput} /></td>;
 		case InputMode.Dropdown:
 			function setSelected(selected: string) {
 				update(() => {
@@ -224,7 +292,7 @@ function Property({ template, value, update }: { template: BonePropertyTemplate,
 
 			return <td><Dropdown
 				options={template.dropdownArgs || []}
-				selectedField={value as (string | undefined)}
+				selectedField={state as (string | undefined)}
 				setSelectedField={setSelected}
 			/></td>
 		case InputMode.Multistage:
@@ -234,11 +302,11 @@ function Property({ template, value, update }: { template: BonePropertyTemplate,
 				})
 			}
 
-			return <MultistageProperty template={template} multistage={value as (BonePropertyMultistage | undefined)} update={updateMultistage} />
+			return <MultistageProperty template={template} state={state as (BonePropertyMultistage | undefined)} update={updateMultistage} />
 	}
 }
 
-function MultistageProperty({ template, multistage, update }: { template: BonePropertyTemplate, multistage?: BonePropertyMultistage, update: (fn: (value?: BonePropertyMultistage) => BonePropertyMultistage) => void }) {
+function MultistageProperty({ template, state, update }: { template: BonePropertyInput, state?: BonePropertyMultistage, update: (fn: (value?: BonePropertyMultistage) => BonePropertyMultistage) => void }) {
 	const options: string[] | undefined = template.multistageArgs?.map(arg => arg.value)
 
 	function setSelected(selected: string) {
@@ -256,8 +324,8 @@ function MultistageProperty({ template, multistage, update }: { template: BonePr
 			return multistage
 		})
 	}
-	
-	if (!multistage) {
+
+	if (!state) {
 		return <td>
 			<Dropdown
 				options={options || []}
@@ -266,22 +334,22 @@ function MultistageProperty({ template, multistage, update }: { template: BonePr
 		</td>
 	}
 
-	function FirstStage() {
-		return <td><Dropdown
+	const firstStage = (<td>
+		<Dropdown
 			options={options || []}
-			selectedField={multistage?.value}
+			selectedField={state.value}
 			setSelectedField={setSelected}
-		/></td>
-	}
+		/>
+	</td>)
 
-	const nextTemplate = template.multistageArgs?.filter(arg => arg.value === multistage.value)[0].next
+	const nextTemplate = template.multistageArgs?.filter(arg => arg.value === state.value)[0].next
 	if (!nextTemplate) {
 		return <>
-			<FirstStage />
+			{firstStage}
 			<td>Errore, template non trovato</td>
 		</>
 	}
-	const nextValue = multistage.next
+	const nextValue = state.next
 	function nextUpdate(fn: (value?: BoneProperty) => BoneProperty) {
 		update(multistage => {
 			if (!multistage) {
@@ -294,7 +362,7 @@ function MultistageProperty({ template, multistage, update }: { template: BonePr
 	}
 
 	return <>
-		<FirstStage />
-		<Property template={nextTemplate} value={nextValue} update={nextUpdate} />
+		{firstStage}
+		<Property template={nextTemplate} state={nextValue} update={nextUpdate} />
 	</>
 }

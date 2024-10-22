@@ -13,5 +13,8 @@ export default defineConfig({
     rollupOptions: {
       input: resolve(__dirname, 'src/index.html')
     }
+  },
+  server: {
+    port: 3000
   }
 })

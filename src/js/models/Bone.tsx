@@ -1,8 +1,11 @@
-/**
- * Bone contiene sia le informazioni di un osso già registrato, che il template
- * dell'osso per poterlo generare la prima volta.
- */
-export type Bone = {
+export type BoneState = {
+	/** il nome dell'osso */
+	name: string
+	/** quadrivettore: pagina x tabella x riga x colonna */
+	props?: BoneProperty[][][][]
+}
+
+export type BoneTemplate = {
 	/** il nome dell'osso */
 	name: string
 	/** le pagine di proprietà dell'osso */
@@ -18,35 +21,35 @@ export type BonePropertyPage = {
 	title: string
 	/** immagini da affiancare alle tabelle delle proprietà */
 	image?: string[]
-	/** le sezioni contenenti le tabelle delle proprietà */
-	sections: BonePropertyPageSection[]
+	/** le tabelle delle proprietà */
+	tables: BonePropertyPageTable[]
 }
 
 /**
- * BonePropertyPageSection contiene il template della tabella per la sua generazione
+ * BonePropertyPageTable contiene il template della tabella per la sua generazione
  * ed eventualmente anche delle informazioni già esistendi.
  * Non c'è ancora nessun legame tra i campi fissi di una riga e i valori contenuti in `props`,
  * questi rimangono consistenti solo se il template non viene cambiato minimamente, compreso l'ordine
  * delle liste di campi fissi (`indexes`) della tabella
  */
-export type BonePropertyPageSection = {
-	/** template della tabella */
-	table: BonePropertyTable
-	/** proprietà già presenti relative alla tabella */
-	props?: BoneProperty[][]
-}
-
-export type BonePropertyTable = {
+export type BonePropertyPageTable = {
+	type: PropertyTableType
 	/** le intestazioni della tabella delle proprietà */
 	headers: string[]
 	/** elenco dei vari input presenti per ogni riga della tabella */
-	template: BonePropertyTemplate[]
-	/**  elenco dei campi fissi per ogni riga */
-	indexes: string[][]
+	inputs: BonePropertyInput[]
+	/**  elenco dei campi fissi per ogni riga, presente se la tabella è di tipo Default */
+	indexes?: string[][]
 }
 
-/** BonePropertyTemplate contiene le caratteristiche di una proprietà */
-export type BonePropertyTemplate = {
+export enum PropertyTableType {
+	Default,
+	VariadicButton,
+	VariadicMouse
+}
+
+/** BonePropertyInput contiene le caratteristiche di una proprietà */
+export type BonePropertyInput = {
 	/** il tipo di input sottostante alla proprietà */
 	mode: InputMode
 	/** presente quando l'input è del tipo `Dropdown`, contiene la lista di valori possibili */
@@ -74,5 +77,5 @@ export type BonePropertyMultistage = {
 
 export type MultistageArg = {
 	value: string
-	next: BonePropertyTemplate
+	next: BonePropertyInput
 }
