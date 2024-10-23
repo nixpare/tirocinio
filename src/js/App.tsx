@@ -2,6 +2,8 @@ import { Bone } from './Bone'
 import { BoneState, BoneTemplate, InputMode, PropertyTableType } from './models/Bone'
 import { useState } from 'react'
 
+import "../css/App.css"
+
 const boneState: BoneState = {
   name: "OSSO INNOMINATO",
   props: [
@@ -234,7 +236,7 @@ function App() {
   const [state, setState] = useState(boneState)
 
   return (
-    <div className="container">
+    <div className="container app">
       <h1>Tirocinio</h1>
       <Bone template={boneTemplate} state={state} setState={setState} editMode={true} />
       {/* <Bone bone={bone} /> */}

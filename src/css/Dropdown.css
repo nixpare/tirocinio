@@ -1,16 +1,22 @@
 .dropdown {
 	position: relative;
+	padding: .4em .8em;
 }
 
 .dropdown>ul {
 	list-style: none;
 	position: absolute;
 	z-index: 100;
-	top: 110%;
-	left: -10%;
+	top: 120%;
+	left: 50%;
 	width: 120%;
-	background-color: rgb(215, 215, 215);
-	padding: .4em
+	transform: translateX(-50%);
+	background-color: #f9f9f9;
+	padding: .4em;
+	border-radius: .4em;
+	min-width: 20ch;
+	max-height: 8em;
+	overflow: auto;
 }
 
 .dropdown:not(.active)>ul {
@@ -18,12 +24,12 @@
 }
 
 .dropdown>ul>li {
-	border: 1px solid black;
+	background-color: rgba(var(--primary-color), .2);
 	margin: .2em 0;
 	padding: .2em .5em;
 	border-radius: .2em;
 }
 
 .dropdown>ul>li:hover {
-	background-color: rgba(0, 0, 0, .5);
+	background-color: rgba(var(--primary-color), .4);
 }
