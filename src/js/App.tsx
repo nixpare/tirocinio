@@ -2,8 +2,6 @@ import { Bone } from './Bone'
 import { BoneState, BoneTemplate, InputMode, PropertyTableType } from './models/Bone'
 import { useState } from 'react'
 
-import '../css/App.css'
-
 const boneState: BoneState = {
   name: "OSSO INNOMINATO",
   props: [
