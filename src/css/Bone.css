@@ -71,11 +71,11 @@
 .bone-table > .active::after {
 	content: '';
 	position: absolute;
-	z-index: 100;
+	z-index: -1;
 	inset: 0 0 0 0;
 	border-radius: .4em;
 	box-shadow: 0 0 1em 0 rgba(var(--primary-color), .8),
-		inset 0 0 1em 0 rgba(var(--primary-color), .8);
+		inset 0 0 .5em 0 rgba(var(--primary-color), .8);
 }
 
 .bone-table table {

@@ -463,7 +463,7 @@ function PropertyPageTableVariadicMouse({ table, state, update, active, setActiv
 	active: boolean, setActive: () => void,
 	deleteCircle: DeleteImageCircleFunc, highlightCircle: HighlightImageCircleFunc
 }) {
-	const [activeRow, setActiveRow] = useState(0)
+	const [activeRow, setActiveRow] = useState(-1)
 
 	return (
 		<div className={active ? 'active' : undefined} onMouseEnter={setActive}>
