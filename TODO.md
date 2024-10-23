@@ -4,9 +4,9 @@
 + [x] Ridurre code duplication nella funzione `PropertyPage` senza introdurre problemi nel rendering loop
 + [x] Implementare una tabella variadica che si basi sugli input del mouse sull'immagine
 + [ ] Rivedere la documentazione dopo un redesign pesante
-+ [ ] Risolvere gli errori della console relativi a:
++ [x] Risolvere gli errori della console relativi a:
   + [x] chiavi duplicate
-  + [ ] setState durante rendering
+  + [x] setState durante rendering
 
 # Idee
 
