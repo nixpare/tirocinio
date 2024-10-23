@@ -508,7 +508,7 @@ function PropertyPageTableVariadicMouse({ table, state, update, active, setActiv
 							const updateProperty: UpdatePropertyFunc = (fn) => {
 								update(table => {
 									const newProp = fn(table?.[rowIdx][fieldIdx+1]) // fieldIdx+1 perchè il primo field contiene le informazioni per l'immagine
-									if (!newProp)
+									if (newProp == undefined)
 										return table
 
 									if (!table) {
@@ -547,7 +547,7 @@ function PropertyPageTableVariadicMouse({ table, state, update, active, setActiv
 function Property({ template, state, update }: { template: BonePropertyInput, state?: BoneProperty, update: (fn: (value?: BoneProperty) => BoneProperty) => void }) {
 	switch (template.mode) {
 		case InputMode.Text:
-			function handleTextInput(ev: ChangeEvent<HTMLInputElement>) {
+			const handleTextInput = (ev: ChangeEvent<HTMLInputElement>): void => {
 				update(() => {
 					return ev.target.value
 				})
@@ -557,7 +557,7 @@ function Property({ template, state, update }: { template: BonePropertyInput, st
 
 			return <td><input type="text" value={state} onChange={handleTextInput} /></td>;
 		case InputMode.Dropdown:
-			function setSelected(selected: string) {
+			const setSelected = (selected: string): void => {
 				update(() => {
 					return selected
 				})
@@ -569,7 +569,7 @@ function Property({ template, state, update }: { template: BonePropertyInput, st
 				setSelectedField={setSelected}
 			/></td>
 		case InputMode.Multistage:
-			function updateMultistage(fn: (value?: BonePropertyMultistage) => BonePropertyMultistage) {
+			const updateMultistage = (fn: (value?: BonePropertyMultistage) => BonePropertyMultistage): void => {
 				update(value => {
 					return fn(value as (BonePropertyMultistage | undefined))
 				})
@@ -582,7 +582,7 @@ function Property({ template, state, update }: { template: BonePropertyInput, st
 function MultistageProperty({ template, state, update }: { template: BonePropertyInput, state?: BonePropertyMultistage, update: (fn: (value?: BonePropertyMultistage) => BonePropertyMultistage) => void }) {
 	const options: string[] | undefined = template.multistageArgs?.map(arg => arg.value)
 
-	function setSelected(selected: string) {
+	const setSelected = (selected: string): void => {
 		update(multistage => {
 			if (!multistage) {
 				return { value: selected }
@@ -623,7 +623,7 @@ function MultistageProperty({ template, state, update }: { template: BonePropert
 		</>
 	}
 	const nextValue = state.next
-	function nextUpdate(fn: (value?: BoneProperty) => BoneProperty) {
+	const nextUpdate = (fn: (value?: BoneProperty) => BoneProperty): void => {
 		update(multistage => {
 			if (!multistage) {
 				throw new Error('multistage is undefined after the first stage')
