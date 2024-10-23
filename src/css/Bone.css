@@ -1,3 +1,10 @@
+.bone {
+	background-color: rgba(var(--primary-color), 0.2);
+	border-radius: .4em;
+	width: 100%;
+	overflow: auto;
+}
+
 .bone-name {
 	font-size: 2em;
 	background-color: rgba(0, 0, 255, .2);
@@ -10,15 +17,26 @@
 	flex-direction: column;
 	align-items: center;
 	gap: 2em;
+	margin-bottom: 2em;
 }
 
 .bone-form>button {
 	width: fit-content;
 }
 
+.bone-page {
+	width: 100%;
+}
+
 .bone-page h3 {
 	text-align: center;
 	margin-bottom: 1em;
+}
+
+.bone-page-images {
+	background-color: rgba(var(--primary-color), .2);
+	padding: 1em .5em;
+	border-radius: .4em;
 }
 
 .bone-page-image {
@@ -47,8 +65,67 @@
 	width: 100%;
 	text-align: center;
 	margin: 2em 0;
+	position: relative;
 }
 
-.bone-table table.active {
-	border: 1px solid black;
+.bone-table > .active::after {
+	content: '';
+	position: absolute;
+	z-index: 100;
+	inset: 0 0 0 0;
+	border-radius: .4em;
+	box-shadow: 0 0 1em 0 rgba(var(--primary-color), .8),
+		inset 0 0 1em 0 rgba(var(--primary-color), .8);
+}
+
+.bone-table table {
+	width: 100%;
+	border-spacing: 0;
+}
+
+.bone-table table thead th {
+	background-color: rgb(var(--primary-color));
+}
+.bone-table table tbody td {
+	background-color: rgba(var(--primary-color), .2);
+}
+
+.bone-table table thead tr:first-child th:first-child {
+	border-top-left-radius: .4em;
+}
+.bone-table table thead tr:first-child th:last-child {
+	border-top-right-radius: .4em;
+}
+.bone-table table tbody tr:last-child td:first-child {
+	border-bottom-left-radius: .4em;
+}
+.bone-table table tbody tr:last-child td:last-child {
+	border-bottom-right-radius: .4em;
+}
+
+.bone-table table th, .bone-table table td {
+	padding: .4em 1em;
+}
+
+.bone-table .bone-table-add-row {
+	margin: 1em 0 .5em;
+}
+
+.bone-table .bone-table-remove-row {
+	padding: 0 .5em;
+}
+
+.bone-table .bone-table-variadic-control {
+	display: flex;
+	align-items: center;
+	gap: .5em;
+}
+
+.bone-table tr .bone-table-variadic-control span {
+	pointer-events: none;
+	transition: opacity .2s;
+}
+
+.bone-table tr:not(.active) .bone-table-variadic-control span {
+	opacity: 0;
 }

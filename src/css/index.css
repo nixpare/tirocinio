@@ -22,8 +22,6 @@
 }
 
 body {
-  margin: 0;
-  min-width: 320px;
   min-height: 100vh;
 }
 
@@ -33,7 +31,7 @@ h1 {
 }
 
 button {
-  border-radius: 8px;
+  border-radius: .4em;
   border: 1px solid transparent;
   padding: 0.6em 1.2em;
   font-size: 1em;
@@ -44,17 +42,20 @@ button {
   cursor: pointer;
   transition: border-color 0.25s;
 }
-button:hover {
+button:not(:disabled):hover {
   border-color: rgb(var(--primary-color));
 }
-button:focus,
-button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
+button:disabled {
+  pointer-events: none;
 }
 
 input {
   color: inherit;
   background-color: inherit;
+  border: none;
+  border-radius: .2em;
+  background-color: rgba(255, 255, 255, .6);
+  padding: .4em 1em;
 }
 
 .container {
@@ -62,23 +63,20 @@ input {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  margin: 2em 3em;
+  margin: 1em;
   gap: 1em;
-  background: rgba(0, 0, 255, .1)
 }
 
 .split {
   display: grid;
   grid-template-columns: 1fr 1fr;
   grid-template-rows: auto;
-  gap: .5em;
+  gap: 1em;
 }
 
 .split > * {
-  padding: 1em;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  background: rgba(0, 0, 255, .1);
 }

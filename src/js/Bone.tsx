@@ -47,7 +47,7 @@ export function Bone({ template, state, setState, editMode }: { template: BoneTe
 	// oppure se duplicarne la natura
 	if (!editMode) {
 		return (
-			<div className="container">
+			<div className="container bone">
 				<h4 className="bone-name">{template.name}</h4>
 				<p>To be implemented</p>
 			</div>
@@ -64,7 +64,7 @@ export function Bone({ template, state, setState, editMode }: { template: BoneTe
 	}
 
 	return (
-		<div className="container">
+		<div className="container bone">
 			<h4 className="bone-name">{state.name}</h4>
 			<form className="bone-form" onSubmit={handleSubmit}>
 				<Carousel>
@@ -239,7 +239,7 @@ function PropertyPage({ page, state, update }: { page: BonePropertyPage, state: 
 				<div>
 					{tables}
 				</div>
-				<div>
+				<div className="bone-page-images">
 					<Carousel visibleState={{ visible: activeImage, setVisible: setActiveImage }} >
 						{page.image?.map((image, imageIdx) => {
 							const handleImageClick = (ev: MouseEvent<HTMLImageElement, PointerEvent>): void => {
@@ -298,63 +298,65 @@ function PropertyPageTableDefault({ table, state, update, active, setActive }: {
 	active: boolean, setActive: () => void
 }) {
 	return (
-		<table className={`${active ? 'active' : ''}`} onMouseEnter={setActive}>
-			<thead>
-				<tr>
-					{/* Generazione degli header della tabella */}
-					{table.headers.map(th => {
-						return <th key={th}>{th}</th>
-					})}
-				</tr>
-			</thead>
-			<tbody>
-				{table.indexes?.map((row, rowIdx) => {
-					const rowName = row[0]
-					const colOffset = row.length;
+		<div className={active ? 'active' : undefined} onMouseEnter={setActive}>
+			<table>
+				<thead>
+					<tr>
+						{/* Generazione degli header della tabella */}
+						{table.headers.map(th => {
+							return <th key={th}>{th}</th>
+						})}
+					</tr>
+				</thead>
+				<tbody>
+					{table.indexes?.map((row, rowIdx) => {
+						const rowName = row[0]
+						const colOffset = row.length;
 
-					return (
-						<tr key={rowName}>
-							{/* Generazione dei campi fissi di ogni riga della tabella */}
-							{row.map((rowConst, rowConstIdx) => {
-								return <td key={`${rowName}-${rowConstIdx}`}>{rowConst}</td>
-							})}
+						return (
+							<tr key={rowName}>
+								{/* Generazione dei campi fissi di ogni riga della tabella */}
+								{row.map((rowConst, rowConstIdx) => {
+									return <td key={`${rowName}-${rowConstIdx}`}>{rowConst}</td>
+								})}
 
-							{/* Generazione degli input della tabella dal template */}
-							{table.inputs.map((input, fieldIdx) => {
-								// updatePropertyRow è la funzione di produzione sullo stato per la proprietà specifica
-								const updateProperty: UpdatePropertyFunc = (fn) => {
-									update(table => {
-										const newProp = fn(table?.[rowIdx][fieldIdx])
-										if (!newProp)
+								{/* Generazione degli input della tabella dal template */}
+								{table.inputs.map((input, fieldIdx) => {
+									// updatePropertyRow è la funzione di produzione sullo stato per la proprietà specifica
+									const updateProperty: UpdatePropertyFunc = (fn) => {
+										update(table => {
+											const newProp = fn(table?.[rowIdx][fieldIdx])
+											if (!newProp)
+												return table
+
+											if (!table) {
+												table = []
+											}
+
+											if (!table[rowIdx]) {
+												table[rowIdx] = []
+											}
+
+											table[rowIdx][fieldIdx] = newProp
 											return table
+										})
+									}
 
-										if (!table) {
-											table = []
-										}
+									let propertyState: BoneProperty | undefined;
+									if (state && state[rowIdx]) {
+										propertyState = state[rowIdx][fieldIdx]
+									}
 
-										if (!table[rowIdx]) {
-											table[rowIdx] = []
-										}
+									const key = `${rowName}-${fieldIdx + colOffset}`
 
-										table[rowIdx][fieldIdx] = newProp
-										return table
-									})
-								}
-
-								let propertyState: BoneProperty | undefined;
-								if (state && state[rowIdx]) {
-									propertyState = state[rowIdx][fieldIdx]
-								}
-
-								const key = `${rowName}-${fieldIdx + colOffset}`
-
-								return <Property key={key} state={propertyState} template={input} update={updateProperty} />
-							})}
-						</tr>
-					)
-				})}
-			</tbody>
-		</table>
+									return <Property key={key} state={propertyState} template={input} update={updateProperty} />
+								})}
+							</tr>
+						)
+					})}
+				</tbody>
+			</table>
+		</div>
 	)
 }
 
@@ -381,8 +383,8 @@ function PropertyPageTableVariadicButton({ table, state, update, active, setActi
 	}
 	
 	return (
-		<div>
-			<table className={`${active ? 'active' : ''}`} onMouseEnter={setActive}>
+		<div className={active ? 'active' : undefined} onMouseEnter={setActive}>
+			<table>
 				<thead>
 					<tr>
 						<th key={0}></th>
@@ -409,7 +411,7 @@ function PropertyPageTableVariadicButton({ table, state, update, active, setActi
 
 						return <tr key={rowIdx}>
 							<td>
-								<button onClick={deleteRow}>-</button>
+								<button className="bone-table-remove-row" onClick={deleteRow}>-</button>
 							</td>
 							<td>
 								{rowIdx + 1}
@@ -444,7 +446,7 @@ function PropertyPageTableVariadicButton({ table, state, update, active, setActi
 					})}
 				</tbody>
 			</table>
-			<button onClick={addRow}>{table.variadicPlaceholder || '+'}</button>
+			<button className="bone-table-add-row" onClick={addRow}>{table.variadicPlaceholder || '+'}</button>
 		</div>
 	)
 }
@@ -461,78 +463,88 @@ function PropertyPageTableVariadicMouse({ table, state, update, active, setActiv
 	active: boolean, setActive: () => void,
 	deleteCircle: DeleteImageCircleFunc, highlightCircle: HighlightImageCircleFunc
 }) {
+	const [activeRow, setActiveRow] = useState(0)
+
 	return (
-		<table className={`${active ? 'active' : ''}`} onMouseEnter={setActive}>
-			<thead>
-				<tr>
-					<th key={0}></th>
-					<th key={1}>#</th>
-					{/* Generazione degli header della tabella */}
-					{table.headers.map((th, thIdx) => {
-						return <th key={thIdx + 2}>{th}</th>
-					})}
-				</tr>
-			</thead>
-			<tbody>
-				{/* Generazione dei valori già esistenti della tabella */}
-				{state?.map((row, rowIdx) => {
-					const deleteRow: () => void = () => {
-						const circle = row[0] as BonePropertyImageRef
-						deleteCircle(circle.imageIdx, rowIdx)
-
-						update(table => {
-							if (!table)
-								return table
-
-							return table.filter((_, index) => {
-								return index !== rowIdx
-							})
-						})
-					}
-
-					const circle = row[0] as BonePropertyImageRef
-
-					const onRowHover = () => {
-						highlightCircle(circle.imageIdx, rowIdx)
-					}
-
-					return <tr key={rowIdx} onMouseEnter={onRowHover}>
-						<td>
-							<button onClick={deleteRow}>-</button>
-						</td>
-						<td>
-							{rowIdx + 1}
-						</td>
-						{table.inputs.map((input, fieldIdx) => {
-							// updatePropertyRow è la funzione di produzione sullo stato per la proprietà specifica
-							const updateProperty: UpdatePropertyFunc = (fn) => {
-								update(table => {
-									const newProp = fn(table?.[rowIdx][fieldIdx+1]) // fieldIdx+1 perchè il primo field contiene le informazioni per l'immagine
-									if (newProp == undefined)
-										return table
-
-									if (!table) {
-										table = []
-									}
-
-									if (!table[rowIdx]) {
-										table[rowIdx] = []
-									}
-
-									table[rowIdx][fieldIdx + 1] = newProp  // fieldIdx+1 perchè il primo field contiene le informazioni per l'immagine
-									return table
-								})
-							}
-
-							const key = `${rowIdx}-${fieldIdx}`
-							const propertyState = row?.[fieldIdx + 1]  // fieldIdx+1 perchè il primo field contiene le informazioni per l'immagine
-
-							return <Property key={key} state={propertyState} template={input} update={updateProperty} />
+		<div className={active ? 'active' : undefined} onMouseEnter={setActive}>
+			<table>
+				<thead>
+					<tr>
+						<th key={0}></th>
+						<th key={1}>#</th>
+						{/* Generazione degli header della tabella */}
+						{table.headers.map((th, thIdx) => {
+							return <th key={thIdx + 2}>{th}</th>
 						})}
 					</tr>
-				})}
-			</tbody>
-		</table>
+				</thead>
+				<tbody>
+					{/* Generazione dei valori già esistenti della tabella */}
+					{state?.map((row, rowIdx) => {
+						const deleteRow: () => void = () => {
+							const circle = row[0] as BonePropertyImageRef
+							deleteCircle(circle.imageIdx, rowIdx)
+
+							update(table => {
+								if (!table)
+									return table
+
+								return table.filter((_, index) => {
+									return index !== rowIdx
+								})
+							})
+						}
+
+						const circle = row[0] as BonePropertyImageRef
+
+						const onRowHover = () => {
+							highlightCircle(circle.imageIdx, rowIdx)
+							setActiveRow(rowIdx)
+						}
+
+						const className = active && activeRow === rowIdx ? 'active' : undefined
+
+						return <tr key={rowIdx} className={className} onMouseEnter={onRowHover}>
+							<td>
+								<div className="bone-table-variadic-control">
+									<span>&gt;</span>
+									<button className="bone-table-remove-row" onClick={deleteRow}>-</button>
+								</div>
+							</td>
+							<td>
+								{rowIdx + 1}
+							</td>
+							{table.inputs.map((input, fieldIdx) => {
+								// updatePropertyRow è la funzione di produzione sullo stato per la proprietà specifica
+								const updateProperty: UpdatePropertyFunc = (fn) => {
+									update(table => {
+										const newProp = fn(table?.[rowIdx][fieldIdx+1]) // fieldIdx+1 perchè il primo field contiene le informazioni per l'immagine
+										if (newProp == undefined)
+											return table
+
+										if (!table) {
+											table = []
+										}
+
+										if (!table[rowIdx]) {
+											table[rowIdx] = []
+										}
+
+										table[rowIdx][fieldIdx + 1] = newProp  // fieldIdx+1 perchè il primo field contiene le informazioni per l'immagine
+										return table
+									})
+								}
+
+								const key = `${rowIdx}-${fieldIdx}`
+								const propertyState = row?.[fieldIdx + 1]  // fieldIdx+1 perchè il primo field contiene le informazioni per l'immagine
+
+								return <Property key={key} state={propertyState} template={input} update={updateProperty} />
+							})}
+						</tr>
+					})}
+				</tbody>
+			</table>
+		</div>
 	)
 }
 

@@ -3,9 +3,14 @@
 	align-items: center;
 	justify-content: space-between;
 	gap: 1em;
-	margin: 0 .8em;
+	padding: 0 .8em;
+	width: 100%;
 }
 
 .carousel > button {
-	padding: .5em .2em
+	padding: .5em .2em;
+}
+
+.carousel > div {
+	width: 100%;
 }
