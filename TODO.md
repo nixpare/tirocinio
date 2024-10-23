@@ -5,7 +5,7 @@
 + [x] Implementare una tabella variadica che si basi sugli input del mouse sull'immagine
 + [ ] Rivedere la documentazione dopo un redesign pesante
 + [ ] Risolvere gli errori della console relativi a:
-  + [ ] chiavi duplicate
+  + [x] chiavi duplicate
   + [ ] setState durante rendering
 
 # Idee

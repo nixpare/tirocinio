@@ -261,9 +261,8 @@ function PropertyPage({ page, state, update }: { page: BonePropertyPage, state: 
 								createCircleGeneric(activeTable, imageIdx, rowIdx, imageLeft, imageTop, true)
 							}
 
-							return <div className="bone-page-image">
+							return <div className="bone-page-image" key={`${page.title}-${imageIdx}`}>
 								<img
-									key={`${page.title}-${imageIdx}`}
 									src={image}
 									alt={page.title}
 									onClick={handleImageClick}
