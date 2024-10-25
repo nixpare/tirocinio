@@ -60,6 +60,7 @@
 .anatom-struct-table .anatom-struct-table-variadic-control {
 	display: flex;
 	align-items: center;
+	justify-content: center;
 	gap: .5em;
 }
 

@@ -11,7 +11,9 @@ export default defineConfig({
     outDir: '../dist',
     emptyOutDir: true,
     rollupOptions: {
-      input: resolve(__dirname, 'src/index.html')
+      input: [
+        resolve(__dirname, 'src/index.html')
+      ]
     }
   },
   server: {

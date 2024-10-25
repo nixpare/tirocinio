@@ -1,11 +1,43 @@
-import { useState } from "react";
-import { AnatomStructProperty, AnatomStructPropertyImageRef, AnatomStructTable, AnatomStructTableState } from "./models/AnatomStructTypes";
-import { DeleteImageCircleFunc, HighlightImageCircleFunc } from "./AnatomStruct";
+import { useContext, useState } from "react";
+import { AnatomStructProperty, AnatomStructPropertyImageRef, AnatomStructTable, AnatomStructTableState, AnatomStructTableType } from "../models/AnatomStructTypes";
+import { DeleteImageCircleFunc, EditModeContext, HighlightImageCircleFunc } from "./AnatomStruct";
 import { Property, UpdatePropertyFunc } from "./AnatomStructProperty";
 
-import '../css/AnatomStructTable.css'
+import './AnatomStructTable.css'
 
 export type UpdateTableFunc = (fn: (table: AnatomStructTableState) => AnatomStructTableState) => void
+
+/**
+ * Table rappresenta la sezione di una pagina con la tabella di opzioni.
+ * TODO
+ * @param table attributo derivato dallo stato globale
+ * @param update funzione di produzione per informare lo stato globale dei cambiamenti
+ * @return ReactNode
+ */
+export function Table({ table, state, update, active, setActive, deleteCircle, highlightCircle }: {
+	table: AnatomStructTable, state: AnatomStructTableState, update: UpdateTableFunc,
+	active: boolean, setActive: () => void,
+	deleteCircle: DeleteImageCircleFunc, highlightCircle: HighlightImageCircleFunc
+}) {
+	switch (table.type) {
+		case AnatomStructTableType.Default:
+			return <TableDefault
+				table={table} state={state} update={update}
+				active={active} setActive={setActive}
+			/>
+		case AnatomStructTableType.VariadicButton:
+			return <TableVariadicButton
+				table={table} state={state} update={update}
+				active={active} setActive={setActive}
+			/>
+		case AnatomStructTableType.VariadicMouse:
+			return <TableVariadicMouse
+				table={table} state={state} update={update}
+				active={active} setActive={setActive}
+				deleteCircle={deleteCircle} highlightCircle={highlightCircle}
+			/>
+	}
+}
 
 /**
  * TableDefault rappresenta la sezione di una pagina con la tabella di opzioni.
@@ -14,7 +46,7 @@ export type UpdateTableFunc = (fn: (table: AnatomStructTableState) => AnatomStru
  * @param update funzione di produzione per informare lo stato globale dei cambiamenti
  * @return ReactNode
  */
-export function TableDefault({ table, state, update, active, setActive }: {
+function TableDefault({ table, state, update, active, setActive }: {
 	table: AnatomStructTable, state: AnatomStructTableState, update: UpdateTableFunc,
 	active: boolean, setActive: () => void
 }) {
@@ -46,8 +78,8 @@ export function TableDefault({ table, state, update, active, setActive }: {
 									// updatePropertyRow è la funzione di produzione sullo stato per la proprietà specifica
 									const updateProperty: UpdatePropertyFunc = (fn) => {
 										update(table => {
-											const newProp = fn(table?.[rowIdx][fieldIdx])
-											if (!newProp)
+											const newProp = fn(table?.[rowIdx]?.[fieldIdx])
+											if (newProp == undefined)
 												return table
 
 											if (!table) {
@@ -88,11 +120,13 @@ export function TableDefault({ table, state, update, active, setActive }: {
  * @param update funzione di produzione per informare lo stato globale dei cambiamenti
  * @return ReactNode
  */
-export function TableVariadicButton({ table, state, update, active, setActive }: {
+function TableVariadicButton({ table, state, update, active, setActive }: {
 	table: AnatomStructTable, state: AnatomStructTableState, update: UpdateTableFunc,
 	active: boolean, setActive: () => void
 }) {
-	function addRow() {
+	const editMode = useContext(EditModeContext)
+
+	const addRow = (): void => {
 		update(table => {
 			if (!table) {
 				table = []
@@ -102,6 +136,65 @@ export function TableVariadicButton({ table, state, update, active, setActive }:
 			return table
 		})
 	}
+
+	const tableBody = <>
+		{/* Generazione dei valori già esistenti della tabella */}
+		{state?.map((row, rowIdx) => {
+			const deleteRow: () => void = () => {
+				update(table => {
+					if (table == undefined)
+						return table
+
+					return table.filter((_, index) => {
+						return index !== rowIdx
+					})
+				})
+			}
+
+			const removeRowButton = editMode ? <>
+				<button className="anatom-struct-table-remove-row" onClick={deleteRow}>-</button>
+			</> : undefined
+
+			return <tr key={rowIdx}>
+				<td>
+					{removeRowButton}
+				</td>
+				<td>
+					{rowIdx + 1}
+				</td>
+				{table.fields.map((input, fieldIdx) => {
+					// updatePropertyRow è la funzione di produzione sullo stato per la proprietà specifica
+					const updateProperty: UpdatePropertyFunc = (fn) => {
+						update(table => {
+							const newProp = fn(table?.[rowIdx]?.[fieldIdx])
+							if (newProp == undefined)
+								return table
+
+							if (!table) {
+								table = []
+							}
+
+							if (!table[rowIdx]) {
+								table[rowIdx] = []
+							}
+
+							table[rowIdx][fieldIdx] = newProp
+							return table
+						})
+					}
+
+					const key = `${rowIdx}-${fieldIdx}`
+					const propertyState = row?.[fieldIdx] || undefined
+
+					return <Property key={key} state={propertyState} template={input} update={updateProperty} />
+				})}
+			</tr>
+		})}
+	</>
+
+	const addButton = editMode ? <>
+		<button className="anatom-struct-table-add-row" onClick={addRow}>{table.variadicPlaceholder || '+'}</button>
+	</> : undefined
 
 	return (
 		<div className={active ? 'active' : undefined} onMouseEnter={setActive}>
@@ -117,57 +210,10 @@ export function TableVariadicButton({ table, state, update, active, setActive }:
 					</tr>
 				</thead>
 				<tbody>
-					{/* Generazione dei valori già esistenti della tabella */}
-					{state?.map((row, rowIdx) => {
-						const deleteRow: () => void = () => {
-							update(table => {
-								if (!table)
-									return table
-
-								return table.filter((_, index) => {
-									return index !== rowIdx
-								})
-							})
-						}
-
-						return <tr key={rowIdx}>
-							<td>
-								<button className="anatom-struct-table-remove-row" onClick={deleteRow}>-</button>
-							</td>
-							<td>
-								{rowIdx + 1}
-							</td>
-							{table.fields.map((input, fieldIdx) => {
-								// updatePropertyRow è la funzione di produzione sullo stato per la proprietà specifica
-								const updateProperty: UpdatePropertyFunc = (fn) => {
-									update(table => {
-										const newProp = fn(table?.[rowIdx][fieldIdx])
-										if (!newProp)
-											return table
-
-										if (!table) {
-											table = []
-										}
-
-										if (!table[rowIdx]) {
-											table[rowIdx] = []
-										}
-
-										table[rowIdx][fieldIdx] = newProp
-										return table
-									})
-								}
-
-								const key = `${rowIdx}-${fieldIdx}`
-								const propertyState = row?.[fieldIdx] || undefined
-
-								return <Property key={key} state={propertyState} template={input} update={updateProperty} />
-							})}
-						</tr>
-					})}
+					{tableBody}
 				</tbody>
 			</table>
-			<button className="anatom-struct-table-add-row" onClick={addRow}>{table.variadicPlaceholder || '+'}</button>
+			{addButton}
 		</div>
 	)
 }
@@ -179,11 +225,12 @@ export function TableVariadicButton({ table, state, update, active, setActive }:
  * @param update funzione di produzione per informare lo stato globale dei cambiamenti
  * @return ReactNode
  */
-export function TableVariadicMouse({ table, state, update, active, setActive, deleteCircle, highlightCircle }: {
+function TableVariadicMouse({ table, state, update, active, setActive, deleteCircle, highlightCircle }: {
 	table: AnatomStructTable, state: AnatomStructTableState, update: UpdateTableFunc,
 	active: boolean, setActive: () => void,
 	deleteCircle: DeleteImageCircleFunc, highlightCircle: HighlightImageCircleFunc
 }) {
+	const editMode = useContext(EditModeContext)
 	const [activeRow, setActiveRow] = useState(-1)
 
 	return (
@@ -225,11 +272,15 @@ export function TableVariadicMouse({ table, state, update, active, setActive, de
 
 						const className = active && activeRow === rowIdx ? 'active' : undefined
 
+						const variadicControl = editMode ? <>
+							<button className="anatom-struct-table-remove-row" onClick={deleteRow}>-</button>
+						</> : undefined
+
 						return <tr key={rowIdx} className={className} onMouseEnter={onRowHover}>
 							<td>
 								<div className="anatom-struct-table-variadic-control">
 									<span>&gt;</span>
-									<button className="anatom-struct-table-remove-row" onClick={deleteRow}>-</button>
+									{variadicControl}
 								</div>
 							</td>
 							<td>
@@ -239,7 +290,7 @@ export function TableVariadicMouse({ table, state, update, active, setActive, de
 								// updatePropertyRow è la funzione di produzione sullo stato per la proprietà specifica
 								const updateProperty: UpdatePropertyFunc = (fn) => {
 									update(table => {
-										const newProp = fn(table?.[rowIdx][fieldIdx + 1]) // fieldIdx+1 perchè il primo field contiene le informazioni per l'immagine
+										const newProp = fn(table?.[rowIdx]?.[fieldIdx + 1]) // fieldIdx+1 perchè il primo field contiene le informazioni per l'immagine
 										if (newProp == undefined)
 											return table
 
