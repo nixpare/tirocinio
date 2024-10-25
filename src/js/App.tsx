@@ -4,24 +4,6 @@ import { useState } from 'react'
 
 import "../css/App.css"
 
-const boneState: AnatomStructState = {
-  name: "OSSO INNOMINATO",
-  props: [
-    // Page Test
-    [
-      // Table 0
-      [
-        // Row 0
-        [
-          { imageIdx: 0, x: 50, y: 50 },
-          "assente",
-          "Ciao"
-        ]
-      ]
-    ]
-  ]
-}
-
 const boneTemplate: AnatomStructTemplate = {
   name: "OSSO INNOMINATO",
   pages: [
@@ -72,7 +54,7 @@ const boneTemplate: AnatomStructTemplate = {
               dropdownArgs: ["assente", "presente non valutabile PND", "presente non fuso PN", "presente in fusione PIF", "presente fuso PF"]
             },
             {
-              mode: AnatomStructInputMode.Text
+              mode: AnatomStructInputMode.Number
             }
           ],
           indexes: [["A"], ["B"], ["C"], ["D"], ["E"], ["F"]]
@@ -124,7 +106,7 @@ const boneTemplate: AnatomStructTemplate = {
           headers: ["Codice Misura", "Nome Misura", "Misura (cm)"],
           fields: [
             {
-              mode: AnatomStructInputMode.Text
+              mode: AnatomStructInputMode.Number
             }
           ],
           indexes: [
@@ -232,13 +214,32 @@ const boneTemplate: AnatomStructTemplate = {
   ]
 }
 
+const boneState: AnatomStructState = {
+  name: "OSSO INNOMINATO",
+  template: boneTemplate,
+  props: [
+    // Page Test
+    [
+      // Table 0
+      [
+        // Row 0
+        [
+          { imageIdx: 0, x: 50, y: 50 },
+          "assente",
+          "Ciao"
+        ]
+      ]
+    ]
+  ]
+}
+
 function App() {
   const [state, setState] = useState(boneState)
 
   return (
     <div className="container app">
       <h1>Tirocinio</h1>
-      <AnatomStruct template={boneTemplate} state={state} setState={setState} editMode={true} />
+      <AnatomStruct anatomStruct={state} setAnatomStruct={setState} editMode={true} />
       {/* <Bone bone={bone} /> */}
     </div>
   )

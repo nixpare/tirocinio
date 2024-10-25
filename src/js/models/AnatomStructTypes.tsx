@@ -56,6 +56,8 @@ export type AnatomStructTableField = {
 export enum AnatomStructInputMode {
 	/** un semplice <input type="text" /> */
 	Text,
+	/** un semplice <input type="number" /> */
+	Number,
 	/** un componente che simula un elemento <select> */
 	Dropdown,
 	/**  */
@@ -70,6 +72,8 @@ export type AnatomStructMultistageArg = {
 export type AnatomStructState = {
 	/** il nome della struttura anatomica */
 	name: string
+	/** una copia del template della struttura anatomica */
+	template: AnatomStructTemplate,
 	/** quadrivettore: pagina x tabella x riga x colonna */
 	props?: AnatomStructPageState[]
 }
@@ -78,7 +82,7 @@ export type AnatomStructPageState = AnatomStructTableState[] | undefined
 export type AnatomStructTableState = AnatomStructProperty[][] | undefined
 
 /** AnatomStructProperty è il tipo che può avere una proprietà, per ora tutto è basato su stringhe */
-export type AnatomStructProperty = string | AnatomStructPropertyMultistage | AnatomStructPropertyImageRef | undefined
+export type AnatomStructProperty = string | number | AnatomStructPropertyMultistage | AnatomStructPropertyImageRef | undefined
 
 export type AnatomStructPropertyMultistage = {
 	value?: string

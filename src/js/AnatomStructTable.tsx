@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { AnatomStructProperty, AnatomStructPropertyImageRef, AnatomStructTable, AnatomStructTableState } from "./models/AnatomStructTypes";
+import { AnatomStructProperty, AnatomStructPropertyImageRef, AnatomStructTable, AnatomStructTableState, AnatomStructTableType } from "./models/AnatomStructTypes";
 import { DeleteImageCircleFunc, HighlightImageCircleFunc } from "./AnatomStruct";
 import { Property, UpdatePropertyFunc } from "./AnatomStructProperty";
 
@@ -8,13 +8,45 @@ import '../css/AnatomStructTable.css'
 export type UpdateTableFunc = (fn: (table: AnatomStructTableState) => AnatomStructTableState) => void
 
 /**
+ * Table rappresenta la sezione di una pagina con la tabella di opzioni.
+ * TODO
+ * @param table attributo derivato dallo stato globale
+ * @param update funzione di produzione per informare lo stato globale dei cambiamenti
+ * @return ReactNode
+ */
+export function Table({ table, state, update, active, setActive, deleteCircle, highlightCircle }: {
+	table: AnatomStructTable, state: AnatomStructTableState, update: UpdateTableFunc,
+	active: boolean, setActive: () => void,
+	deleteCircle: DeleteImageCircleFunc, highlightCircle: HighlightImageCircleFunc
+}) {
+	switch (table.type) {
+		case AnatomStructTableType.Default:
+			return <TableDefault
+				table={table} state={state} update={update}
+				active={active} setActive={setActive}
+			/>
+		case AnatomStructTableType.VariadicButton:
+			return <TableVariadicButton
+				table={table} state={state} update={update}
+				active={active} setActive={setActive}
+			/>
+		case AnatomStructTableType.VariadicMouse:
+			return <TableVariadicMouse
+				table={table} state={state} update={update}
+				active={active} setActive={setActive}
+				deleteCircle={deleteCircle} highlightCircle={highlightCircle}
+			/>
+	}
+}
+
+/**
  * TableDefault rappresenta la sezione di una pagina con la tabella di opzioni.
  * TODO
  * @param table attributo derivato dallo stato globale
  * @param update funzione di produzione per informare lo stato globale dei cambiamenti
  * @return ReactNode
  */
-export function TableDefault({ table, state, update, active, setActive }: {
+function TableDefault({ table, state, update, active, setActive }: {
 	table: AnatomStructTable, state: AnatomStructTableState, update: UpdateTableFunc,
 	active: boolean, setActive: () => void
 }) {
@@ -46,8 +78,8 @@ export function TableDefault({ table, state, update, active, setActive }: {
 									// updatePropertyRow è la funzione di produzione sullo stato per la proprietà specifica
 									const updateProperty: UpdatePropertyFunc = (fn) => {
 										update(table => {
-											const newProp = fn(table?.[rowIdx][fieldIdx])
-											if (!newProp)
+											const newProp = fn(table?.[rowIdx]?.[fieldIdx])
+											if (newProp == undefined)
 												return table
 
 											if (!table) {
@@ -88,7 +120,7 @@ export function TableDefault({ table, state, update, active, setActive }: {
  * @param update funzione di produzione per informare lo stato globale dei cambiamenti
  * @return ReactNode
  */
-export function TableVariadicButton({ table, state, update, active, setActive }: {
+function TableVariadicButton({ table, state, update, active, setActive }: {
 	table: AnatomStructTable, state: AnatomStructTableState, update: UpdateTableFunc,
 	active: boolean, setActive: () => void
 }) {
@@ -121,7 +153,7 @@ export function TableVariadicButton({ table, state, update, active, setActive }:
 					{state?.map((row, rowIdx) => {
 						const deleteRow: () => void = () => {
 							update(table => {
-								if (!table)
+								if (table == undefined)
 									return table
 
 								return table.filter((_, index) => {
@@ -141,8 +173,8 @@ export function TableVariadicButton({ table, state, update, active, setActive }:
 								// updatePropertyRow è la funzione di produzione sullo stato per la proprietà specifica
 								const updateProperty: UpdatePropertyFunc = (fn) => {
 									update(table => {
-										const newProp = fn(table?.[rowIdx][fieldIdx])
-										if (!newProp)
+										const newProp = fn(table?.[rowIdx]?.[fieldIdx])
+										if (newProp == undefined)
 											return table
 
 										if (!table) {
@@ -179,7 +211,7 @@ export function TableVariadicButton({ table, state, update, active, setActive }:
  * @param update funzione di produzione per informare lo stato globale dei cambiamenti
  * @return ReactNode
  */
-export function TableVariadicMouse({ table, state, update, active, setActive, deleteCircle, highlightCircle }: {
+function TableVariadicMouse({ table, state, update, active, setActive, deleteCircle, highlightCircle }: {
 	table: AnatomStructTable, state: AnatomStructTableState, update: UpdateTableFunc,
 	active: boolean, setActive: () => void,
 	deleteCircle: DeleteImageCircleFunc, highlightCircle: HighlightImageCircleFunc
@@ -239,7 +271,7 @@ export function TableVariadicMouse({ table, state, update, active, setActive, de
 								// updatePropertyRow è la funzione di produzione sullo stato per la proprietà specifica
 								const updateProperty: UpdatePropertyFunc = (fn) => {
 									update(table => {
-										const newProp = fn(table?.[rowIdx][fieldIdx + 1]) // fieldIdx+1 perchè il primo field contiene le informazioni per l'immagine
+										const newProp = fn(table?.[rowIdx]?.[fieldIdx + 1]) // fieldIdx+1 perchè il primo field contiene le informazioni per l'immagine
 										if (newProp == undefined)
 											return table
 

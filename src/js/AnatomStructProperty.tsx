@@ -23,9 +23,28 @@ export function Property({ template, state, update }: { template: AnatomStructTa
 				})
 			}
 
-			state = (state as (string | undefined)) || ''
+			return <td>
+				<input type="text"
+					value={state as (string | undefined) || ''}
+					onChange={handleTextInput}
+				/>
+			</td>;
+		case AnatomStructInputMode.Number:
+			const handleNumberInput = (ev: ChangeEvent<HTMLInputElement>): void => {
+				update(() => {
+					const n = Number(ev.target.value)
+					return Number.isNaN(n) ? 0 : n
+				})
+			}
 
-			return <td><input type="text" value={state} onChange={handleTextInput} /></td>;
+			state = (state as (number | undefined) || 0).toString()
+
+			return <td>
+				<input type="number"
+					value={state}
+					onChange={handleNumberInput}
+				/>
+			</td>;
 		case AnatomStructInputMode.Dropdown:
 			const setSelected = (selected: string): void => {
 				update(() => {
@@ -33,11 +52,13 @@ export function Property({ template, state, update }: { template: AnatomStructTa
 				})
 			}
 
-			return <td><Dropdown
-				options={template.dropdownArgs || []}
-				selectedField={state as (string | undefined)}
-				setSelectedField={setSelected}
-			/></td>
+			return <td>
+				<Dropdown
+					options={template.dropdownArgs || []}
+					selectedField={state as (string | undefined)}
+					setSelectedField={setSelected}
+				/>
+			</td>
 		case AnatomStructInputMode.Multistage:
 			const updateMultistage = (fn: (value?: AnatomStructPropertyMultistage) => AnatomStructPropertyMultistage): void => {
 				update(value => {
@@ -45,7 +66,11 @@ export function Property({ template, state, update }: { template: AnatomStructTa
 				})
 			}
 
-			return <MultistageProperty template={template} state={state as (AnatomStructPropertyMultistage | undefined)} update={updateMultistage} />
+			return <MultistageProperty
+				template={template}
+				state={state as (AnatomStructPropertyMultistage | undefined)}
+				update={updateMultistage}
+			/>
 	}
 }
 

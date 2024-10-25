@@ -1,7 +1,7 @@
 import { FormEvent, MouseEvent, useState } from 'react'
 import { produce } from 'immer'
-import { AnatomStructPage, AnatomStructTemplate, AnatomStructState, AnatomStructTableType, AnatomStructPageState, AnatomStructPropertyImageRef } from './models/AnatomStructTypes'
-import { TableDefault, TableVariadicButton, TableVariadicMouse, UpdateTableFunc } from './AnatomStructTable'
+import { AnatomStructPage, AnatomStructState, AnatomStructTableType, AnatomStructPageState, AnatomStructPropertyImageRef } from './models/AnatomStructTypes'
+import { Table, UpdateTableFunc } from './AnatomStructTable'
 import { Carousel } from './Carousel'
 
 import '../css/AnatomStruct.css'
@@ -34,7 +34,7 @@ export type HighlightImageCircleFunc = (imageIdx: number, circleIdx: number) => 
  * @param editMode (opzionale) flag per indicare se abilitare la possibilità di modificare i campi
  * @return ReactNode
  */
-export function AnatomStruct({ template, state, setState, editMode }: { template: AnatomStructTemplate, state: AnatomStructState, setState: (newState: AnatomStructState) => void, editMode?: boolean }) {
+export function AnatomStruct({ anatomStruct, setAnatomStruct, editMode }: { anatomStruct: AnatomStructState, setAnatomStruct: (newState: AnatomStructState) => void, editMode?: boolean }) {
 	// La editMode dovrebbe permettere la visualizzazione di una struttura anatomica
 	// già inserita senza la presenza degli input, con la possibilità
 	// di passare nella modalità di modifica con un pulsante esterno.
@@ -45,27 +45,27 @@ export function AnatomStruct({ template, state, setState, editMode }: { template
 	if (!editMode) {
 		return (
 			<div className="container anatom-struct">
-				<h4 className="anatom-struct-name">{template.name}</h4>
+				<h4 className="anatom-struct-name">{anatomStruct.name}</h4>
 				<p>To be implemented</p>
 			</div>
 		)
 	}
 
 	function updateState(fn: (prev: AnatomStructState) => AnatomStructState): void {
-		setState(produce(state, fn))
+		setAnatomStruct(produce(anatomStruct, fn))
 	}
 
 	function handleSubmit(ev: FormEvent) {
 		ev.preventDefault()
-		console.log(state)
+		console.log(anatomStruct.props)
 	}
 
 	return (
 		<div className="container anatom-struct">
-			<h4 className="anatom-struct-name">{state.name}</h4>
+			<h4 className="anatom-struct-name">{anatomStruct.name}</h4>
 			<form className="anatom-struct-form" onSubmit={handleSubmit}>
 				<Carousel>
-					{template.pages.map((page, pageIdx) => {
+					{anatomStruct.template.pages.map((page, pageIdx) => {
 						// updatePage è la funzione di produzione sullo stato per la pagina specifica
 						const updatePage: UpdatePageFunc = (fn) => {
 							updateState(state => {
@@ -82,7 +82,7 @@ export function AnatomStruct({ template, state, setState, editMode }: { template
 							})
 						}
 
-						return <PropertyPage key={page.title} page={page} state={state.props?.[pageIdx]} update={updatePage} />;
+						return <PropertyPage key={page.title} page={page} state={anatomStruct.props?.[pageIdx]} update={updatePage} />;
 					})}
 				</Carousel>
 				<button type="submit">Invia</button>
@@ -186,39 +186,20 @@ function PropertyPage({ page, state, update }: { page: AnatomStructPage, state: 
 			setActiveTable(tableIdx)
 		}
 
-		let tableElem: React.JSX.Element
-		switch (table.type) {
-			case AnatomStructTableType.Default:
-				tableElem = <TableDefault
-					table={table} state={state?.[tableIdx]} update={updateTable}
-					active={activeTable === tableIdx} setActive={setActive}
-				/>
-				break;
-			case AnatomStructTableType.VariadicButton:
-				tableElem = <TableVariadicButton
-					table={table} state={state?.[tableIdx]} update={updateTable}
-					active={activeTable === tableIdx} setActive={setActive}
-				/>
-				break;
-			case AnatomStructTableType.VariadicMouse:
-				const deleteCircle: DeleteImageCircleFunc = (imageIdx, circleIdx) => {
-					deleteCircleGeneric(tableIdx, imageIdx, circleIdx)
-				}
+		const deleteCircle: DeleteImageCircleFunc = (imageIdx, circleIdx) => {
+			deleteCircleGeneric(tableIdx, imageIdx, circleIdx)
+		}
 
-				const highlightCircle: HighlightImageCircleFunc = (imageIdx, circleIdx) => {
-					highlightCircleGeneric(tableIdx, imageIdx, circleIdx)
-				}
-
-				tableElem = <TableVariadicMouse
-					table={table} state={state?.[tableIdx]} update={updateTable}
-					active={activeTable === tableIdx} setActive={setActive}
-					deleteCircle={deleteCircle} highlightCircle={highlightCircle}
-				/>
-				break;
+		const highlightCircle: HighlightImageCircleFunc = (imageIdx, circleIdx) => {
+			highlightCircleGeneric(tableIdx, imageIdx, circleIdx)
 		}
 
 		return <div className="anatom-struct-table" key={`${page.title}-${tableIdx}`}>
-			{tableElem}
+			<Table
+				table={table} state={state?.[tableIdx]} update={updateTable}
+				active={activeTable === tableIdx} setActive={setActive}
+				deleteCircle={deleteCircle} highlightCircle={highlightCircle}
+			/>
 		</div>
 	})
 
