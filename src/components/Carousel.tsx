@@ -41,7 +41,9 @@ export function Carousel({ children, visibleState }: { children: ReactNode, visi
 	
 	return (
 		<div className="carousel">
-			<button style={buttonStyle} onClick={slideLeft} disabled={visibleState.visible === 0}>&lt;</button>
+			<button style={buttonStyle} onClick={slideLeft} disabled={visibleState.visible === 0}>
+				<i className="fa-solid fa-chevron-left"></i>
+			</button>
 			<div>
 				{childs.map((child, childIdx) => {
 					const key: string = React.isValidElement(child) && child.key ? child.key : childIdx.toString()
@@ -56,7 +58,9 @@ export function Carousel({ children, visibleState }: { children: ReactNode, visi
 					);
 				})}
 			</div>
-			<button style={buttonStyle} onClick={slideRight} disabled={visibleState.visible === pages-1}>&gt;</button>
+			<button style={buttonStyle} onClick={slideRight} disabled={visibleState.visible === pages-1}>
+				<i className="fa-solid fa-chevron-right"></i>
+			</button>
 		</div>
 	)
 }

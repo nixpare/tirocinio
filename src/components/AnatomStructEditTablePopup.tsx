@@ -22,7 +22,7 @@ export function EditTablePopup({ saveTable, table, state, update }: {
 							deleteCircle={() => { console.log('deleteCircle') }} highlightCircle={() => { console.log('highlightCircle') }}
 						/>
 					</EditModeContext.Provider>
-					<i className="fa-duotone fa-solid fa-arrow-right"></i>
+					<i className="fa-solid fa-arrow-right"></i>
 				</div>
 				
 				<EditModeContext.Provider value={true}>

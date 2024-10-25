@@ -43,7 +43,7 @@ button {
   color: inherit;
   background-color: #f9f9f9;
   cursor: pointer;
-  transition: border-color 0.25s;
+  transition: border-color .3s;
 }
 button:not(:disabled):hover {
   border-color: rgb(var(--primary-color));
