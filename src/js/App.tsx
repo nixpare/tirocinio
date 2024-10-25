@@ -1,10 +1,10 @@
-import { Bone } from './Bone'
-import { BoneState, BoneTemplate, InputMode, PropertyTableType } from './models/Bone'
+import { AnatomStruct } from './AnatomStruct'
+import { AnatomStructState, AnatomStructTemplate, AnatomStructInputMode, AnatomStructTableType } from './models/AnatomStructTypes'
 import { useState } from 'react'
 
 import "../css/App.css"
 
-const boneState: BoneState = {
+const boneState: AnatomStructState = {
   name: "OSSO INNOMINATO",
   props: [
     // Page Test
@@ -22,7 +22,7 @@ const boneState: BoneState = {
   ]
 }
 
-const boneTemplate: BoneTemplate = {
+const boneTemplate: AnatomStructTemplate = {
   name: "OSSO INNOMINATO",
   pages: [
     // Page Test
@@ -31,28 +31,28 @@ const boneTemplate: BoneTemplate = {
       image: ['/images/slide-image-1.png', '/images/slide-image-2.png'],
       tables: [
         {
-          type: PropertyTableType.VariadicMouse,
+          type: AnatomStructTableType.VariadicMouse,
           headers: ["Nucleo", "Stato"],
-          inputs: [
+          fields: [
             {
-              mode: InputMode.Dropdown,
+              mode: AnatomStructInputMode.Dropdown,
               dropdownArgs: ["assente", "presente non valutabile PND", "presente non fuso PN", "presente in fusione PIF", "presente fuso PF"]
             },
             {
-              mode: InputMode.Text
+              mode: AnatomStructInputMode.Text
             }
           ]
         },
         {
-          type: PropertyTableType.VariadicMouse,
+          type: AnatomStructTableType.VariadicMouse,
           headers: ["Nucleo 2", "Stato 2"],
-          inputs: [
+          fields: [
             {
-              mode: InputMode.Dropdown,
+              mode: AnatomStructInputMode.Dropdown,
               dropdownArgs: ["assente", "presente non valutabile PND", "presente non fuso PN", "presente in fusione PIF", "presente fuso PF"]
             },
             {
-              mode: InputMode.Text
+              mode: AnatomStructInputMode.Text
             }
           ]
         }
@@ -64,15 +64,15 @@ const boneTemplate: BoneTemplate = {
       image: ['/images/slide-image-1.png'],
       tables: [
         {
-          type: PropertyTableType.Default,
+          type: AnatomStructTableType.Default,
           headers: ["Nucleo", "Stato", "Lunghezza (cm)"],
-          inputs: [
+          fields: [
             {
-              mode: InputMode.Dropdown,
+              mode: AnatomStructInputMode.Dropdown,
               dropdownArgs: ["assente", "presente non valutabile PND", "presente non fuso PN", "presente in fusione PIF", "presente fuso PF"]
             },
             {
-              mode: InputMode.Text
+              mode: AnatomStructInputMode.Text
             }
           ],
           indexes: [["A"], ["B"], ["C"], ["D"], ["E"], ["F"]]
@@ -85,28 +85,28 @@ const boneTemplate: BoneTemplate = {
       image: ['/images/slide-image-2.png'],
       tables: [
         {
-          type: PropertyTableType.Default,
+          type: AnatomStructTableType.Default,
           headers: ["Settore", "Presente/Assente", "Note"],
-          inputs: [
+          fields: [
             {
-              mode: InputMode.Dropdown,
+              mode: AnatomStructInputMode.Dropdown,
               dropdownArgs: ["Assente", "Presente"]
             },
             {
-              mode: InputMode.Text
+              mode: AnatomStructInputMode.Text
             }
           ],
           indexes: [["1"], ["2"], ["3"], ["4"], ["5"], ["6"], ["7"], ["8"], ["9"], ["10"], ["11"], ["12"]]
         },
         {
-          type: PropertyTableType.Default,
+          type: AnatomStructTableType.Default,
           headers: ["Area", "Dettagli", "Colore"],
-          inputs: [
+          fields: [
             {
-              mode: InputMode.Text
+              mode: AnatomStructInputMode.Text
             },
             {
-              mode: InputMode.Dropdown,
+              mode: AnatomStructInputMode.Dropdown,
               dropdownArgs: ["da marrone a marrone scuro", "grigio", "naturale", "da arancione a marrone", "da giallo ad arancione"]
             }
           ],
@@ -120,11 +120,11 @@ const boneTemplate: BoneTemplate = {
       image: ['/images/slide-image-3.png', '/images/slide-image-4.png'],
       tables: [
         {
-          type: PropertyTableType.Default,
+          type: AnatomStructTableType.Default,
           headers: ["Codice Misura", "Nome Misura", "Misura (cm)"],
-          inputs: [
+          fields: [
             {
-              mode: InputMode.Text
+              mode: AnatomStructInputMode.Text
             }
           ],
           indexes: [
@@ -148,26 +148,26 @@ const boneTemplate: BoneTemplate = {
       title: "Caratteri non metrici",
       tables: [
         {
-          type: PropertyTableType.Default,
+          type: AnatomStructTableType.Default,
           headers: ["Caratteri non metrici", "Stato"],
-          inputs: [
+          fields: [
             {
-              mode: InputMode.Dropdown,
+              mode: AnatomStructInputMode.Dropdown,
               dropdownArgs: ["Assente", "Non valutabile", "Presente"]
             }
           ],
           indexes: [["Accessory Sacroiliac Facet"], ["Pubic Spine"], ["Acetabular Crease"], ["Cotyloid bone"]]
         },
         {
-          type: PropertyTableType.VariadicButton,
+          type: AnatomStructTableType.VariadicButton,
           headers: ["Caratteri non metrici", "Stato"],
           variadicPlaceholder: 'Aggiungi Carattere non Metrico',
-          inputs: [
+          fields: [
             {
-              mode: InputMode.Text
+              mode: AnatomStructInputMode.Text
             },
             {
-              mode: InputMode.Dropdown,
+              mode: AnatomStructInputMode.Dropdown,
               dropdownArgs: ["Assente", "Non valutabile", "Presente"]
             }
           ]
@@ -182,16 +182,16 @@ const boneTemplate: BoneTemplate = {
       image: ["/images/slide-image-5.png"],
       tables: [
         {
-          type: PropertyTableType.Default,
+          type: AnatomStructTableType.Default,
           headers: ["#", "Classe", "Descrizione segni"],
-          inputs: [
+          fields: [
             {
-              mode: InputMode.Multistage,
+              mode: AnatomStructInputMode.Multistage,
               multistageArgs: [
                 {
                   value: "Soluzione di continuo",
                   next: {
-                    mode: InputMode.Dropdown,
+                    mode: AnatomStructInputMode.Dropdown,
                     dropdownArgs: [
                       "A tutto spessore e tutta circonferenza",
                       "A tutto spessore e parziale circonferenza",
@@ -204,20 +204,20 @@ const boneTemplate: BoneTemplate = {
                 },
                 {
                   value: "Perdita di sostanza",
-                  next: { mode: InputMode.Text }
+                  next: { mode: AnatomStructInputMode.Text }
                 },
                 {
                   value: "Aspetto margine (esempio nested multistage)",
                   next: {
-                    mode: InputMode.Multistage,
+                    mode: AnatomStructInputMode.Multistage,
                     multistageArgs: [
                       {
                         value: "Aspetto della superficie di frattura (indicare la localizzazione - mediale, laterale, anteriore e posteriore)",
-                        next: { mode: InputMode.Text }
+                        next: { mode: AnatomStructInputMode.Text }
                       },
                       {
                         value: "Aspetto superficie di taglio (indicare la localizzazione - mediale, laterale, anteriore e posteriore)",
-                        next: { mode: InputMode.Text }
+                        next: { mode: AnatomStructInputMode.Text }
                       }
                     ]
                   }
@@ -238,7 +238,7 @@ function App() {
   return (
     <div className="container app">
       <h1>Tirocinio</h1>
-      <Bone template={boneTemplate} state={state} setState={setState} editMode={true} />
+      <AnatomStruct template={boneTemplate} state={state} setState={setState} editMode={true} />
       {/* <Bone bone={bone} /> */}
     </div>
   )

@@ -1,0 +1,62 @@
+.anatom-struct {
+	background-color: rgba(var(--primary-color), 0.2);
+	border-radius: .4em;
+	width: 100%;
+	overflow: auto;
+}
+
+.anatom-struct-name {
+	font-size: 2em;
+	background-color: rgba(0, 0, 255, .2);
+	width: 100%;
+	text-align: center;
+}
+
+.anatom-struct-form {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 2em;
+	margin-bottom: 2em;
+}
+
+.anatom-struct-form>button {
+	width: fit-content;
+}
+
+.anatom-struct-page {
+	width: 100%;
+}
+
+.anatom-struct-page h3 {
+	text-align: center;
+	margin-bottom: 1em;
+}
+
+.anatom-struct-page-images {
+	background-color: rgba(var(--primary-color), .2);
+	padding: 1em .5em;
+	border-radius: .4em;
+}
+
+.anatom-struct-page-image {
+	position: relative;
+}
+
+.anatom-struct-page-image img {
+	width: 100%;
+	height: fit-content;
+}
+
+.anatom-struct-page-image-tracker {
+	position: absolute;
+	width: 50px;
+	aspect-ratio: 1 / 1;
+	border: 2px solid red;
+	border-radius: 50%;
+	transform: translate(-50%, -50%);
+}
+
+.anatom-struct-page-image-tracker.active {
+	border-color: green;
+}
