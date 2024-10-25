@@ -1,10 +1,10 @@
-import { FormEvent, MouseEvent, useState } from 'react'
+import { createContext, FormEvent, MouseEvent, useContext, useState } from 'react'
 import { produce } from 'immer'
-import { AnatomStructPage, AnatomStructState, AnatomStructTableType, AnatomStructPageState, AnatomStructPropertyImageRef } from './models/AnatomStructTypes'
+import { AnatomStructPage, AnatomStructState, AnatomStructTableType, AnatomStructPageState, AnatomStructPropertyImageRef } from '../models/AnatomStructTypes'
 import { Table, UpdateTableFunc } from './AnatomStructTable'
 import { Carousel } from './Carousel'
 
-import '../css/AnatomStruct.css'
+import './AnatomStruct.css'
 
 type UpdatePageFunc = (fn: (page: AnatomStructPageState) => AnatomStructPageState) => void
 
@@ -14,6 +14,8 @@ type HighlightImageCircleGenericFunc = (tableIdx: number, imageIdx: number, circ
 
 export type DeleteImageCircleFunc = (imageIdx: number, circleIdx: number) => void
 export type HighlightImageCircleFunc = (imageIdx: number, circleIdx: number) => void
+
+export const EditModeContext = createContext(false)
 
 /**
  * AnatomStruct è il macro elemento che gestisce la visualizzazione e la modifica / inserimento
@@ -31,25 +33,10 @@ export type HighlightImageCircleFunc = (imageIdx: number, circleIdx: number) => 
  * questo approccio puà permettere una ricorsione delle proprietà più flessibile (proprietà
  * che in base al loro valore determinano la natura delle proprietà successive)
  * @param state stato utilizzato per la creazione del componente
- * @param editMode (opzionale) flag per indicare se abilitare la possibilità di modificare i campi
  * @return ReactNode
  */
-export function AnatomStruct({ anatomStruct, setAnatomStruct, editMode }: { anatomStruct: AnatomStructState, setAnatomStruct: (newState: AnatomStructState) => void, editMode?: boolean }) {
-	// La editMode dovrebbe permettere la visualizzazione di una struttura anatomica
-	// già inserita senza la presenza degli input, con la possibilità
-	// di passare nella modalità di modifica con un pulsante esterno.
-	//
-	// C'è da capire se sia conveniente fare si che ogni componente
-	// abbia una editMode così da avere le due versioni più "vicine"
-	// oppure se duplicarne la natura
-	if (!editMode) {
-		return (
-			<div className="container anatom-struct">
-				<h4 className="anatom-struct-name">{anatomStruct.name}</h4>
-				<p>To be implemented</p>
-			</div>
-		)
-	}
+export function AnatomStruct({ anatomStruct, setAnatomStruct }: { anatomStruct: AnatomStructState, setAnatomStruct: (newState: AnatomStructState) => void }) {
+	const editMode = useContext(EditModeContext)
 
 	function updateState(fn: (prev: AnatomStructState) => AnatomStructState): void {
 		setAnatomStruct(produce(anatomStruct, fn))
@@ -60,36 +47,51 @@ export function AnatomStruct({ anatomStruct, setAnatomStruct, editMode }: { anat
 		console.log(anatomStruct.props)
 	}
 
+	const pages = anatomStruct.template.pages.map((page, pageIdx) => {
+		// updatePage è la funzione di produzione sullo stato per la pagina specifica
+		const updatePage: UpdatePageFunc = (fn) => {
+			updateState(state => {
+				const newPage = fn(state.props?.[pageIdx])
+				if (!newPage)
+					return state
+
+				if (!state.props) {
+					state.props = []
+				}
+
+				state.props[pageIdx] = newPage
+				return state
+			})
+		}
+
+		return <PropertyPage key={page.title} page={page} state={anatomStruct.props?.[pageIdx]} update={updatePage} />;
+	})
+
+	if (!editMode) {
+		return <div className="container anatom-struct">
+			<h4 className="anatom-struct-name">{anatomStruct.name}</h4>
+			<div className="anatom-struct-pages">
+				<Carousel>
+					{pages}
+				</Carousel>
+			</div>
+		</div>
+	}
+
 	return (
 		<div className="container anatom-struct">
 			<h4 className="anatom-struct-name">{anatomStruct.name}</h4>
-			<form className="anatom-struct-form" onSubmit={handleSubmit}>
+			<form className="anatom-struct-pages" onSubmit={handleSubmit}>
 				<Carousel>
-					{anatomStruct.template.pages.map((page, pageIdx) => {
-						// updatePage è la funzione di produzione sullo stato per la pagina specifica
-						const updatePage: UpdatePageFunc = (fn) => {
-							updateState(state => {
-								const newPage = fn(state.props?.[pageIdx])
-								if (!newPage)
-									return state
-
-								if (!state.props) {
-									state.props = []
-								}
-
-								state.props[pageIdx] = newPage
-								return state
-							})
-						}
-
-						return <PropertyPage key={page.title} page={page} state={anatomStruct.props?.[pageIdx]} update={updatePage} />;
-					})}
+					{pages}
 				</Carousel>
 				<button type="submit">Invia</button>
 			</form>
 		</div>
 	);
 }
+
+type PropertyPageImageCircle = (((({ x: number, y: number } | undefined)[]) | undefined)[] | undefined)[] | undefined
 
 /**
  * PropertyPage rappresenta una pagina di opzioni per la struttura anatomica, la quale contiene, eventualmente, una o più immagini
@@ -105,7 +107,7 @@ function PropertyPage({ page, state, update }: { page: AnatomStructPage, state: 
 	const [activeImage, setActiveImage] = useState(0)
 	const [activeCircles, setActiveCircles] = useState([] as boolean[][][])
 
-	const circles: (((({ x: number, y: number } | undefined)[]) | undefined)[] | undefined)[] | undefined = state?.map((table, tableIdx) => {
+	const circles: PropertyPageImageCircle = state?.map((table, tableIdx) => {
 		if (page.tables[tableIdx].type !== AnatomStructTableType.VariadicMouse)
 			return undefined
 
@@ -210,56 +212,71 @@ function PropertyPage({ page, state, update }: { page: AnatomStructPage, state: 
 		</div>
 	}
 
-	return (
-		<div className="anatom-struct-page">
-			<h3>{page.title}</h3>
-			<div className="split">
-				<div>
-					{tables}
-				</div>
-				<div className="anatom-struct-page-images">
-					<Carousel visibleState={{ visible: activeImage, setVisible: setActiveImage }} >
-						{page.image?.map((image, imageIdx) => {
-							const handleImageClick = (ev: MouseEvent<HTMLImageElement, PointerEvent>): void => {
-								ev.preventDefault();
-
-								if (page.tables[activeTable].type !== AnatomStructTableType.VariadicMouse)
-									return
-
-								const img = ev.nativeEvent.target as HTMLImageElement
-								const imageLeft = Math.round(ev.nativeEvent.offsetX / img.offsetWidth * 100)
-								const imageTop = Math.round(ev.nativeEvent.offsetY / img.offsetHeight * 100)
-
-								const rowIdx = state?.[activeTable]?.length || 0
-
-								createCircleGeneric(activeTable, imageIdx, rowIdx, imageLeft, imageTop)
-							}
-
-							return <div className="anatom-struct-page-image" key={`${page.title}-${imageIdx}`}>
-								<img
-									src={image}
-									alt={page.title}
-									onClick={handleImageClick}
-								/>
-								{circles?.map((imageCircles, tableIdx) => {
-									return imageCircles?.[imageIdx]?.map((circle, circleIdx) => {
-										if (!circle)
-											return undefined
-
-										const activeClassName = activeCircles[tableIdx]?.[imageIdx]?.[circleIdx] ? ' active' : ''
-										const className = 'anatom-struct-page-image-tracker' + activeClassName
-
-										return <div key={`${tableIdx}-${imageIdx}-${circleIdx}`} className={className} style={{
-											left: `${circle.x}%`,
-											top: `${circle.y}%`,
-										}}></div>
-									})
-								})}
-							</div>
-						})}
-					</Carousel>
-				</div>
+	return <div className="anatom-struct-page">
+		<h3>{page.title}</h3>
+		<div className="split">
+			<div>
+				{tables}
+			</div>
+			<div className="anatom-struct-page-images">
+				<Carousel visibleState={{ visible: activeImage, setVisible: setActiveImage }} >
+					{page.image?.map((image, imageIdx) => {
+						return <PropertyPageImage key={`${page.title}-${imageIdx}`}
+							image={image} idx={imageIdx}
+							page={page} pageState={state} activeTable={activeTable}
+							circles={circles} activeCircles={activeCircles} createCircleGeneric={createCircleGeneric}
+						/>
+					})}
+				</Carousel>
 			</div>
 		</div>
-	)
+	</div>
+}
+
+function PropertyPageImage({ image, idx, page, pageState, activeTable, circles, activeCircles, createCircleGeneric }: {
+	image: string, idx: number
+	page: AnatomStructPage, pageState: AnatomStructPageState, activeTable: number,
+	circles: PropertyPageImageCircle, activeCircles: boolean[][][], createCircleGeneric: CreateImageCircleGenericFunc
+}) {
+	const editMode = useContext(EditModeContext)
+
+	const handleImageClick = (ev: MouseEvent<HTMLImageElement, PointerEvent>): void => {
+		ev.preventDefault();
+		
+		if (!editMode)
+			return
+
+		if (page.tables[activeTable].type !== AnatomStructTableType.VariadicMouse)
+			return
+
+		const img = ev.nativeEvent.target as HTMLImageElement
+		const imageLeft = Math.round(ev.nativeEvent.offsetX / img.offsetWidth * 100)
+		const imageTop = Math.round(ev.nativeEvent.offsetY / img.offsetHeight * 100)
+
+		const rowIdx = pageState?.[activeTable]?.length || 0
+
+		createCircleGeneric(activeTable, idx, rowIdx, imageLeft, imageTop)
+	}
+
+	return <div className="anatom-struct-page-image">
+		<img
+			src={image}
+			alt={page.title}
+			onClick={handleImageClick}
+		/>
+		{circles?.map((imageCircles, tableIdx) => {
+			return imageCircles?.[idx]?.map((circle, circleIdx) => {
+				if (!circle)
+					return undefined
+
+				const activeClassName = activeCircles[tableIdx]?.[idx]?.[circleIdx] ? ' active' : ''
+				const className = 'anatom-struct-page-image-tracker' + activeClassName
+
+				return <div key={`${tableIdx}-${idx}-${circleIdx}`} className={className} style={{
+					left: `${circle.x}%`,
+					top: `${circle.y}%`,
+				}}></div>
+			})
+		})}
+	</div>
 }

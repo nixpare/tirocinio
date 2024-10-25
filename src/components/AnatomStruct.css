@@ -12,7 +12,7 @@
 	text-align: center;
 }
 
-.anatom-struct-form {
+.anatom-struct-pages {
 	display: flex;
 	flex-direction: column;
 	align-items: center;
@@ -20,7 +20,7 @@
 	margin-bottom: 2em;
 }
 
-.anatom-struct-form>button {
+.anatom-struct-pages>button {
 	width: fit-content;
 }
 

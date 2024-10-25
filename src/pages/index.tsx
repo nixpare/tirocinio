@@ -1,8 +1,16 @@
-import { AnatomStruct } from './AnatomStruct'
-import { AnatomStructState, AnatomStructTemplate, AnatomStructInputMode, AnatomStructTableType } from './models/AnatomStructTypes'
-import { useState } from 'react'
+import { StrictMode, useState } from 'react'
+import { createRoot } from 'react-dom/client'
+import { AnatomStruct, EditModeContext } from '../components/AnatomStruct'
+import { AnatomStructState, AnatomStructTemplate, AnatomStructInputMode, AnatomStructTableType } from '../models/AnatomStructTypes'
 
-import "../css/App.css"
+import '../css/global.css'
+import './index.css'
+
+createRoot(document.getElementById('root')!).render(
+  <StrictMode>
+    <App />
+  </StrictMode>,
+)
 
 const boneTemplate: AnatomStructTemplate = {
   name: "OSSO INNOMINATO",
@@ -239,10 +247,10 @@ function App() {
   return (
     <div className="container app">
       <h1>Tirocinio</h1>
-      <AnatomStruct anatomStruct={state} setAnatomStruct={setState} editMode={true} />
-      {/* <Bone bone={bone} /> */}
+      <AnatomStruct anatomStruct={state} setAnatomStruct={setState} />
+      <EditModeContext.Provider value={true}>
+        <AnatomStruct anatomStruct={state} setAnatomStruct={setState} />
+      </EditModeContext.Provider>
     </div>
   )
 }
-
-export default App

@@ -1,6 +1,6 @@
 import { MouseEvent, useState } from 'react'
 
-import '../css/Dropdown.css'
+import './Dropdown.css'
 
 /**
  * Dropdown simula il comportamento dell'elemento <select>. Normalmente il chiamante dovrebbe passare al componente uno stato e la sua funzione per cambiarlo
@@ -11,7 +11,7 @@ import '../css/Dropdown.css'
  * @param setSelectField funzione da chiamare quando viene selezionata una nuova opzione
  * @returns ReactNode
  */
-export function Dropdown({ options, selectedField = 'Non selezionato', setSelectedField }: { options: string[], selectedField?: string, setSelectedField: (selected: string) => void }) {
+export function Dropdown({ options, selectedField = 'Non selezionato', setSelectedField, disabled }: { options: string[], selectedField?: string, setSelectedField: (selected: string) => void, disabled?: boolean }) {
 	const [active, setActive] = useState(false)
 
 	const handleDropdownButton = (ev: MouseEvent<HTMLButtonElement, PointerEvent>): void => {
@@ -20,7 +20,7 @@ export function Dropdown({ options, selectedField = 'Non selezionato', setSelect
 	}
 
 	return (
-		<button className={`dropdown ${active ? 'active' : ''}`} onClick={handleDropdownButton}>
+		<button className={`dropdown ${active ? 'active' : ''}`} onClick={handleDropdownButton} disabled={disabled}>
 			{selectedField}
 			<ul>
 				{options.map(option => {
