@@ -3,7 +3,7 @@ import { createRoot } from 'react-dom/client'
 import { AnatomStruct, EditModeContext } from '../components/AnatomStruct'
 import { AnatomStructState, AnatomStructTemplate, AnatomStructInputMode, AnatomStructTableType } from '../models/AnatomStructTypes'
 
-import '../css/global.css'
+import '../global.css'
 import './index.css'
 
 createRoot(document.getElementById('root')!).render(
@@ -247,7 +247,6 @@ function App() {
   return (
     <div className="container app">
       <h1>Tirocinio</h1>
-      <AnatomStruct anatomStruct={state} setAnatomStruct={setState} />
       <EditModeContext.Provider value={true}>
         <AnatomStruct anatomStruct={state} setAnatomStruct={setState} />
       </EditModeContext.Provider>

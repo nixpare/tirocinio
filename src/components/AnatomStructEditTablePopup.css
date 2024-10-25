@@ -1,0 +1,14 @@
+.anatom-struct-edit-table-popup {
+	position: absolute;
+	inset: 2em 2em 2em 2em;
+	background-color: transparent;
+	backdrop-filter: blur(4em);
+	box-shadow: 0 0 2em 0 rgba(0, 0, 0, .4);
+	z-index: 200;
+	border-radius: .4em;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	overflow: auto;
+}

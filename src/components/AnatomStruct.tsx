@@ -196,13 +196,11 @@ function PropertyPage({ page, state, update }: { page: AnatomStructPage, state: 
 			highlightCircleGeneric(tableIdx, imageIdx, circleIdx)
 		}
 
-		return <div className="anatom-struct-table" key={`${page.title}-${tableIdx}`}>
-			<Table
-				table={table} state={state?.[tableIdx]} update={updateTable}
-				active={activeTable === tableIdx} setActive={setActive}
-				deleteCircle={deleteCircle} highlightCircle={highlightCircle}
-			/>
-		</div>
+		return <Table key={`${page.title}-${tableIdx}`}
+			table={table} state={state?.[tableIdx]} update={updateTable}
+			active={activeTable === tableIdx} setActive={setActive}
+			deleteCircle={deleteCircle} highlightCircle={highlightCircle}
+		/>
 	})
 
 	if (!page.image) {

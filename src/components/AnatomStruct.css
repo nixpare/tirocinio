@@ -3,6 +3,7 @@
 	border-radius: .4em;
 	width: 100%;
 	overflow: auto;
+	position: relative;
 }
 
 .anatom-struct-name {

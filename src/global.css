@@ -80,12 +80,18 @@ input[type=number] {
   margin: 1em;
   gap: 1em;
 }
+.container.container-horiz {
+  flex-direction: row;
+}
 
 .split {
   display: grid;
   grid-template-columns: 1fr 1fr;
   grid-template-rows: auto;
   gap: 1em;
+}
+.split-no-gap {
+  gap: 0;
 }
 
 .split > * {

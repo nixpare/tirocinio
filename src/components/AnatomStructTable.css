@@ -2,7 +2,18 @@
 	width: 100%;
 	text-align: center;
 	margin: 2em 0;
+}
+
+.anatom-struct-table>.anatom-struct-table-edit-controls {
+	display: flex;
+	align-items: center;
+	justify-content: flex-end;
+	gap: 1em;
+}
+
+.anatom-struct-table>.anatom-struct-table-wrapper {
 	position: relative;
+	width: 100%;
 }
 
 .anatom-struct-table>.active::after {
