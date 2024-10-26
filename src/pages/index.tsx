@@ -1,7 +1,7 @@
 import { StrictMode, useState } from 'react'
 import { createRoot } from 'react-dom/client'
 import { AnatomStruct, EditModeContext } from '../components/AnatomStruct/AnatomStruct'
-import { AnatomStructState, AnatomStructTemplate, AnatomStructInputMode, AnatomStructTableType } from '../models/AnatomStructTypes'
+import { AnatomStructState, AnatomStructTemplate, AnatomStructInputMode, AnatomStructTableType, AnatomStructRowSpecial } from '../models/AnatomStructTypes'
 
 import '../global.css'
 import './index.css'
@@ -123,6 +123,9 @@ const boneTemplate: AnatomStructTemplate = {
               mode: AnatomStructInputMode.Fixed
             },
             {
+              mode: AnatomStructInputMode.Fixed
+            },
+            {
               mode: AnatomStructInputMode.Number
             }
           ]
@@ -231,11 +234,11 @@ const boneState: AnatomStructState = {
       // Table 0
       [
         // Row 0
-        [
-          { imageIdx: 0, x: 50, y: 50 },
-          "assente",
-          "Ciao"
-        ]
+        {
+          [AnatomStructRowSpecial.CircleInfo]: { imageIdx: 0, x: 50, y: 50 },
+          0: "assente",
+          1: "Ciao"
+        }
       ]
     ],
     // Page 1

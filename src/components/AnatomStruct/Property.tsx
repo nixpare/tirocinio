@@ -1,5 +1,5 @@
 import { ChangeEvent, useContext } from "react";
-import { AnatomStructInputMode, AnatomStructProperty, AnatomStructPropertyMultistage, AnatomStructTableField } from "../../models/AnatomStructTypes";
+import { AnatomStructInputMode, AnatomStructProperty, AnatomStructMultistageProperty, AnatomStructTableField } from "../../models/AnatomStructTypes";
 import { Dropdown } from "../UI/Dropdown";
 import { EditModeContext } from "./AnatomStruct";
 
@@ -63,23 +63,23 @@ export function Property({ template, state, update }: { template: AnatomStructTa
 				/>
 			</td>
 		case AnatomStructInputMode.Multistage:
-			const updateMultistage = (fn: (value?: AnatomStructPropertyMultistage) => AnatomStructPropertyMultistage): void => {
+			const updateMultistage = (fn: (value?: AnatomStructMultistageProperty) => AnatomStructMultistageProperty): void => {
 				update(value => {
-					return fn(value as (AnatomStructPropertyMultistage | undefined))
+					return fn(value as (AnatomStructMultistageProperty | undefined))
 				})
 			}
 
 			return <MultistageProperty
 				template={template}
-				state={state as (AnatomStructPropertyMultistage | undefined)}
+				state={state as (AnatomStructMultistageProperty | undefined)}
 				update={updateMultistage} disabled={!editMode}
 			/>
 	}
 }
 
 function MultistageProperty({ template, state, update, disabled }: {
-	template: AnatomStructTableField, state?: AnatomStructPropertyMultistage,
-	update: (fn: (value?: AnatomStructPropertyMultistage) => AnatomStructPropertyMultistage) => void, disabled: boolean
+	template: AnatomStructTableField, state?: AnatomStructMultistageProperty,
+	update: (fn: (value?: AnatomStructMultistageProperty) => AnatomStructMultistageProperty) => void, disabled: boolean
 }) {
 	const options: string[] | undefined = template.multistageArgs?.map(arg => arg.value)
 

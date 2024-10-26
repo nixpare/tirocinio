@@ -24,14 +24,16 @@ const boneTemplate: AnatomStructTemplate = {
           headers: ["Nucleo", "Stato", "Lunghezza (cm)"],
           fields: [
             {
+              mode: AnatomStructInputMode.Fixed
+            },
+            {
               mode: AnatomStructInputMode.Dropdown,
               dropdownArgs: ["assente", "presente non valutabile PND", "presente non fuso PN", "presente in fusione PIF", "presente fuso PF"]
             },
             {
               mode: AnatomStructInputMode.Number
             }
-          ],
-          indexes: [["A"], ["B"], ["C"], ["D"], ["E"], ["F"]]
+          ]
         }
       ]
     }
@@ -41,6 +43,13 @@ const boneTemplate: AnatomStructTemplate = {
 const boneState: AnatomStructState = {
   name: "OSSO INNOMINATO",
   template: boneTemplate,
+  props: [
+    // Page 0
+    [
+      // Table 0
+      [["A"], ["B"], ["C"], ["D"], ["E"], ["F"]]
+    ]
+  ]
 }
 
 function App() {

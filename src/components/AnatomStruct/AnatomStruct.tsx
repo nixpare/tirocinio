@@ -1,6 +1,6 @@
 import { createContext, FormEvent, MouseEvent, useContext, useState } from 'react'
 import { produce } from 'immer'
-import { AnatomStructPage, AnatomStructState, AnatomStructTableType, AnatomStructPageState, AnatomStructPropertyImageRef } from '../../models/AnatomStructTypes'
+import { AnatomStructPage, AnatomStructState, AnatomStructTableType, AnatomStructPageState, AnatomStructPropertyImageRef, AnatomStructRowSpecial } from '../../models/AnatomStructTypes'
 import { Table, UpdateTableFunc } from './Table'
 import { Carousel } from '../UI/Carousel'
 
@@ -113,7 +113,7 @@ function PropertyPage({ page, state, update }: { page: AnatomStructPage, state: 
 
 		return page.image?.map((_, imageIdx) => {
 			return table?.map(row => {
-				const circle = row[0] as AnatomStructPropertyImageRef
+				const circle = row[AnatomStructRowSpecial.CircleInfo] as AnatomStructPropertyImageRef
 
 				if (circle.imageIdx !== imageIdx)
 					return undefined
@@ -131,11 +131,13 @@ function PropertyPage({ page, state, update }: { page: AnatomStructPage, state: 
 			if (!page[tableIdx])
 				page[tableIdx] = []
 
-			page[tableIdx][circleIdx] = [{
-				imageIdx: imageIdx,
-				x: x,
-				y: y
-			}]
+			page[tableIdx][circleIdx] = {
+				[AnatomStructRowSpecial.CircleInfo]: {
+					imageIdx: imageIdx,
+					x: x,
+					y: y
+				}
+			}
 
 			return page
 		})
@@ -146,7 +148,7 @@ function PropertyPage({ page, state, update }: { page: AnatomStructPage, state: 
 			if (!page || !page[tableIdx] || !page[tableIdx][imageIdx] || !page[tableIdx][imageIdx][circleIdx])
 				return
 
-			page[tableIdx][imageIdx].filter((_, index) => index !== circleIdx)
+			delete page[tableIdx][imageIdx][circleIdx]
 			return page
 		})
 	}

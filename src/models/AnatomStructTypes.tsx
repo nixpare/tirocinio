@@ -79,12 +79,17 @@ export type AnatomStructState = {
 }
 
 export type AnatomStructPageState = AnatomStructTableState[] | undefined
-export type AnatomStructTableState = AnatomStructProperty[][] | undefined
+export type AnatomStructTableState = TableRowState[] | undefined
+export type TableRowState = Record<number, AnatomStructProperty>
 
 /** AnatomStructProperty è il tipo che può avere una proprietà, per ora tutto è basato su stringhe */
-export type AnatomStructProperty = string | number | AnatomStructPropertyMultistage | AnatomStructPropertyImageRef | undefined
+export type AnatomStructProperty = string | number | AnatomStructMultistageProperty | AnatomStructPropertyImageRef | undefined
 
-export type AnatomStructPropertyMultistage = {
+export enum AnatomStructRowSpecial {
+	CircleInfo = -1,
+}
+
+export type AnatomStructMultistageProperty = {
 	value?: string
 	next?: AnatomStructProperty
 }
