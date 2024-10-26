@@ -1,8 +1,8 @@
 import { useContext, useState } from "react";
-import { AnatomStructProperty, AnatomStructPropertyImageRef, AnatomStructTable, AnatomStructTableState, AnatomStructTableType } from "../../models/AnatomStructTypes";
+import { AnatomStructPropertyImageRef, AnatomStructTable, AnatomStructTableState, AnatomStructTableType } from "../../models/AnatomStructTypes";
 import { DeleteImageCircleFunc, EditModeContext, HighlightImageCircleFunc } from "./AnatomStruct";
 import { Property, UpdatePropertyFunc } from "./Property";
-import { EditTablePopup, EditTablePopupContext } from "./EditTablePopup";
+import { EditTablePopup, EditTablePopupContext, SaveTableTemplateFunc } from "./EditTablePopup";
 
 import './Table.css'
 
@@ -48,11 +48,11 @@ export function Table({ table, state, update, active, setActive, deleteCircle, h
 	</>
 
 	const [editTable, setEditTable] = useState(false)
-	const saveTable = () => {
-		setEditTable(false)
+	const saveTableTemplate: SaveTableTemplateFunc = (fn) => {
+		console.log(fn(table))
 	}
 	const editTablePopup = editTable && !inEditTablePopup ? <>
-		<EditTablePopup saveTable={saveTable} table={table} state={state} update={update} />
+		<EditTablePopup saveTableTemplate={saveTableTemplate} table={table} state={state} update={update} />
 	</> : undefined
 
 	const editControls = inEditTablePopup ? undefined : <>
@@ -92,50 +92,35 @@ function TableDefault({ table, state, update }: { table: AnatomStructTable, stat
 				</tr>
 			</thead>
 			<tbody>
-				{table.indexes?.map((row, rowIdx) => {
-					const rowName = row[0]
-					const colOffset = row.length;
-
-					return (
-						<tr key={rowName}>
-							{/* Generazione dei campi fissi di ogni riga della tabella */}
-							{row.map((rowConst, rowConstIdx) => {
-								return <td key={`${rowName}-${rowConstIdx}`}>{rowConst}</td>
-							})}
-
-							{/* Generazione degli input della tabella dal template */}
-							{table.fields.map((input, fieldIdx) => {
-								// updatePropertyRow è la funzione di produzione sullo stato per la proprietà specifica
-								const updateProperty: UpdatePropertyFunc = (fn) => {
-									update(table => {
-										const newProp = fn(table?.[rowIdx]?.[fieldIdx])
-										if (newProp == undefined)
-											return table
-
-										if (!table) {
-											table = []
-										}
-
-										if (!table[rowIdx]) {
-											table[rowIdx] = []
-										}
-
-										table[rowIdx][fieldIdx] = newProp
+				{state?.map((row, rowIdx) => {
+					return <tr key={rowIdx}>
+						{row?.map((field, fieldIdx) => {
+							// updatePropertyRow è la funzione di produzione sullo stato per la proprietà specifica
+							const updateProperty: UpdatePropertyFunc = (fn) => {
+								update(table => {
+									const newProp = fn(table?.[rowIdx]?.[fieldIdx])
+									if (newProp == undefined)
 										return table
-									})
-								}
 
-								let propertyState: AnatomStructProperty | undefined;
-								if (state && state[rowIdx]) {
-									propertyState = state[rowIdx][fieldIdx]
-								}
+									if (!table) {
+										table = []
+									}
 
-								const key = `${rowName}-${fieldIdx + colOffset}`
+									if (!table[rowIdx]) {
+										table[rowIdx] = []
+									}
 
-								return <Property key={key} state={propertyState} template={input} update={updateProperty} />
-							})}
-						</tr>
-					)
+									table[rowIdx][fieldIdx] = newProp
+									return table
+								})
+							}
+
+							const key = `${rowIdx}-${fieldIdx}`
+							const fieldTemplate = table.fields[fieldIdx]
+
+							return <Property key={key} state={field} template={fieldTemplate} update={updateProperty} />
+						})}
+					</tr>
 				})}
 			</tbody>
 		</table>
@@ -188,7 +173,7 @@ function TableVariadicButton({ table, state, update }: { table: AnatomStructTabl
 				<td>
 					{rowIdx + 1}
 				</td>
-				{table.fields.map((input, fieldIdx) => {
+				{row?.map((field, fieldIdx) => {
 					// updatePropertyRow è la funzione di produzione sullo stato per la proprietà specifica
 					const updateProperty: UpdatePropertyFunc = (fn) => {
 						update(table => {
@@ -210,9 +195,9 @@ function TableVariadicButton({ table, state, update }: { table: AnatomStructTabl
 					}
 
 					const key = `${rowIdx}-${fieldIdx}`
-					const propertyState = row?.[fieldIdx] || undefined
+					const fieldTemplate = table.fields[fieldIdx]
 
-					return <Property key={key} state={propertyState} template={input} update={updateProperty} />
+					return <Property key={key} state={field} template={fieldTemplate} update={updateProperty} />
 				})}
 			</tr>
 		})}

@@ -19,6 +19,8 @@ export function Property({ template, state, update }: { template: AnatomStructTa
 	const editMode = useContext(EditModeContext)
 
 	switch (template.mode) {
+		case AnatomStructInputMode.Fixed:
+			return <td>{state as (string | undefined) || ''}</td>
 		case AnatomStructInputMode.Text:
 			const handleTextInput = (ev: ChangeEvent<HTMLInputElement>): void => {
 				update(() => {
@@ -31,7 +33,7 @@ export function Property({ template, state, update }: { template: AnatomStructTa
 					value={state as (string | undefined) || ''}
 					onChange={handleTextInput} disabled={!editMode}
 				/>
-			</td>;
+			</td>
 		case AnatomStructInputMode.Number:
 			const handleNumberInput = (ev: ChangeEvent<HTMLInputElement>): void => {
 				update(() => {
@@ -45,7 +47,7 @@ export function Property({ template, state, update }: { template: AnatomStructTa
 					value={(state as (number | undefined) || 0).toString()}
 					onChange={handleNumberInput} disabled={!editMode}
 				/>
-			</td>;
+			</td>
 		case AnatomStructInputMode.Dropdown:
 			const setSelected = (selected: string): void => {
 				update(() => {

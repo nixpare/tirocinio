@@ -31,8 +31,6 @@ export type AnatomStructTable = {
 	headers: string[]
 	/** elenco dei vari campi di input presenti per ogni riga della tabella */
 	fields: AnatomStructTableField[]
-	/** elenco dei campi fissi per ogni riga, presente se la tabella è di tipo Default */
-	indexes?: string[][]
 	/** valore da dare al bottone per aggiungere elementi alla tabella */
 	variadicPlaceholder?: string
 }
@@ -54,6 +52,8 @@ export type AnatomStructTableField = {
 }
 
 export enum AnatomStructInputMode {
+	/** una semplice stringa non modificabile */
+	Fixed,
 	/** un semplice <input type="text" /> */
 	Text,
 	/** un semplice <input type="number" /> */
