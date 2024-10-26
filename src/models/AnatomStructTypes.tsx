@@ -66,6 +66,13 @@ export enum AnatomStructInputMode {
 	/**  */
 	Multistage
 }
+export const anatomStructInputModes: Record<string, AnatomStructInputMode> = {
+	"Fissato": AnatomStructInputMode.Fixed,
+	"Testo": AnatomStructInputMode.Text,
+	"Numbero": AnatomStructInputMode.Number,
+	"Scelta multipla": AnatomStructInputMode.Dropdown,
+	"Variabile (?)": AnatomStructInputMode.Multistage
+}
 
 export type AnatomStructMultistageArg = {
 	value: string

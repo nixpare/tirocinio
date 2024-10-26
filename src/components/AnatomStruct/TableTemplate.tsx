@@ -1,9 +1,11 @@
 import { ChangeEvent, FormEvent, MouseEvent, useEffect, useState } from "react"
-import { AnatomStructTable, anatomStructTableTypes } from "../../models/AnatomStructTypes"
+import { AnatomStructInputMode, anatomStructInputModes, AnatomStructTable, AnatomStructTableField, AnatomStructTableType, anatomStructTableTypes } from "../../models/AnatomStructTypes"
 import { Dropdown } from "../UI/Dropdown"
 import { produce } from "immer"
 
 import "./TableTemplate.css"
+
+type UpdateTableTemplateFunc = (fn: (table: Partial<AnatomStructTable>) => (Partial<AnatomStructTable> | void)) => void
 
 export function TableTemplate() {
 	const [table, setTable] = useState({} as Partial<AnatomStructTable>)
@@ -11,10 +13,8 @@ export function TableTemplate() {
 		ev.preventDefault()
 		console.log(table)
 	}
-	const updateTable = (fn: (table: Partial<AnatomStructTable>) => Partial<AnatomStructTable>): void => {
-		setTable(produce(table => {
-			table = fn(table)
-		}))
+	const updateTable: UpdateTableTemplateFunc = (fn) => {
+		setTable(produce(fn))
 	}
 
 	const [tableType, setTableType] = useState(undefined as (string | undefined))
@@ -23,7 +23,6 @@ export function TableTemplate() {
 			table.type = Object.entries(anatomStructTableTypes).filter(([tableTypeID, _]) => {
 				return tableTypeID === tableType
 			}).map(([_, tableTypeValue]) => tableTypeValue)[0]
-			return table
 		})
 	}, [tableType])
 
@@ -40,8 +39,6 @@ export function TableTemplate() {
 
 			table.headers.push(header)
 			setHeader('')
-
-			return table
 		})
 	}
 
@@ -52,6 +49,7 @@ export function TableTemplate() {
 				table={table} updateTable={updateTable}
 				header={header} addHeader={addHeader} onNewHeaderChange={onHeaderChange}
 			/>
+			<TableTemplateFields table={table} updateTable={updateTable} />
 			<button type="submit">Salva Tabella</button>
 		</form>
 	</div>
@@ -68,7 +66,7 @@ function TableTemplateType({ tableType, setTableType }: { tableType?: string, se
 }
 
 function TableTemplateHeaders({ table, updateTable, header, addHeader, onNewHeaderChange }: {
-	table: Partial<AnatomStructTable>, updateTable: (fn: (table: Partial<AnatomStructTable>) => Partial<AnatomStructTable>) => void,
+	table: Partial<AnatomStructTable>, updateTable: UpdateTableTemplateFunc,
 	header: string, addHeader: (ev: MouseEvent) => void, onNewHeaderChange: (ev: ChangeEvent<HTMLInputElement>) => void
 }) {
 	return <div className="container container-horiz container-start">
@@ -77,10 +75,8 @@ function TableTemplateHeaders({ table, updateTable, header, addHeader, onNewHead
 			const onHeaderChange = (ev: ChangeEvent<HTMLInputElement>): void => {
 				updateTable(table => {
 					if (!table.headers)
-						return table
-
+						return
 					table.headers[headerIdx] = ev.target.value
-					return table
 				})
 			}
 
@@ -92,16 +88,14 @@ function TableTemplateHeaders({ table, updateTable, header, addHeader, onNewHead
 			const deleteHeader = () => {
 				updateTable(table => {
 					if (!table.headers)
-						return table
-
+						return
 					table.headers = table.headers.filter((_, idx) => idx !== headerIdx)
-					return table
 				})
 			}
 
 			return <div key={headerIdx} className="header-input">
 				<input type="text" style={inputStyle} value={header} onChange={onHeaderChange} />
-				<div className="">
+				<div>
 					<button onClick={deleteHeader}>
 						<i className="fa-solid fa-circle-minus"></i>
 					</button>
@@ -114,5 +108,82 @@ function TableTemplateHeaders({ table, updateTable, header, addHeader, onNewHead
 				<i className="fa-solid fa-circle-plus"></i>
 			</button>
 		</div>
+	</div>
+}
+
+function TableTemplateFields({ table, updateTable }: { table: Partial<AnatomStructTable>, updateTable: UpdateTableTemplateFunc }) {
+	if (table.type == undefined)
+		return
+	
+	switch (table.type) {
+		case AnatomStructTableType.Default:
+			return <DefaultTableTemplateFields table={table} updateTable={updateTable} />
+	}
+}
+
+function DefaultTableTemplateFields({ table, updateTable }: { table: Partial<AnatomStructTable>, updateTable: UpdateTableTemplateFunc }) {
+	const [field, setField] = useState({} as AnatomStructTableField)
+	const updateField = (fn: (field: AnatomStructTableField) => (AnatomStructTableField | void)): void => {
+		setField(produce(fn))
+	}
+	
+	const [fieldType, setFieldType] = useState(undefined as (string | undefined))
+	useEffect(() => {
+		updateField(() => {
+			return {
+				mode: Object.entries(anatomStructInputModes).filter(([fieldID, _]) => {
+					return fieldID === fieldType
+				}).map(([_, field]) => field)[0] || AnatomStructInputMode.Text
+			}
+		})
+	}, [fieldType])
+	
+	const addField = (ev: MouseEvent) => {
+		ev.preventDefault()
+
+		updateTable(table => {
+			if (!table.fields)
+				table.fields = []
+			table.fields.push(field)
+		})
+		setFieldType(undefined)
+	}
+
+	return <div className="container container-horiz container-start">
+		<label htmlFor="table-fields">Aggiungi campo:</label>
+		{table.fields?.map((fiedld, fieldIdx) => {
+			const selectedField = Object.entries(anatomStructInputModes).filter(([_, inputMode]) => {
+				return inputMode === field.mode
+			}).map(([modeID, _]) => modeID)[0]
+
+			const setSelectedField = (selected: string) => {
+				const field = anatomStructInputModes[selected] ?? AnatomStructInputMode.Text
+				console.log(field)
+				updateTable(table => {
+					if (!table.fields)
+						return
+					table.fields[fieldIdx] = { mode: field }
+				})
+			}
+
+			return <div key={fieldIdx} className="header-input">
+				<Dropdown name="table-fields"
+					options={Object.keys(anatomStructInputModes)}
+					selectedField={selectedField} setSelectedField={setSelectedField}
+				/>
+				<div>
+					<button onClick={() => { console.log('delete') }}>
+						<i className="fa-solid fa-circle-minus"></i>
+					</button>
+				</div>
+			</div>
+		})}
+		<Dropdown name="table-fields"
+			options={Object.keys(anatomStructInputModes)}
+			selectedField={fieldType} setSelectedField={setFieldType}
+		/>
+		<button className="add-field" onClick={addField}>
+			<i className="fa-solid fa-circle-plus"></i>
+		</button>
 	</div>
 }
