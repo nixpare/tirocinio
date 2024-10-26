@@ -2,7 +2,6 @@ import { useContext, useState } from "react";
 import { AnatomStructPropertyImageRef, AnatomStructTable, AnatomStructTableField, AnatomStructTableState, AnatomStructTableType, AnatomStructRowSpecial, TableRowState } from "../../models/AnatomStructTypes";
 import { DeleteImageCircleFunc, EditModeContext, HighlightImageCircleFunc } from "./AnatomStruct";
 import { Property, UpdatePropertyFunc } from "./Property";
-import { EditTablePopup, EditTablePopupContext, SaveTableTemplateFunc } from "./EditTablePopup";
 
 import './Table.css'
 
@@ -63,41 +62,24 @@ export function Table({ table, state, update, active, setActive, deleteCircle, h
 	})()
 
 	const editMode = useContext(EditModeContext)
-	const inEditTablePopup = useContext(EditTablePopupContext)
 
 	const [editFields, setEditFields] = useState(useContext(EditModeContext))
 	const toggleEditFields = () => {
 		setEditFields(!editFields)
 	}
 	const editFieldsButton = editMode ? undefined : <>
-		<button onClick={toggleEditFields}>
-			{editFields ? 'Save' : 'Edit' }
+		<button className="table-edit-button" onClick={toggleEditFields}>
+			{editFields ? <i className="fa-regular fa-floppy-disk"></i> : <i className="fa-regular fa-pen-to-square"></i> }
 		</button>
 	</>
 
-	const [editTable, setEditTable] = useState(false)
-	const saveTableTemplate: SaveTableTemplateFunc = (fn) => {
-		console.log(fn(table))
-	}
-	const editTablePopup = editTable && !inEditTablePopup ? <>
-		<EditTablePopup saveTableTemplate={saveTableTemplate} table={table} state={state} update={update} />
-	</> : undefined
-
-	const editControls = inEditTablePopup ? undefined : <>
-		<div className="table-edit-controls">
-			<button onClick={() => { setEditTable(true) }}>Edit Table</button>
-			{editFieldsButton}
-		</div>
-	</>
-
 	return <div className="table">
-		{editControls}
+		{editFieldsButton}
 		<EditModeContext.Provider value={editFields}>
 			<div className={`table-wrapper ${active ? 'active' : ''}`} onMouseEnter={setActive}>
 				{tableElem}
 			</div>
 		</EditModeContext.Provider>
-		{editTablePopup}
 	</div>
 }
 
@@ -158,7 +140,7 @@ function TableVariadicButton({ table, state, update, renderRowField }: {
 	}
 
 	const addButton = editMode ? <>
-		<button className="table-add-row" onClick={addRow}>{table.variadicPlaceholder || '+'}</button>
+		<button className="table-add-row" onClick={addRow}>Aggiungi riga</button>
 	</> : undefined
 
 	return <>

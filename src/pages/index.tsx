@@ -152,7 +152,6 @@ const boneTemplate: AnatomStructTemplate = {
         {
           type: AnatomStructTableType.VariadicButton,
           headers: ["Caratteri non metrici", "Stato"],
-          variadicPlaceholder: 'Aggiungi Carattere non Metrico',
           fields: [
             {
               mode: AnatomStructInputMode.Text

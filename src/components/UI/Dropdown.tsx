@@ -11,7 +11,10 @@ import './Dropdown.css'
  * @param setSelectField funzione da chiamare quando viene selezionata una nuova opzione
  * @returns ReactNode
  */
-export function Dropdown({ options, selectedField = 'Non selezionato', setSelectedField, disabled }: { options: string[], selectedField?: string, setSelectedField: (selected: string) => void, disabled?: boolean }) {
+export function Dropdown({ options, selectedField = 'Non selezionato', setSelectedField, name, disabled }: {
+	options: string[], selectedField?: string, setSelectedField: (selected: string) => void,
+	name?: string, disabled?: boolean
+}) {
 	const [active, setActive] = useState(false)
 
 	const handleDropdownButton = (ev: MouseEvent<HTMLButtonElement, PointerEvent>): void => {
@@ -19,18 +22,19 @@ export function Dropdown({ options, selectedField = 'Non selezionato', setSelect
 		setActive(!active)
 	}
 
-	return (
-		<button className={`dropdown ${active ? 'active' : ''}`} onClick={handleDropdownButton} disabled={disabled}>
-			{selectedField}
-			<ul>
-				{options.map(option => {
-					function handleSelect() {
-						setSelectedField(option)
-					}
+	return <button
+		name={name} className={`dropdown ${active ? 'active' : ''}`}
+		onClick={handleDropdownButton} disabled={disabled}
+	>
+		{selectedField}
+		<ul>
+			{options.map(option => {
+				function handleSelect() {
+					setSelectedField(option)
+				}
 
-					return <li key={option} onClick={handleSelect}>{option}</li>
-				})}
-			</ul>
-		</button>
-	)
+				return <li key={option} onClick={handleSelect}>{option}</li>
+			})}
+		</ul>
+	</button>
 }

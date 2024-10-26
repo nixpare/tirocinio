@@ -31,14 +31,17 @@ export type AnatomStructTable = {
 	headers: string[]
 	/** elenco dei vari campi di input presenti per ogni riga della tabella */
 	fields: AnatomStructTableField[]
-	/** valore da dare al bottone per aggiungere elementi alla tabella */
-	variadicPlaceholder?: string
 }
 
 export enum AnatomStructTableType {
 	Default,
 	VariadicButton,
 	VariadicMouse
+}
+export const anatomStructTableTypes: Record<string, AnatomStructTableType> = {
+	"Default": AnatomStructTableType.Default,
+	"Variabile con pulsante": AnatomStructTableType.VariadicButton,
+	"Variabile su immagine": AnatomStructTableType.VariadicMouse
 }
 
 /** AnatomStructTableField contiene le caratteristiche di una proprietà */
