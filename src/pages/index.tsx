@@ -1,6 +1,6 @@
 import { StrictMode, useState } from 'react'
 import { createRoot } from 'react-dom/client'
-import { AnatomStruct, EditModeContext } from '../components/AnatomStruct'
+import { AnatomStruct, EditModeContext } from '../components/AnatomStruct/AnatomStruct'
 import { AnatomStructState, AnatomStructTemplate, AnatomStructInputMode, AnatomStructTableType } from '../models/AnatomStructTypes'
 
 import '../global.css'

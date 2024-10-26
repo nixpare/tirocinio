@@ -1,22 +1,22 @@
-.anatom-struct-table {
+.table {
 	width: 100%;
 	text-align: center;
 	margin: 2em 0;
 }
 
-.anatom-struct-table>.anatom-struct-table-edit-controls {
+.table>.table-edit-controls {
 	display: flex;
 	align-items: center;
 	justify-content: flex-end;
 	gap: 1em;
 }
 
-.anatom-struct-table>.anatom-struct-table-wrapper {
+.table>.table-wrapper {
 	position: relative;
 	width: 100%;
 }
 
-.anatom-struct-table>.active::after {
+.table>.active::after {
 	content: '';
 	position: absolute;
 	z-index: -1;
@@ -26,60 +26,60 @@
 		inset 0 0 .5em 0 rgba(var(--primary-color), .8);
 }
 
-.anatom-struct-table table {
+.table table {
 	width: 100%;
 	border-spacing: 0;
 }
 
-.anatom-struct-table table thead th {
+.table table thead th {
 	background-color: rgb(var(--primary-color));
 }
 
-.anatom-struct-table table tbody td {
+.table table tbody td {
 	background-color: rgba(var(--primary-color), .2);
 }
 
-.anatom-struct-table table thead tr:first-child th:first-child {
+.table table thead tr:first-child th:first-child {
 	border-top-left-radius: .4em;
 }
 
-.anatom-struct-table table thead tr:first-child th:last-child {
+.table table thead tr:first-child th:last-child {
 	border-top-right-radius: .4em;
 }
 
-.anatom-struct-table table tbody tr:last-child td:first-child {
+.table table tbody tr:last-child td:first-child {
 	border-bottom-left-radius: .4em;
 }
 
-.anatom-struct-table table tbody tr:last-child td:last-child {
+.table table tbody tr:last-child td:last-child {
 	border-bottom-right-radius: .4em;
 }
 
-.anatom-struct-table table th,
-.anatom-struct-table table td {
+.table table th,
+.table table td {
 	padding: .4em 1em;
 }
 
-.anatom-struct-table .anatom-struct-table-add-row {
+.table .table-add-row {
 	margin: 1em 0 .5em;
 }
 
-.anatom-struct-table .anatom-struct-table-remove-row {
+.table .table-remove-row {
 	padding: 0 .5em;
 }
 
-.anatom-struct-table .anatom-struct-table-variadic-control {
+.table .table-variadic-control {
 	display: flex;
 	align-items: center;
 	justify-content: center;
 	gap: .5em;
 }
 
-.anatom-struct-table tr .anatom-struct-table-variadic-control span {
+.table tr .table-variadic-control span {
 	pointer-events: none;
 	transition: opacity .2s;
 }
 
-.anatom-struct-table tr:not(.active) .anatom-struct-table-variadic-control span {
+.table tr:not(.active) .table-variadic-control span {
 	opacity: 0;
 }

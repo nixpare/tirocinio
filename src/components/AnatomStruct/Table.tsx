@@ -1,10 +1,10 @@
 import { useContext, useState } from "react";
-import { AnatomStructProperty, AnatomStructPropertyImageRef, AnatomStructTable, AnatomStructTableState, AnatomStructTableType } from "../models/AnatomStructTypes";
+import { AnatomStructProperty, AnatomStructPropertyImageRef, AnatomStructTable, AnatomStructTableState, AnatomStructTableType } from "../../models/AnatomStructTypes";
 import { DeleteImageCircleFunc, EditModeContext, HighlightImageCircleFunc } from "./AnatomStruct";
-import { Property, UpdatePropertyFunc } from "./AnatomStructProperty";
+import { Property, UpdatePropertyFunc } from "./Property";
+import { EditTablePopup, EditTablePopupContext } from "./EditTablePopup";
 
-import './AnatomStructTable.css'
-import { EditTablePopup, EditTablePopupContext } from "./AnatomStructEditTablePopup";
+import './Table.css'
 
 export type UpdateTableFunc = (fn: (table: AnatomStructTableState) => AnatomStructTableState) => void
 
@@ -56,16 +56,16 @@ export function Table({ table, state, update, active, setActive, deleteCircle, h
 	</> : undefined
 
 	const editControls = inEditTablePopup ? undefined : <>
-		<div className="anatom-struct-table-edit-controls">
+		<div className="table-edit-controls">
 			<button onClick={() => { setEditTable(true) }}>Edit Table</button>
 			{editFieldsButton}
 		</div>
 	</>
 
-	return <div className="anatom-struct-table">
+	return <div className="table">
 		{editControls}
 		<EditModeContext.Provider value={editFields}>
-			<div className={`anatom-struct-table-wrapper ${active ? 'active' : ''}`} onMouseEnter={setActive}>
+			<div className={`table-wrapper ${active ? 'active' : ''}`} onMouseEnter={setActive}>
 				{tableElem}
 			</div>
 		</EditModeContext.Provider>
@@ -178,7 +178,7 @@ function TableVariadicButton({ table, state, update }: { table: AnatomStructTabl
 			}
 
 			const removeRowButton = editMode ? <>
-				<button className="anatom-struct-table-remove-row" onClick={deleteRow}>-</button>
+				<button className="table-remove-row" onClick={deleteRow}>-</button>
 			</> : undefined
 
 			return <tr key={rowIdx}>
@@ -219,7 +219,7 @@ function TableVariadicButton({ table, state, update }: { table: AnatomStructTabl
 	</>
 
 	const addButton = editMode ? <>
-		<button className="anatom-struct-table-add-row" onClick={addRow}>{table.variadicPlaceholder || '+'}</button>
+		<button className="table-add-row" onClick={addRow}>{table.variadicPlaceholder || '+'}</button>
 	</> : undefined
 
 	return <>
@@ -295,12 +295,12 @@ function TableVariadicMouse({ table, state, update, active, deleteCircle, highli
 					const className = active && activeRow === rowIdx ? 'active' : undefined
 
 					const variadicControl = editMode ? <>
-						<button className="anatom-struct-table-remove-row" onClick={deleteRow}>-</button>
+						<button className="table-remove-row" onClick={deleteRow}>-</button>
 					</> : undefined
 
 					return <tr key={rowIdx} className={className} onMouseEnter={onRowHover}>
 						<td>
-							<div className="anatom-struct-table-variadic-control">
+							<div className="table-variadic-control">
 								<span>&gt;</span>
 								{variadicControl}
 							</div>

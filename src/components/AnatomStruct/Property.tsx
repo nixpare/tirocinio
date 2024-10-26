@@ -1,9 +1,9 @@
 import { ChangeEvent, useContext } from "react";
-import { AnatomStructInputMode, AnatomStructProperty, AnatomStructPropertyMultistage, AnatomStructTableField } from "../models/AnatomStructTypes";
-import { Dropdown } from "./Dropdown";
-
-import './AnatomStructProperty.css'
+import { AnatomStructInputMode, AnatomStructProperty, AnatomStructPropertyMultistage, AnatomStructTableField } from "../../models/AnatomStructTypes";
+import { Dropdown } from "../UI/Dropdown";
 import { EditModeContext } from "./AnatomStruct";
+
+import './Property.css'
 
 export type UpdatePropertyFunc = (fn: (prop: AnatomStructProperty) => AnatomStructProperty) => void
 

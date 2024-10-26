@@ -1,8 +1,8 @@
 import { createContext, FormEvent, MouseEvent, useContext, useState } from 'react'
 import { produce } from 'immer'
-import { AnatomStructPage, AnatomStructState, AnatomStructTableType, AnatomStructPageState, AnatomStructPropertyImageRef } from '../models/AnatomStructTypes'
-import { Table, UpdateTableFunc } from './AnatomStructTable'
-import { Carousel } from './Carousel'
+import { AnatomStructPage, AnatomStructState, AnatomStructTableType, AnatomStructPageState, AnatomStructPropertyImageRef } from '../../models/AnatomStructTypes'
+import { Table, UpdateTableFunc } from './Table'
+import { Carousel } from '../UI/Carousel'
 
 import './AnatomStruct.css'
 
@@ -70,7 +70,7 @@ export function AnatomStruct({ anatomStruct, setAnatomStruct }: { anatomStruct: 
 	if (!editMode) {
 		return <div className="container anatom-struct">
 			<h4 className="anatom-struct-name">{anatomStruct.name}</h4>
-			<div className="anatom-struct-pages">
+			<div className="property-pages">
 				<Carousel>
 					{pages}
 				</Carousel>
@@ -81,7 +81,7 @@ export function AnatomStruct({ anatomStruct, setAnatomStruct }: { anatomStruct: 
 	return (
 		<div className="container anatom-struct">
 			<h4 className="anatom-struct-name">{anatomStruct.name}</h4>
-			<form className="anatom-struct-pages" onSubmit={handleSubmit}>
+			<form className="property-pages" onSubmit={handleSubmit}>
 				<Carousel>
 					{pages}
 				</Carousel>
@@ -204,19 +204,19 @@ function PropertyPage({ page, state, update }: { page: AnatomStructPage, state: 
 	})
 
 	if (!page.image) {
-		return <div className="anatom-struct-page">
+		return <div className="property-page">
 			<h3>{page.title}</h3>
 			{tables}
 		</div>
 	}
 
-	return <div className="anatom-struct-page">
+	return <div className="property-page">
 		<h3>{page.title}</h3>
 		<div className="split">
 			<div>
 				{tables}
 			</div>
-			<div className="anatom-struct-page-images">
+			<div className="property-page-images">
 				<Carousel visibleState={{ visible: activeImage, setVisible: setActiveImage }} >
 					{page.image?.map((image, imageIdx) => {
 						return <PropertyPageImage key={`${page.title}-${imageIdx}`}
@@ -256,7 +256,7 @@ function PropertyPageImage({ image, idx, page, pageState, activeTable, circles, 
 		createCircleGeneric(activeTable, idx, rowIdx, imageLeft, imageTop)
 	}
 
-	return <div className="anatom-struct-page-image">
+	return <div className="property-page-image">
 		<img
 			src={image}
 			alt={page.title}
@@ -268,7 +268,7 @@ function PropertyPageImage({ image, idx, page, pageState, activeTable, circles, 
 					return undefined
 
 				const activeClassName = activeCircles[tableIdx]?.[idx]?.[circleIdx] ? ' active' : ''
-				const className = 'anatom-struct-page-image-tracker' + activeClassName
+				const className = 'property-page-image-circle' + activeClassName
 
 				return <div key={`${tableIdx}-${idx}-${circleIdx}`} className={className} style={{
 					left: `${circle.x}%`,
