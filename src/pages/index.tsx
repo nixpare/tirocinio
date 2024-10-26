@@ -58,14 +58,16 @@ const boneTemplate: AnatomStructTemplate = {
           headers: ["Nucleo", "Stato", "Lunghezza (cm)"],
           fields: [
             {
+              mode: AnatomStructInputMode.Fixed,
+            },
+            {
               mode: AnatomStructInputMode.Dropdown,
               dropdownArgs: ["assente", "presente non valutabile PND", "presente non fuso PN", "presente in fusione PIF", "presente fuso PF"]
             },
             {
               mode: AnatomStructInputMode.Number
             }
-          ],
-          indexes: [["A"], ["B"], ["C"], ["D"], ["E"], ["F"]]
+          ]
         }
       ]
     },
@@ -79,19 +81,24 @@ const boneTemplate: AnatomStructTemplate = {
           headers: ["Settore", "Presente/Assente", "Note"],
           fields: [
             {
+              mode: AnatomStructInputMode.Fixed
+            },
+            {
               mode: AnatomStructInputMode.Dropdown,
               dropdownArgs: ["Assente", "Presente"]
             },
             {
               mode: AnatomStructInputMode.Text
             }
-          ],
-          indexes: [["1"], ["2"], ["3"], ["4"], ["5"], ["6"], ["7"], ["8"], ["9"], ["10"], ["11"], ["12"]]
+          ]
         },
         {
           type: AnatomStructTableType.Default,
           headers: ["Area", "Dettagli", "Colore"],
           fields: [
+            {
+              mode: AnatomStructInputMode.Fixed
+            },
             {
               mode: AnatomStructInputMode.Text
             },
@@ -99,8 +106,7 @@ const boneTemplate: AnatomStructTemplate = {
               mode: AnatomStructInputMode.Dropdown,
               dropdownArgs: ["da marrone a marrone scuro", "grigio", "naturale", "da arancione a marrone", "da giallo ad arancione"]
             }
-          ],
-          indexes: [["A"], ["B"], ["C"], ["D"], ["E"], ["F"]]
+          ]
         }
       ]
     },
@@ -114,21 +120,11 @@ const boneTemplate: AnatomStructTemplate = {
           headers: ["Codice Misura", "Nome Misura", "Misura (cm)"],
           fields: [
             {
+              mode: AnatomStructInputMode.Fixed
+            },
+            {
               mode: AnatomStructInputMode.Number
             }
-          ],
-          indexes: [
-            ["64", "Maximum Innominate Height"],
-            ["65", "Maximum Iliac Breadth"],
-            ["66", "Minimum Iliac Breadth"],
-            ["67", "Maximum Pubis Length"],
-            ["68", "Minimum Pubis Length"],
-            ["69", "Ischial Length"],
-            ["70", "Minimum Ischial Length"],
-            ["71", "Maximum Ischiopubic Ramus Length"],
-            ["72", "Anterior Superior Iliac Spine to Symphysion"],
-            ["73", "Maximum Posterior Superior Iliac Spine to Symphysion"],
-            ["74", "Minimum Apical Border to Symphysion"]
           ]
         }
       ]
@@ -142,11 +138,13 @@ const boneTemplate: AnatomStructTemplate = {
           headers: ["Caratteri non metrici", "Stato"],
           fields: [
             {
+              mode: AnatomStructInputMode.Fixed
+            },
+            {
               mode: AnatomStructInputMode.Dropdown,
               dropdownArgs: ["Assente", "Non valutabile", "Presente"]
             }
-          ],
-          indexes: [["Accessory Sacroiliac Facet"], ["Pubic Spine"], ["Acetabular Crease"], ["Cotyloid bone"]]
+          ]
         },
         {
           type: AnatomStructTableType.VariadicButton,
@@ -175,6 +173,9 @@ const boneTemplate: AnatomStructTemplate = {
           type: AnatomStructTableType.Default,
           headers: ["#", "Classe", "Descrizione segni"],
           fields: [
+            {
+              mode: AnatomStructInputMode.Fixed
+            },
             {
               mode: AnatomStructInputMode.Multistage,
               multistageArgs: [
@@ -214,8 +215,7 @@ const boneTemplate: AnatomStructTemplate = {
                 }
               ]
             }
-          ],
-          indexes: [["1"], ["2"], ["3"]]
+          ]
         }
       ]
     }
@@ -237,6 +237,45 @@ const boneState: AnatomStructState = {
           "Ciao"
         ]
       ]
+    ],
+    // Page 1
+    [
+      // Table 0
+      [["A"], ["B"], ["C"], ["D"], ["E"], ["F"]]
+    ],
+    // Page 2
+    [
+      // Table 0
+      [["1"], ["2"], ["3"], ["4"], ["5"], ["6"], ["7"], ["8"], ["9"], ["10"], ["11"], ["12"]],
+      // Table 1
+      [["A"], ["B"], ["C"], ["D"], ["E"], ["F"]]
+    ],
+    // Page 3
+    [
+      // Table 0
+      [
+        ["64", "Maximum Innominate Height"],
+        ["65", "Maximum Iliac Breadth"],
+        ["66", "Minimum Iliac Breadth"],
+        ["67", "Maximum Pubis Length"],
+        ["68", "Minimum Pubis Length"],
+        ["69", "Ischial Length"],
+        ["70", "Minimum Ischial Length"],
+        ["71", "Maximum Ischiopubic Ramus Length"],
+        ["72", "Anterior Superior Iliac Spine to Symphysion"],
+        ["73", "Maximum Posterior Superior Iliac Spine to Symphysion"],
+        ["74", "Minimum Apical Border to Symphysion"]
+      ]
+    ],
+    // Page 4
+    [
+      // Table 0
+      [["Accessory Sacroiliac Facet"], ["Pubic Spine"], ["Acetabular Crease"], ["Cotyloid bone"]]
+    ],
+    // Page 7
+    [
+      // Table 0
+      [["1"], ["2"], ["3"]]
     ]
   ]
 }

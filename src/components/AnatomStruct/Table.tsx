@@ -94,11 +94,11 @@ function TableDefault({ table, state, update }: { table: AnatomStructTable, stat
 			<tbody>
 				{state?.map((row, rowIdx) => {
 					return <tr key={rowIdx}>
-						{row?.map((field, fieldIdx) => {
+						{table.fields.map((input, fieldIdx) => {
 							// updatePropertyRow è la funzione di produzione sullo stato per la proprietà specifica
 							const updateProperty: UpdatePropertyFunc = (fn) => {
 								update(table => {
-									const newProp = fn(table?.[rowIdx]?.[fieldIdx])
+									const newProp = fn(table?.[rowIdx]?.[fieldIdx + 1]) // fieldIdx+1 perchè il primo field contiene le informazioni per l'immagine
 									if (newProp == undefined)
 										return table
 
@@ -116,9 +116,9 @@ function TableDefault({ table, state, update }: { table: AnatomStructTable, stat
 							}
 
 							const key = `${rowIdx}-${fieldIdx}`
-							const fieldTemplate = table.fields[fieldIdx]
+							const propertyState = row?.[fieldIdx]
 
-							return <Property key={key} state={field} template={fieldTemplate} update={updateProperty} />
+							return <Property key={key} state={propertyState} template={input} update={updateProperty} />
 						})}
 					</tr>
 				})}
