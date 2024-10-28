@@ -102,8 +102,11 @@ export enum AnatomStructRowSpecial {
 }
 
 export type AnatomStructMultistageProperty = {
-	value?: string
+	value: string
 	next?: AnatomStructProperty
+}
+export function isAnatomStructMultistageProperty(object: any): object is AnatomStructMultistageProperty {
+	return typeof object === 'object' && 'value' in object
 }
 
 export type AnatomStructPropertyImageRef = {

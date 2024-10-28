@@ -102,7 +102,9 @@ function TableTemplateHeaders({ table, updateTable, header, addHeader, onNewHead
 					boxSizing: 'content-box'
 				}
 
-				const deleteHeader = () => {
+				const deleteHeader = (ev: MouseEvent) => {
+					ev.preventDefault()
+					
 					updateTable(table => {
 						table.headers = table.headers.filter((_, idx) => idx !== headerIdx)
 						return table
@@ -146,8 +148,10 @@ function TableTemplateFields({ table, updateTable }: { table: AnatomStructTable,
 
 function DefaultTableTemplateFields({ table, updateTable }: { table: AnatomStructTable, updateTable: UpdateTableTemplateFunc }) {
 	const [field, setField] = useState({} as AnatomStructTableField)
-	const updateField = (fn: (field: AnatomStructTableField) => (AnatomStructTableField | void)): void => {
-		setField(produce(fn))
+	const updateField = (fn: (field: AnatomStructTableField) => AnatomStructTableField): void => {
+		setField(produce(field => {
+			return fn(field)
+		}))
 	}
 	
 	const [fieldType, setFieldType] = useState(undefined as (string | undefined))

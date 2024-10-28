@@ -1,9 +1,11 @@
-import { ChangeEvent, MouseEvent, useState } from 'react'
-import { AnatomStructInputMode, anatomStructInputModes, AnatomStructTableField } from "../../models/AnatomStructTypes"
+import { ChangeEvent, MouseEvent, useEffect, useState } from 'react'
+import { AnatomStructInputMode, anatomStructInputModes, AnatomStructMultistageArg, AnatomStructTableField } from "../../models/AnatomStructTypes"
 import { Dropdown } from "../UI/Dropdown"
 import "./FieldTemplate.css"
+import { produce } from 'immer'
 
 export type UpdateFieldTemplateFunc = (fn: (table: AnatomStructTableField) => (AnatomStructTableField | undefined)) => void
+type UpdateMultistageArgTemplateFunc = (fn: (arg: AnatomStructMultistageArg) => (AnatomStructMultistageArg | undefined)) => void
 
 export function FieldTemplate({ field, updateField }: { field: AnatomStructTableField, updateField: UpdateFieldTemplateFunc }) {
 	const selectedField = Object.entries(anatomStructInputModes).filter(([_, inputMode]) => {
@@ -37,7 +39,7 @@ export function FieldTemplate({ field, updateField }: { field: AnatomStructTable
 			fieldTemplate = <DropdownFieldTemplate field={field} updateField={updateField} />
 			break;
 		case AnatomStructInputMode.Multistage:
-			fieldTemplate = <div>To be implemented</div>
+			fieldTemplate = <MultistageFieldTemplate field={field} updateField={updateField} />
 			break;
 	}
 
@@ -187,6 +189,125 @@ function DropdownFieldTemplate({ field, updateField }: { field: AnatomStructTabl
 					<i className="fa-solid fa-circle-plus"></i>
 				</button>
 			</div>
+		</div>
+	</div>
+}
+
+function MultistageFieldTemplate({ field, updateField }: { field: AnatomStructTableField, updateField: UpdateFieldTemplateFunc }) {
+	const [stage, setStage] = useState({} as Partial<AnatomStructMultistageArg>)
+	const updateStage = (fn: (stage: Partial<AnatomStructMultistageArg>) => Partial<AnatomStructMultistageArg>): void => {
+		setStage(produce(stage => fn(stage)))
+	}
+	const addStage = (ev: MouseEvent) => {
+		ev.preventDefault()
+
+		if (stage.next == undefined)
+			return //TODO: error
+		if (stage.value == undefined)
+			return //TODO: error
+
+		updateField(field => {
+			if (!field.multistageArgs)
+				field.multistageArgs = []
+
+			field.multistageArgs.push(stage as AnatomStructMultistageArg)
+			return field
+		})
+
+		setStage({})
+		setNextFieldType(undefined)
+	}
+
+	const handleStageValueChange = (ev: ChangeEvent<HTMLInputElement>) => {
+		updateStage(stage => {
+			stage.value = ev.target.value
+			return stage
+		})
+	}
+	
+	const [nextFieldType, setNextFieldType] = useState(undefined as (string | undefined))
+	useEffect(() => {
+		updateStage(stage => {
+			stage.next = {
+				mode: Object.entries(anatomStructInputModes).filter(([fieldID, _]) => {
+					return fieldID === nextFieldType
+				}).map(([_, field]) => field)[0] ?? AnatomStructInputMode.Text
+			}
+			return stage
+		})
+	}, [nextFieldType])
+
+	return <div className="container w-100 multistage-field">
+		<div className="container container-horiz container-start w-100">
+			{field.multistageArgs?.map((arg, argIdx) => {
+				const updateArg: UpdateMultistageArgTemplateFunc = (fn) => {
+					updateField(field => {
+						if (!field.multistageArgs)
+							return
+
+						const newArg = fn(field.multistageArgs[argIdx])
+						if (!newArg) {
+							field.multistageArgs = field.multistageArgs.filter((_, idx) => idx !== argIdx)
+						} else {
+							field.multistageArgs[argIdx] = newArg
+						}
+						
+						return field
+					})
+				}
+
+				return <MultistageNextArgTemplate key={argIdx}
+					arg={arg} updateArg={updateArg}
+				/>
+			})}
+		</div>
+		<div className="container container-horiz container-start w-100">
+			<label htmlFor="multistage-arg">Aggiungi opzione:</label>
+			<div>
+				<input type="text" name="multistage-arg" value={stage.value ?? ''} onChange={handleStageValueChange} />
+				<Dropdown name="table-fields"
+					options={Object.keys(anatomStructInputModes)}
+					selectedField={nextFieldType} setSelectedField={setNextFieldType}
+				/>
+				<button className="add-arg" onClick={addStage}>
+					<i className="fa-solid fa-circle-plus"></i>
+				</button>
+			</div>
+		</div>
+	</div>
+}
+
+function MultistageNextArgTemplate({ arg, updateArg }: { arg: AnatomStructMultistageArg, updateArg: UpdateMultistageArgTemplateFunc }) {
+	const onArgChange = (ev: ChangeEvent<HTMLInputElement>): void => {
+		/* updateField(field => {
+			if (!field.multistageArgs)
+				return field
+
+			field.multistageArgs[argIdx] = ev.target.value
+			return field
+		}) */
+		console.log(ev.target.value)
+	}
+
+	const inputStyle: React.CSSProperties = {
+		width: `${arg.value.length + 3}ch`,
+		boxSizing: 'content-box'
+	}
+
+	const deleteHeader = (ev: MouseEvent) => {
+		ev.preventDefault()
+
+		updateArg(() => {
+			return undefined
+		})
+	}
+
+	return <div className="arg-input">
+		<input type="text" style={inputStyle} value={arg.value} onChange={onArgChange} />
+		<div>
+			<button onClick={deleteHeader}>
+				<i className="fa-solid fa-circle-minus"></i>
+			</button>
 		</div>
 	</div>
 }

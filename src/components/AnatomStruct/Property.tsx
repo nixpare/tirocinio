@@ -1,5 +1,5 @@
 import { ChangeEvent, useContext } from "react";
-import { AnatomStructInputMode, AnatomStructProperty, AnatomStructMultistageProperty, AnatomStructTableField } from "../../models/AnatomStructTypes";
+import { AnatomStructInputMode, AnatomStructProperty, AnatomStructMultistageProperty, AnatomStructTableField, isAnatomStructMultistageProperty } from "../../models/AnatomStructTypes";
 import { Dropdown } from "../UI/Dropdown";
 import { EditModeContext } from "./AnatomStruct";
 
@@ -31,9 +31,12 @@ export function Property({ template, rowIdx, state, update }: {
 				})
 			}
 
+			if (state != undefined && typeof state !== 'string')
+				state = undefined
+
 			return <td>
 				<input type="text"
-					value={state as (string | undefined) ?? ''}
+					value={state ?? ''}
 					onChange={handleTextInput} disabled={!editMode}
 				/>
 			</td>
@@ -45,9 +48,12 @@ export function Property({ template, rowIdx, state, update }: {
 				})
 			}
 
+			if (state != undefined && typeof state !== 'number')
+				state = undefined
+
 			return <td>
 				<input type="number"
-					value={(state as (number | undefined) ?? 0).toString()}
+					value={(state ?? 0).toString()}
 					onChange={handleNumberInput} disabled={!editMode}
 				/>
 			</td>
@@ -58,10 +64,13 @@ export function Property({ template, rowIdx, state, update }: {
 				})
 			}
 
+			if (state != undefined && typeof state !== 'string')
+				state = undefined
+
 			return <td>
 				<Dropdown
 					options={template.dropdownArgs ?? []}
-					selectedField={state as (string | undefined)}
+					selectedField={state}
 					setSelectedField={setSelected} disabled={!editMode}
 				/>
 			</td>
@@ -72,9 +81,12 @@ export function Property({ template, rowIdx, state, update }: {
 				})
 			}
 
+			if (state != undefined && !isAnatomStructMultistageProperty(state))
+				state = undefined
+
 			return <MultistageProperty
 				template={template} rowIdx={rowIdx}
-				state={state as (AnatomStructMultistageProperty | undefined)}
+				state={state}
 				update={updateMultistage} disabled={!editMode}
 			/>
 	}
@@ -96,9 +108,9 @@ function MultistageProperty({ template, rowIdx, state, update, disabled }: {
 				return multistage
 			}
 
-			multistage.value = selected
-			multistage.next = undefined
-			return multistage
+			return {
+				value: selected
+			}
 		})
 	}
 
@@ -121,7 +133,7 @@ function MultistageProperty({ template, rowIdx, state, update, disabled }: {
 		/>
 	</td>
 
-	const nextTemplate = template.multistageArgs?.filter(arg => arg.value === state.value)[0].next
+	const nextTemplate = template.multistageArgs?.filter(arg => arg.value === state.value)[0]?.next
 	if (!nextTemplate)
 		return <>
 			{firstStage}

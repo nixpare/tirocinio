@@ -47,10 +47,14 @@
 	border-color: #e0e0e0;
 }
 
-.field-template .dropdown-field {
+.field-template .fixed-field,
+.field-template .dropdown-field,
+.field-template .multistage-field {
 	gap: 0;
 }
 
-.field-template .dropdown-field .arg-input>input {
+.field-template .arg-input>input,
+.field-template .arg-input>input,
+.field-template .arg-input>input {
 	font-size: 1.05em;
 }
