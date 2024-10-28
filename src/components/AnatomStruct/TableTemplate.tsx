@@ -27,11 +27,15 @@ export function TableTemplate() {
 
 	const [tableType, setTableType] = useState(undefined as (string | undefined))
 	useEffect(() => {
-		updateTable(table => {
-			table.type = Object.entries(anatomStructTableTypes).filter(([tableTypeID, _]) => {
+		updateTable(() => {
+			const newTableType = Object.entries(anatomStructTableTypes).filter(([tableTypeID, _]) => {
 				return tableTypeID === tableType
 			}).map(([_, tableTypeValue]) => tableTypeValue)[0]
-			return table
+			return {
+				type: newTableType,
+				headers: [],
+				fields: []
+			}
 		})
 	}, [tableType])
 

@@ -48,6 +48,8 @@ export const anatomStructTableTypes: Record<string, AnatomStructTableType> = {
 export type AnatomStructTableField = {
 	/** il tipo di input sottostante alla proprietà */
 	mode: AnatomStructInputMode
+	/** presente quando l'input è del tipo `Fixed`, contiene la lista dei campi fissi indicizzata sulle righe */
+	fixedArgs?: string[]
 	/** presente quando l'input è del tipo `Dropdown`, contiene la lista di valori possibili */
 	dropdownArgs?: string[]
 	/** presente quando l'input è del tipo `Multistage`, contiene la lista di valori possibili */

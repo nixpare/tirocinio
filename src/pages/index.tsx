@@ -59,6 +59,7 @@ const boneTemplate: AnatomStructTemplate = {
           fields: [
             {
               mode: AnatomStructInputMode.Fixed,
+              fixedArgs: ["A", "B", "C", "D", "E", "F"]
             },
             {
               mode: AnatomStructInputMode.Dropdown,
@@ -81,7 +82,8 @@ const boneTemplate: AnatomStructTemplate = {
           headers: ["Settore", "Presente/Assente", "Note"],
           fields: [
             {
-              mode: AnatomStructInputMode.Fixed
+              mode: AnatomStructInputMode.Fixed,
+              fixedArgs: ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12"]
             },
             {
               mode: AnatomStructInputMode.Dropdown,
@@ -97,7 +99,8 @@ const boneTemplate: AnatomStructTemplate = {
           headers: ["Area", "Dettagli", "Colore"],
           fields: [
             {
-              mode: AnatomStructInputMode.Fixed
+              mode: AnatomStructInputMode.Fixed,
+              fixedArgs: ["A", "B", "C", "D", "E", "F"]
             },
             {
               mode: AnatomStructInputMode.Text
@@ -120,10 +123,24 @@ const boneTemplate: AnatomStructTemplate = {
           headers: ["Codice Misura", "Nome Misura", "Misura (cm)"],
           fields: [
             {
-              mode: AnatomStructInputMode.Fixed
+              mode: AnatomStructInputMode.Fixed,
+              fixedArgs: ["64", "65", "66", "67", "68", "69", "70", "71", "72", "73", "74"]
             },
             {
-              mode: AnatomStructInputMode.Fixed
+              mode: AnatomStructInputMode.Fixed,
+              fixedArgs: [
+                "Maximum Innominate Height",
+                "Maximum Iliac Breadth",
+                "Minimum Iliac Breadth",
+                "Maximum Pubis Length",
+                "Minimum Pubis Length",
+                "Ischial Length",
+                "Minimum Ischial Length",
+                "Maximum Ischiopubic Ramus Length",
+                "Anterior Superior Iliac Spine to Symphysion",
+                "Maximum Posterior Superior Iliac Spine to Symphysion",
+                "Minimum Apical Border to Symphysion"
+              ]
             },
             {
               mode: AnatomStructInputMode.Number
@@ -141,7 +158,13 @@ const boneTemplate: AnatomStructTemplate = {
           headers: ["Caratteri non metrici", "Stato"],
           fields: [
             {
-              mode: AnatomStructInputMode.Fixed
+              mode: AnatomStructInputMode.Fixed,
+              fixedArgs: [
+                "Accessory Sacroiliac Facet",
+                "Pubic Spine",
+                "Acetabular Crease",
+                "Cotyloid bone"
+              ]
             },
             {
               mode: AnatomStructInputMode.Dropdown,
@@ -176,7 +199,8 @@ const boneTemplate: AnatomStructTemplate = {
           headers: ["#", "Classe", "Descrizione segni"],
           fields: [
             {
-              mode: AnatomStructInputMode.Fixed
+              mode: AnatomStructInputMode.Fixed,
+              fixedArgs: ["1", "2", "3"]
             },
             {
               mode: AnatomStructInputMode.Multistage,
@@ -239,45 +263,6 @@ const boneState: AnatomStructState = {
           1: "Ciao"
         }
       ]
-    ],
-    // Page 1
-    [
-      // Table 0
-      [["A"], ["B"], ["C"], ["D"], ["E"], ["F"]]
-    ],
-    // Page 2
-    [
-      // Table 0
-      [["1"], ["2"], ["3"], ["4"], ["5"], ["6"], ["7"], ["8"], ["9"], ["10"], ["11"], ["12"]],
-      // Table 1
-      [["A"], ["B"], ["C"], ["D"], ["E"], ["F"]]
-    ],
-    // Page 3
-    [
-      // Table 0
-      [
-        ["64", "Maximum Innominate Height"],
-        ["65", "Maximum Iliac Breadth"],
-        ["66", "Minimum Iliac Breadth"],
-        ["67", "Maximum Pubis Length"],
-        ["68", "Minimum Pubis Length"],
-        ["69", "Ischial Length"],
-        ["70", "Minimum Ischial Length"],
-        ["71", "Maximum Ischiopubic Ramus Length"],
-        ["72", "Anterior Superior Iliac Spine to Symphysion"],
-        ["73", "Maximum Posterior Superior Iliac Spine to Symphysion"],
-        ["74", "Minimum Apical Border to Symphysion"]
-      ]
-    ],
-    // Page 4
-    [
-      // Table 0
-      [["Accessory Sacroiliac Facet"], ["Pubic Spine"], ["Acetabular Crease"], ["Cotyloid bone"]]
-    ],
-    // Page 7
-    [
-      // Table 0
-      [["1"], ["2"], ["3"]]
     ]
   ]
 }

@@ -1,12 +1,12 @@
 import { useContext, useState } from "react";
-import { AnatomStructPropertyImageRef, AnatomStructTable, AnatomStructTableField, AnatomStructTableState, AnatomStructTableType, AnatomStructRowSpecial, TableRowState } from "../../models/AnatomStructTypes";
+import { AnatomStructPropertyImageRef, AnatomStructTable, AnatomStructTableField, AnatomStructTableState, AnatomStructTableType, AnatomStructRowSpecial, TableRowState, AnatomStructInputMode } from "../../models/AnatomStructTypes";
 import { DeleteImageCircleFunc, EditModeContext, HighlightImageCircleFunc } from "./AnatomStruct";
 import { Property, UpdatePropertyFunc } from "./Property";
 
 import './Table.css'
 
 export type UpdateTableFunc = (fn: (table: AnatomStructTableState) => AnatomStructTableState) => void
-type RenderRowFieldFunc = (row: TableRowState, rowIdx: number, field: AnatomStructTableField, fieldIdx: number) => React.ReactNode
+type RenderRowFieldFunc = (rowIdx: number, field: AnatomStructTableField, fieldIdx: number, row?: TableRowState) => React.ReactNode
 
 /**
  * Table rappresenta la sezione di una pagina con la tabella di opzioni.
@@ -20,7 +20,7 @@ export function Table({ table, state, update, active, setActive, deleteCircle, h
 	active: boolean, setActive: () => void,
 	deleteCircle: DeleteImageCircleFunc, highlightCircle: HighlightImageCircleFunc
 }) {
-	const renderRowField: RenderRowFieldFunc = (row, rowIdx, field, fieldIdx) => {
+	const renderRowField: RenderRowFieldFunc = (rowIdx, field, fieldIdx, row) => {
 		// updatePropertyRow è la funzione di produzione sullo stato per la proprietà specifica
 		const updateProperty: UpdatePropertyFunc = (fn) => {
 			update(table => {
@@ -44,7 +44,9 @@ export function Table({ table, state, update, active, setActive, deleteCircle, h
 		const key = `${rowIdx}-${fieldIdx}`
 		const propertyState = row?.[fieldIdx]
 
-		return <Property key={key} state={propertyState} template={field} update={updateProperty} />
+		return <Property key={key}
+			template={field} rowIdx={rowIdx}
+			state={propertyState} update={updateProperty} />
 	}
 
 	const tableElem = (() => {
@@ -94,6 +96,11 @@ function TableDefault({ table, state, renderRowField }: {
 	table: AnatomStructTable, state: AnatomStructTableState,
 	renderRowField: RenderRowFieldFunc
 }) {
+	const rows = table.fields
+		.filter(field => field.mode === AnatomStructInputMode.Fixed)
+		.map(field => field.fixedArgs?.length ?? 0)
+		.reduce((prev, curr) => { return prev > curr ? prev : curr }, 0)
+
 	return <>
 		<table>
 			<thead>
@@ -105,9 +112,18 @@ function TableDefault({ table, state, renderRowField }: {
 				</tr>
 			</thead>
 			<tbody>
+				{[...Array(rows).keys()].map(rowIdx => {
+					return <tr key={rowIdx}>
+						{table.fields.map((field, fieldIdx) => {
+							const row = state?.[rowIdx]
+							return renderRowField(rowIdx, field, fieldIdx, row)
+						})}
+					</tr>
+					
+				})}
 				{state?.map((row, rowIdx) => {
 					return <tr key={rowIdx}>
-						{table.fields.map((field, fieldIdx) => renderRowField(row, rowIdx, field, fieldIdx))}
+						{table.fields.map((field, fieldIdx) => renderRowField(rowIdx, field, fieldIdx, row))}
 					</tr>
 				})}
 			</tbody>
@@ -179,7 +195,7 @@ function TableVariadicButton({ table, state, update, renderRowField }: {
 						<td>
 							{rowIdx + 1}
 						</td>
-						{table.fields.map((field, fieldIdx) => renderRowField(row, rowIdx, field, fieldIdx))}
+						{table.fields.map((field, fieldIdx) => renderRowField(rowIdx, field, fieldIdx, row))}
 					</tr>
 				})}
 			</tbody>
@@ -255,7 +271,7 @@ function TableVariadicMouse({ table, state, update, renderRowField, active, dele
 						<td>
 							{rowIdx + 1}
 						</td>
-						{table.fields.map((field, fieldIdx) => renderRowField(row, rowIdx, field, fieldIdx))}
+						{table.fields.map((field, fieldIdx) => renderRowField(rowIdx, field, fieldIdx, row))}
 					</tr>
 				})}
 			</tbody>

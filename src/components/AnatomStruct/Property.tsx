@@ -15,12 +15,15 @@ export type UpdatePropertyFunc = (fn: (prop: AnatomStructProperty) => AnatomStru
  * @param update funzione di produzione per informare lo stato globale dei cambiamenti
  * @return ReactNode
  */
-export function Property({ template, state, update }: { template: AnatomStructTableField, state?: AnatomStructProperty, update: UpdatePropertyFunc }) {
+export function Property({ template, rowIdx, state, update }: {
+	template: AnatomStructTableField, rowIdx: number,
+	state?: AnatomStructProperty, update: UpdatePropertyFunc
+}) {
 	const editMode = useContext(EditModeContext)
 
 	switch (template.mode) {
 		case AnatomStructInputMode.Fixed:
-			return <td>{state as (string | undefined) || ''}</td>
+			return <td>{template.fixedArgs?.[rowIdx]}</td>
 		case AnatomStructInputMode.Text:
 			const handleTextInput = (ev: ChangeEvent<HTMLInputElement>): void => {
 				update(() => {
@@ -30,7 +33,7 @@ export function Property({ template, state, update }: { template: AnatomStructTa
 
 			return <td>
 				<input type="text"
-					value={state as (string | undefined) || ''}
+					value={state as (string | undefined) ?? ''}
 					onChange={handleTextInput} disabled={!editMode}
 				/>
 			</td>
@@ -44,7 +47,7 @@ export function Property({ template, state, update }: { template: AnatomStructTa
 
 			return <td>
 				<input type="number"
-					value={(state as (number | undefined) || 0).toString()}
+					value={(state as (number | undefined) ?? 0).toString()}
 					onChange={handleNumberInput} disabled={!editMode}
 				/>
 			</td>
@@ -57,7 +60,7 @@ export function Property({ template, state, update }: { template: AnatomStructTa
 
 			return <td>
 				<Dropdown
-					options={template.dropdownArgs || []}
+					options={template.dropdownArgs ?? []}
 					selectedField={state as (string | undefined)}
 					setSelectedField={setSelected} disabled={!editMode}
 				/>
@@ -70,15 +73,15 @@ export function Property({ template, state, update }: { template: AnatomStructTa
 			}
 
 			return <MultistageProperty
-				template={template}
+				template={template} rowIdx={rowIdx}
 				state={state as (AnatomStructMultistageProperty | undefined)}
 				update={updateMultistage} disabled={!editMode}
 			/>
 	}
 }
 
-function MultistageProperty({ template, state, update, disabled }: {
-	template: AnatomStructTableField, state?: AnatomStructMultistageProperty,
+function MultistageProperty({ template, rowIdx, state, update, disabled }: {
+	template: AnatomStructTableField, rowIdx: number, state?: AnatomStructMultistageProperty,
 	update: (fn: (value?: AnatomStructMultistageProperty) => AnatomStructMultistageProperty) => void, disabled: boolean
 }) {
 	const options: string[] | undefined = template.multistageArgs?.map(arg => arg.value)
@@ -102,7 +105,7 @@ function MultistageProperty({ template, state, update, disabled }: {
 	if (!state) {
 		return <td>
 			<Dropdown
-				options={options || []}
+				options={options ?? []}
 				setSelectedField={setSelected}
 				disabled={disabled}
 			/>
@@ -111,7 +114,7 @@ function MultistageProperty({ template, state, update, disabled }: {
 
 	const firstStage = <td>
 		<Dropdown
-			options={options || []}
+			options={options ?? []}
 			selectedField={state.value}
 			setSelectedField={setSelected}
 			disabled={disabled}
@@ -138,6 +141,9 @@ function MultistageProperty({ template, state, update, disabled }: {
 
 	return <>
 		{firstStage}
-		<Property template={nextTemplate} state={nextValue} update={nextUpdate} />
+		<Property
+			template={nextTemplate} rowIdx={rowIdx}
+			state={nextValue} update={nextUpdate}
+		/>
 	</>
 }
