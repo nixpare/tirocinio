@@ -9,19 +9,6 @@
 	position: relative;
 }
 
-.table-template .add-header,
-.table-template .header-input>div>button {
-	background-color: transparent;
-	padding: 1px;
-	border-width: 2px;
-	border-radius: 50%;
-}
-
-.table-template .add-header>i,
-.table-template .header-input>div>button>i {
-	display: block;
-}
-
 .table-template .header-input>div {
 	position: absolute;
 	top: 0;
@@ -33,10 +20,44 @@
 	justify-content: center;
 }
 
-.table-template .add-header {
+.table-template .header-input>input {
+	font-size: 1.05em;
+}
+
+.table-template .add-header,
+.table-template .header-input>div>button,
+.table-template .add-field {
+	background-color: transparent;
+	padding: 1px;
+	border-width: 2px;
+	border-radius: 50%;
+}
+
+.table-template .add-header>i,
+.table-template .header-input>div>button>i,
+.table-template .add-field>i {
+	display: block;
+}
+
+.table-template .add-header,
+.table-template .add-field {
 	margin-left: .4em;
 }
 
-.table-template .add-header:not(:disabled):hover {
+.table-template .add-header:not(:disabled):hover,
+.table-template .add-field:not(:disabled):hover {
 	border-color: #e0e0e0;
+}
+
+.table-template .section {
+	background-color: rgba(var(--primary-color), .2);
+	padding: 1em;
+	gap : 0;
+	border-radius: .4em;
+	width: 100%;
+}
+
+.table-template .section>* {
+	width: 100%;
+	padding: 0 1em;
 }
