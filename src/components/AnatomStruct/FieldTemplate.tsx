@@ -10,8 +10,8 @@ type UpdateMultistageArgTemplateFunc = (fn: (arg: AnatomStructMultistageArg) => 
 export function FieldTemplate({ field, updateField, deleteField }: { field: AnatomStructTableField, updateField: UpdateFieldTemplateFunc, deleteField: ()=>void }) {
 	const selectedField = getInputModeID(field.mode)
 
-	const setSelectedField = (selected: string) => {
-		const field = anatomStructInputModes[selected] ?? AnatomStructInputMode.Text
+	const setSelectedField = (selected?: string) => {
+		const field = anatomStructInputModes[selected ?? ''] ?? AnatomStructInputMode.Text
 		updateField(() => {
 			return { mode: field }
 		})
@@ -286,9 +286,9 @@ function MultistageNextArgTemplate({ arg, updateArg, deleteArg }: { arg: AnatomS
 	}
 
 	const fieldType = getInputModeID(arg.next.mode)
-	const setFieldType = (modeID: string): void => {
+	const setFieldType = (modeID?: string): void => {
 		updateArg(arg => {
-			arg.next = { mode: anatomStructInputModes[modeID] ?? AnatomStructInputMode.Text }
+			arg.next = { mode: anatomStructInputModes[modeID ?? ''] ?? AnatomStructInputMode.Text }
 			return arg
 		})
 	}

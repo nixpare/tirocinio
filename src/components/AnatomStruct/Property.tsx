@@ -6,6 +6,7 @@ import { EditModeContext } from "./AnatomStruct";
 import './Property.css'
 
 export type UpdatePropertyFunc = (fn: (prop: AnatomStructProperty) => AnatomStructProperty) => void
+type UpdateMultistagePropertyFunc = (fn: (value?: AnatomStructMultistageProperty) => AnatomStructMultistageProperty | undefined) => void
 
 /**
  * Property rappresenta un'opzione della tabella. In base al valore `mode` in `template` il componente genera l'input sottostante
@@ -58,7 +59,7 @@ export function Property({ template, rowIdx, state, update }: {
 				/>
 			</td>
 		case AnatomStructInputMode.Dropdown:
-			const setSelected = (selected: string): void => {
+			const setSelected = (selected?: string): void => {
 				update(() => {
 					return selected
 				})
@@ -75,7 +76,7 @@ export function Property({ template, rowIdx, state, update }: {
 				/>
 			</td>
 		case AnatomStructInputMode.Multistage:
-			const updateMultistage = (fn: (value?: AnatomStructMultistageProperty) => AnatomStructMultistageProperty): void => {
+			const updateMultistage: UpdateMultistagePropertyFunc = (fn) => {
 				update(value => {
 					return fn(value as (AnatomStructMultistageProperty | undefined))
 				})
@@ -94,18 +95,14 @@ export function Property({ template, rowIdx, state, update }: {
 
 function MultistageProperty({ template, rowIdx, state, update, disabled }: {
 	template: AnatomStructTableField, rowIdx: number, state?: AnatomStructMultistageProperty,
-	update: (fn: (value?: AnatomStructMultistageProperty) => AnatomStructMultistageProperty) => void, disabled: boolean
+	update: UpdateMultistagePropertyFunc, disabled: boolean
 }) {
 	const options: string[] | undefined = template.multistageArgs?.map(arg => arg.value)
 
-	const setSelected = (selected: string): void => {
-		update(multistage => {
-			if (!multistage) {
-				return { value: selected }
-			}
-
-			if (multistage.value === selected) {
-				return multistage
+	const setSelected = (selected?: string): void => {
+		update(() => {
+			if (!selected) {
+				return undefined
 			}
 
 			return {

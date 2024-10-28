@@ -24,10 +24,6 @@ export function Table({ table, state, update, active, setActive, deleteCircle, h
 		// updatePropertyRow è la funzione di produzione sullo stato per la proprietà specifica
 		const updateProperty: UpdatePropertyFunc = (fn) => {
 			update(table => {
-				const newProp = fn(table?.[rowIdx]?.[fieldIdx])
-				if (newProp == undefined)
-					return table
-
 				if (!table) {
 					table = []
 				}
@@ -36,7 +32,7 @@ export function Table({ table, state, update, active, setActive, deleteCircle, h
 					table[rowIdx] = {}
 				}
 
-				table[rowIdx][fieldIdx] = newProp
+				table[rowIdx][fieldIdx] = fn(table?.[rowIdx]?.[fieldIdx])
 				return table
 			})
 		}
@@ -120,11 +116,6 @@ function TableDefault({ table, state, renderRowField }: {
 						})}
 					</tr>
 					
-				})}
-				{state?.map((row, rowIdx) => {
-					return <tr key={rowIdx}>
-						{table.fields.map((field, fieldIdx) => renderRowField(rowIdx, field, fieldIdx, row))}
-					</tr>
 				})}
 			</tbody>
 		</table>

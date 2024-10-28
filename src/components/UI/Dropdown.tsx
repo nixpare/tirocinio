@@ -12,7 +12,7 @@ import './Dropdown.css'
  * @returns ReactNode
  */
 export function Dropdown({ options, selectedField = 'Non selezionato', setSelectedField, name, disabled }: {
-	options: string[], selectedField?: string, setSelectedField: (selected: string) => void,
+	options: string[], selectedField?: string, setSelectedField: (selected?: string) => void,
 	name?: string, disabled?: boolean
 }) {
 	const [active, setActive] = useState(false)
@@ -35,6 +35,11 @@ export function Dropdown({ options, selectedField = 'Non selezionato', setSelect
 
 				return <li key={option} onClick={handleSelect}>{option}</li>
 			})}
+			<hr />
+			<li className="no-selection" onClick={() => { setSelectedField(undefined) }}>
+				<i className="fa-solid fa-trash"></i>
+				Annulla selezione
+			</li>
 		</ul>
 	</button>
 }
