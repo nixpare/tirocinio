@@ -44,6 +44,12 @@ export const anatomStructTableTypes: Record<string, AnatomStructTableType> = {
 	"Variabile su immagine": AnatomStructTableType.VariadicMouse
 }
 
+export function getTableTypeID(table: AnatomStructTableType): string | undefined {
+	return Object.entries(anatomStructTableTypes).filter(([_, tableType]) => {
+		return tableType === table
+	}).map(([tableID, _]) => tableID)[0] ?? undefined
+}
+
 /** AnatomStructTableField contiene le caratteristiche di una proprietà */
 export type AnatomStructTableField = {
 	/** il tipo di input sottostante alla proprietà */
@@ -74,6 +80,12 @@ export const anatomStructInputModes: Record<string, AnatomStructInputMode> = {
 	"Numbero": AnatomStructInputMode.Number,
 	"Scelta multipla": AnatomStructInputMode.Dropdown,
 	"Variabile (?)": AnatomStructInputMode.Multistage
+}
+
+export function getInputModeID(mode: AnatomStructInputMode): string | undefined {
+	return Object.entries(anatomStructInputModes).filter(([_, inputMode]) => {
+		return inputMode === mode
+	}).map(([modeID, _]) => modeID)[0] ?? undefined
 }
 
 export type AnatomStructMultistageArg = {

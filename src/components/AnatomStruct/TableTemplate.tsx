@@ -28,9 +28,9 @@ export function TableTemplate() {
 	const [tableType, setTableType] = useState(undefined as (string | undefined))
 	useEffect(() => {
 		updateTable(() => {
-			const newTableType = Object.entries(anatomStructTableTypes).filter(([tableTypeID, _]) => {
-				return tableTypeID === tableType
-			}).map(([_, tableTypeValue]) => tableTypeValue)[0]
+			// Non imposto il tipo della tabella di fallback apposta così che lo switch
+			// non selezioni nulla se il tipo della tabella non è stata ancora selezionato
+			const newTableType = anatomStructTableTypes[tableType ?? '']
 			return {
 				type: newTableType,
 				headers: [],
@@ -135,14 +135,11 @@ function TableTemplateHeaders({ table, updateTable, header, addHeader, onNewHead
 }
 
 function TableTemplateFields({ table, updateTable }: { table: AnatomStructTable, updateTable: UpdateTableTemplateFunc }) {
-	if (table.type == undefined)
-		return
-	
 	switch (table.type) {
 		case AnatomStructTableType.Default:
 			return <DefaultTableTemplateFields table={table} updateTable={updateTable} />
 		case AnatomStructTableType.VariadicButton:
-			return <VariadicButtonTableTemplateFields table={table} updateTable={updateTable} />
+			return <DefaultTableTemplateFields table={table} updateTable={updateTable} />
 	}
 }
 
@@ -158,9 +155,7 @@ function DefaultTableTemplateFields({ table, updateTable }: { table: AnatomStruc
 	useEffect(() => {
 		updateField(() => {
 			return {
-				mode: Object.entries(anatomStructInputModes).filter(([fieldID, _]) => {
-					return fieldID === fieldType
-				}).map(([_, field]) => field)[0] ?? AnatomStructInputMode.Text
+				mode: anatomStructInputModes[fieldType ?? ''] ?? AnatomStructInputMode.Text
 			}
 		})
 	}, [fieldType])
@@ -181,17 +176,19 @@ function DefaultTableTemplateFields({ table, updateTable }: { table: AnatomStruc
 			{table.fields.map((field, fieldIdx) => {
 				const updateField: UpdateFieldTemplateFunc = (fn) => {
 					updateTable(table => {
-						const newField =  fn(table.fields[fieldIdx])
-						if (!newField) {
-							table.fields = table.fields.filter((_, idx) => idx !== fieldIdx)
-						} else {
-							table.fields[fieldIdx] = newField
-						}
+						table.fields[fieldIdx] = fn(table.fields[fieldIdx])
 						return table
 					})
 				}
 
-				return <FieldTemplate key={fieldIdx} field={field} updateField={updateField} />
+				const deleteField = () => {
+					updateTable(table => {
+						table.fields = table.fields.filter((_, idx) => idx !== fieldIdx)
+						return table
+					})
+				}
+
+				return <FieldTemplate key={fieldIdx} field={field} updateField={updateField} deleteField={deleteField} />
 			})}
 		</div>
 		<div className="container container-horiz container-start">
@@ -199,71 +196,6 @@ function DefaultTableTemplateFields({ table, updateTable }: { table: AnatomStruc
 			<div>
 				<Dropdown name="table-fields"
 					options={Object.keys(anatomStructInputModes)}
-					selectedField={fieldType} setSelectedField={setFieldType}
-				/>
-				<button className="add-field" onClick={addField}>
-					<i className="fa-solid fa-circle-plus"></i>
-				</button>
-			</div>
-		</div>
-	</div>
-}
-
-function VariadicButtonTableTemplateFields({ table, updateTable }: { table: AnatomStructTable, updateTable: UpdateTableTemplateFunc }) {
-	const [field, setField] = useState({} as AnatomStructTableField)
-	const updateField = (fn: (field: AnatomStructTableField) => (AnatomStructTableField | void)): void => {
-		setField(produce(fn))
-	}
-	
-	const [fieldType, setFieldType] = useState(undefined as (string | undefined))
-	useEffect(() => {
-		updateField(() => {
-			return {
-				mode: Object.entries(anatomStructInputModes).filter(([fieldID, _]) => {
-					return fieldID === fieldType
-				}).map(([_, field]) => field)[0] ?? AnatomStructInputMode.Text
-			}
-		})
-	}, [fieldType])
-	
-	const addField = (ev: MouseEvent) => {
-		ev.preventDefault()
-
-		updateTable(table => {
-			table.fields.push(field)
-			return table
-		})
-		setFieldType(undefined)
-	}
-
-	return <div className="container container-start section">
-		<h4>Campi Tabella</h4>
-		<div>
-			{table.fields.map((field, fieldIdx) => {
-				const updateField: UpdateFieldTemplateFunc = (fn) => {
-					updateTable(table => {
-						const newField =  fn(table.fields[fieldIdx])
-						if (!newField) {
-							table.fields = table.fields.filter((_, idx) => idx !== fieldIdx)
-						} else {
-							table.fields[fieldIdx] = newField
-						}
-						return table
-					})
-				}
-
-				return <FieldTemplate key={fieldIdx} field={field} updateField={updateField} />
-			})}
-		</div>
-		<div className="container container-horiz container-start">
-			<label htmlFor="table-fields">Aggiungi campo:</label>
-			<div>
-				<Dropdown name="table-fields"
-					options={
-						Object.entries(anatomStructInputModes).filter(([_, inputMode]) => {
-							return inputMode !== AnatomStructInputMode.Fixed
-						}).map(([inputModeID, _]) => inputModeID)
-					}
 					selectedField={fieldType} setSelectedField={setFieldType}
 				/>
 				<button className="add-field" onClick={addField}>
