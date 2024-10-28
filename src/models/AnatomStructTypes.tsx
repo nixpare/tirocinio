@@ -82,7 +82,7 @@ export const anatomStructInputModes: Record<string, AnatomStructInputMode> = {
 	"Variabile (?)": AnatomStructInputMode.Multistage
 }
 
-export function getInputModeID(mode: AnatomStructInputMode): string | undefined {
+export function getInputModeID(mode?: AnatomStructInputMode): string | undefined {
 	return Object.entries(anatomStructInputModes).filter(([_, inputMode]) => {
 		return inputMode === mode
 	}).map(([modeID, _]) => modeID)[0] ?? undefined

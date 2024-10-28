@@ -1,4 +1,4 @@
-import { ChangeEvent, MouseEvent, useEffect, useState } from 'react'
+import { ChangeEvent, MouseEvent, useState } from 'react'
 import { AnatomStructInputMode, anatomStructInputModes, AnatomStructMultistageArg, AnatomStructTableField, getInputModeID } from "../../models/AnatomStructTypes"
 import { Dropdown } from "../UI/Dropdown"
 import "./FieldTemplate.css"
@@ -85,7 +85,9 @@ function FixedFieldTemplate({ field, updateField }: { field: AnatomStructTableFi
 					width: `${arg.length + 4}ch`
 				}
 
-				const deleteHeader = () => {
+				const deleteHeader = (ev: MouseEvent) => {
+					ev.preventDefault()
+					
 					updateField(field => {
 						if (!field.fixedArgs)
 							return field
@@ -154,7 +156,9 @@ function DropdownFieldTemplate({ field, updateField }: { field: AnatomStructTabl
 					boxSizing: 'content-box'
 				}
 
-				const deleteHeader = () => {
+				const deleteHeader = (ev: MouseEvent) => {
+					ev.preventDefault()
+
 					updateField(field => {
 						if (!field.dropdownArgs)
 							return field
@@ -217,16 +221,16 @@ function MultistageFieldTemplate({ field, updateField }: { field: AnatomStructTa
 			return stage
 		})
 	}
-	
-	const [nextFieldType, setNextFieldType] = useState(undefined as (string | undefined))
-	useEffect(() => {
+
+	const nextFieldType = getInputModeID(stage.next?.mode)
+	const setNextFieldType = (nextFieldType?: string): void => {
 		updateStage(stage => {
 			stage.next = {
-				mode: anatomStructInputModes[nextFieldType ?? ''] ?? AnatomStructInputMode.Text
+				mode: anatomStructInputModes[nextFieldType ?? '']
 			}
 			return stage
 		})
-	}, [nextFieldType])
+	}
 
 	return <div className="container w-100 multistage-field">
 		<div>

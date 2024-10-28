@@ -1,5 +1,5 @@
-import { ChangeEvent, FormEvent, MouseEvent, useEffect, useState } from "react"
-import { AnatomStructInputMode, anatomStructInputModes, AnatomStructTable, AnatomStructTableField, AnatomStructTableState, AnatomStructTableType, anatomStructTableTypes } from "../../models/AnatomStructTypes"
+import { ChangeEvent, FormEvent, MouseEvent, useState } from "react"
+import { AnatomStructInputMode, anatomStructInputModes, AnatomStructTable, AnatomStructTableField, AnatomStructTableState, AnatomStructTableType, anatomStructTableTypes, getInputModeID, getTableTypeID } from "../../models/AnatomStructTypes"
 import { Dropdown } from "../UI/Dropdown"
 import { produce } from "immer"
 
@@ -12,7 +12,7 @@ type UpdateTableTemplateFunc = (fn: (table: AnatomStructTable) => AnatomStructTa
 
 export function TableTemplate() {
 	const [table, setTable] = useState({
-		type: AnatomStructTableType.Default,
+		type: undefined as unknown as AnatomStructTableType,
 		headers: [],
 		fields: []
 	} as AnatomStructTable)
@@ -25,19 +25,15 @@ export function TableTemplate() {
 		setTable(produce(fn))
 	}
 
-	const [tableType, setTableType] = useState(undefined as (string | undefined))
-	useEffect(() => {
-		updateTable(() => {
+	const tableType = getTableTypeID(table.type)
+	const setTableType = (value?: string): void => {
+		updateTable(table => {
 			// Non imposto il tipo della tabella di fallback apposta così che lo switch
 			// non selezioni nulla se il tipo della tabella non è stata ancora selezionato
-			const newTableType = anatomStructTableTypes[tableType ?? '']
-			return {
-				type: newTableType,
-				headers: [],
-				fields: []
-			}
+			table.type = anatomStructTableTypes[value ?? '']
+			return table
 		})
-	}, [tableType])
+	}
 
 	const [header, setHeader] = useState('')
 	const onHeaderChange = (ev: ChangeEvent<HTMLInputElement>): void => {
@@ -53,14 +49,16 @@ export function TableTemplate() {
 		})
 	}
 
+	const tableTemplateHeader = table.type != undefined ? <TableTemplateHeaders
+		table={table} updateTable={updateTable}
+		header={header} addHeader={addHeader} onNewHeaderChange={onHeaderChange}
+	/> : undefined
+
 	return <div className="container table-template">
 		<div className="split">
 			<form onSubmit={saveTable}>
 				<TableTemplateType tableType={tableType} setTableType={setTableType} />
-				<TableTemplateHeaders
-					table={table} updateTable={updateTable}
-					header={header} addHeader={addHeader} onNewHeaderChange={onHeaderChange}
-				/>
+				{tableTemplateHeader}
 				<TableTemplateFields table={table} updateTable={updateTable} />
 				<button type="submit">Salva Tabella</button>
 			</form>
@@ -152,15 +150,15 @@ function DefaultTableTemplateFields({ table, updateTable }: { table: AnatomStruc
 			return fn(field)
 		}))
 	}
-	
-	const [fieldType, setFieldType] = useState(undefined as (string | undefined))
-	useEffect(() => {
+
+	const fieldType = getInputModeID(field.mode)
+	const setFieldType = (fieldType?: string) => {
 		updateField(() => {
 			return {
 				mode: anatomStructInputModes[fieldType ?? ''] ?? AnatomStructInputMode.Text
 			}
 		})
-	}, [fieldType])
+	}
 	
 	const addField = (ev: MouseEvent) => {
 		ev.preventDefault()
