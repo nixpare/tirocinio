@@ -25,7 +25,7 @@ export function FieldTemplate({ field, updateField }: { field: AnatomStructTable
 	let fieldTemplate: React.ReactNode | undefined = undefined
 	switch (field.mode) {
 		case AnatomStructInputMode.Fixed:
-			fieldTemplate = undefined
+			fieldTemplate = <FixedFieldTemplate field={field} updateField={updateField} />
 			break;
 		case AnatomStructInputMode.Text:
 			fieldTemplate = undefined
@@ -50,6 +50,75 @@ export function FieldTemplate({ field, updateField }: { field: AnatomStructTable
 			selectedField={selectedField} setSelectedField={setSelectedField}
 		/>
 		{fieldTemplate}
+	</div>
+}
+
+function FixedFieldTemplate({ field, updateField }: { field: AnatomStructTableField, updateField: UpdateFieldTemplateFunc }) {
+	const [arg, setArg] = useState('')
+	const addArg = (ev: MouseEvent) => {
+		ev.preventDefault()
+
+		updateField(field => {
+			if (!field.fixedArgs)
+				field.fixedArgs = []
+
+			field.fixedArgs.push(arg)
+			return field
+		})
+		setArg('')
+	}
+
+	const handleInputChange = (ev: ChangeEvent<HTMLInputElement>) => {
+		setArg(ev.target.value ?? '')
+	}
+
+	return <div className="container w-100 fixed-field">
+		<div className="container container-horiz container-start w-100">
+			{field.fixedArgs?.map((arg, argIdx) => {
+				const onArgChange = (ev: ChangeEvent<HTMLInputElement>): void => {
+					updateField(field => {
+						if (!field.fixedArgs)
+							return field
+
+						field.fixedArgs[argIdx] = ev.target.value
+						return field
+					})
+				}
+
+				const inputStyle: React.CSSProperties = {
+					width: `${arg.length + 3}ch`,
+					boxSizing: 'content-box'
+				}
+
+				const deleteHeader = () => {
+					updateField(field => {
+						if (!field.fixedArgs)
+							return field
+
+						field.fixedArgs = field.fixedArgs.filter((_, idx) => idx !== argIdx)
+						return field
+					})
+				}
+
+				return <div key={argIdx} className="arg-input">
+					<input type="text" style={inputStyle} value={arg} onChange={onArgChange} />
+					<div>
+						<button onClick={deleteHeader}>
+							<i className="fa-solid fa-circle-minus"></i>
+						</button>
+					</div>
+				</div>
+			})}
+		</div>
+		<div className="container container-horiz container-start w-100">
+			<label htmlFor="fixed-arg">Aggiungi campo fisso:</label>
+			<div>
+				<input type="text" name="fixed-arg" value={arg} onChange={handleInputChange} />
+				<button className="add-arg" onClick={addArg}>
+					<i className="fa-solid fa-circle-plus"></i>
+				</button>
+			</div>
+		</div>
 	</div>
 }
 
