@@ -140,6 +140,8 @@ function TableTemplateFields({ table, updateTable }: { table: AnatomStructTable,
 			return <DefaultTableTemplateFields table={table} updateTable={updateTable} />
 		case AnatomStructTableType.VariadicButton:
 			return <DefaultTableTemplateFields table={table} updateTable={updateTable} />
+		case AnatomStructTableType.VariadicMouse:
+			return <h2>To be implemented</h2>
 	}
 }
 
