@@ -191,16 +191,25 @@ export enum AnatomStructRowSpecial {
 	CircleInfo = -1,
 }
 
+/** AnatomStructMultistageProperty contiene lo stato di una proprietà `Multistage` */
 export type AnatomStructMultistageProperty = {
+	/** il valore selezionato dal menu a tendina */
 	value: string
+	/** la `AnatomStructProperty` innestata, opzionale, indica il valore della proprietà derivata dalla selezione corrente */
 	next?: AnatomStructProperty
 }
+
+/** isAnatomStructMultistageProperty determina il risultato in base alla presenza del campo `value` */
 export function isAnatomStructMultistageProperty(object: any): object is AnatomStructMultistageProperty {
 	return typeof object === 'object' && 'value' in object
 }
 
+/** AnatomStructPropertyImageRef contiene le informazioni relative al cerchio selezionato per una riga */
 export type AnatomStructPropertyImageRef = {
+	/** l'indice dell'immagine all'interno della pagina */
 	imageIdx: number
+	/** posizione percentuale (0 <= x <= 100) sulle x relative all'immagine */
 	x: number
+	/** posizione percentuale (0 <= x <= 100) sulle y relative all'immagine */
 	y: number
 }
