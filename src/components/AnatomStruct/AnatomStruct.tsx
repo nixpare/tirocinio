@@ -113,7 +113,7 @@ function PropertyPage({ page, state, update }: { page: AnatomStructPage, state: 
 
 		return page.image?.map((_, imageIdx) => {
 			return table?.map(row => {
-				const circle = row[AnatomStructRowSpecial.CircleInfo] as AnatomStructPropertyImageRef
+				const circle = row?.[AnatomStructRowSpecial.CircleInfo] as AnatomStructPropertyImageRef
 
 				if (circle.imageIdx !== imageIdx)
 					return undefined

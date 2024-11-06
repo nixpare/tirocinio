@@ -38,6 +38,8 @@ export type AnatomStructPage = {
 export type AnatomStructTable = {
 	/** la tipologia di tabella */
 	type: AnatomStructTableType
+	/** se la tabella è espandibile */
+	isVariadic?: boolean,
 	/** le intestazioni della tabella */
 	headers: string[]
 	/** elenco dei vari campi di input presenti per ogni riga della tabella */

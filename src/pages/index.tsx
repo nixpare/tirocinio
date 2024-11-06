@@ -22,6 +22,7 @@ const boneTemplate: AnatomStructTemplate = {
             tables: [
                 {
                     type: AnatomStructTableType.VariadicMouse,
+                    isVariadic: true,
                     headers: ["Nucleo", "Stato"],
                     fields: [
                         {
@@ -35,6 +36,7 @@ const boneTemplate: AnatomStructTemplate = {
                 },
                 {
                     type: AnatomStructTableType.VariadicMouse,
+                    isVariadic: true,
                     headers: ["Nucleo 2", "Stato 2"],
                     fields: [
                         {
@@ -58,7 +60,7 @@ const boneTemplate: AnatomStructTemplate = {
                     headers: ["Nucleo", "Stato", "Lunghezza (cm)"],
                     fields: [
                         {
-                            mode: AnatomStructInputMode.Fixed,
+                            mode: AnatomStructInputMode.Text,
                             fixedArgs: ["A", "B", "C", "D", "E", "F"]
                         },
                         {
@@ -82,7 +84,7 @@ const boneTemplate: AnatomStructTemplate = {
                     headers: ["Settore", "Presente/Assente", "Note"],
                     fields: [
                         {
-                            mode: AnatomStructInputMode.Fixed,
+                            mode: AnatomStructInputMode.Number,
                             fixedArgs: ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12"]
                         },
                         {
@@ -99,7 +101,7 @@ const boneTemplate: AnatomStructTemplate = {
                     headers: ["Area", "Dettagli", "Colore"],
                     fields: [
                         {
-                            mode: AnatomStructInputMode.Fixed,
+                            mode: AnatomStructInputMode.Text,
                             fixedArgs: ["A", "B", "C", "D", "E", "F"]
                         },
                         {
@@ -123,11 +125,11 @@ const boneTemplate: AnatomStructTemplate = {
                     headers: ["Codice Misura", "Nome Misura", "Misura (cm)"],
                     fields: [
                         {
-                            mode: AnatomStructInputMode.Fixed,
+                            mode: AnatomStructInputMode.Number,
                             fixedArgs: ["64", "65", "66", "67", "68", "69", "70", "71", "72", "73", "74"]
                         },
                         {
-                            mode: AnatomStructInputMode.Fixed,
+                            mode: AnatomStructInputMode.Text,
                             fixedArgs: [
                                 "Maximum Innominate Height",
                                 "Maximum Iliac Breadth",
@@ -154,30 +156,18 @@ const boneTemplate: AnatomStructTemplate = {
             title: "Caratteri non metrici",
             tables: [
                 {
-                    type: AnatomStructTableType.Default,
+                    type: AnatomStructTableType.VariadicButton,
+                    isVariadic: true,
                     headers: ["Caratteri non metrici", "Stato"],
                     fields: [
                         {
-                            mode: AnatomStructInputMode.Fixed,
+                            mode: AnatomStructInputMode.Text,
                             fixedArgs: [
                                 "Accessory Sacroiliac Facet",
                                 "Pubic Spine",
                                 "Acetabular Crease",
                                 "Cotyloid bone"
                             ]
-                        },
-                        {
-                            mode: AnatomStructInputMode.Dropdown,
-                            dropdownArgs: ["Assente", "Non valutabile", "Presente"]
-                        }
-                    ]
-                },
-                {
-                    type: AnatomStructTableType.VariadicButton,
-                    headers: ["Caratteri non metrici", "Stato"],
-                    fields: [
-                        {
-                            mode: AnatomStructInputMode.Text
                         },
                         {
                             mode: AnatomStructInputMode.Dropdown,
@@ -199,7 +189,7 @@ const boneTemplate: AnatomStructTemplate = {
                     headers: ["#", "Classe", "Descrizione segni"],
                     fields: [
                         {
-                            mode: AnatomStructInputMode.Fixed,
+                            mode: AnatomStructInputMode.Text,
                             fixedArgs: ["1", "2", "3"]
                         },
                         {

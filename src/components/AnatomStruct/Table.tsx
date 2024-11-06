@@ -1,5 +1,5 @@
-import { useContext, useState } from "react";
-import { AnatomStructPropertyImageRef, AnatomStructTable, AnatomStructTableField, AnatomStructTableState, AnatomStructTableType, AnatomStructRowSpecial, TableRowState, AnatomStructInputMode } from "../../models/AnatomStructTypes";
+import { useContext, useState, MouseEvent } from "react";
+import { AnatomStructPropertyImageRef, AnatomStructTable, AnatomStructTableField, AnatomStructTableState, AnatomStructRowSpecial, TableRowState } from "../../models/AnatomStructTypes";
 import { DeleteImageCircleFunc, EditModeContext, HighlightImageCircleFunc } from "./AnatomStruct";
 import { Property, UpdatePropertyFunc } from "./Property";
 
@@ -38,107 +38,47 @@ export function Table({ table, state, update, active, setActive, deleteCircle, h
 		}
 
 		const key = `${rowIdx}-${fieldIdx}`
+		const fixedArg = field.fixedArgs?.[rowIdx]
 		const propertyState = row?.[fieldIdx]
+
+		if (fixedArg != undefined)
+			return <td key={key}>{fixedArg}</td>
 
 		return <Property key={key}
 			template={field} rowIdx={rowIdx}
 			state={propertyState} update={updateProperty} />
 	}
 
-	const tableElem = (() => {
-		switch (table.type) {
-			case AnatomStructTableType.Default:
-				return <TableDefault table={table} state={state} renderRowField={renderRowField} />
-			case AnatomStructTableType.VariadicButton:
-				return <TableVariadicButton table={table} state={state} update={update} renderRowField={renderRowField} />
-			case AnatomStructTableType.VariadicMouse:
-				return <TableVariadicMouse
-					table={table} state={state} update={update} renderRowField={renderRowField}
-					active={active} deleteCircle={deleteCircle} highlightCircle={highlightCircle}
-				/>
-		}
-	})()
-
 	const editMode = useContext(EditModeContext)
 
-	const [editFields, setEditFields] = useState(useContext(EditModeContext))
+	const [editTable, setEditTable] = useState(useContext(EditModeContext))
 	const toggleEditFields = () => {
-		setEditFields(!editFields)
+		setEditTable(!editTable)
 	}
 	const editFieldsButton = editMode ? undefined : <>
 		<button className="table-edit-button" onClick={toggleEditFields}>
-			{editFields ? <i className="fa-regular fa-floppy-disk"></i> : <i className="fa-regular fa-pen-to-square"></i> }
+			{editTable ? <i className="fa-regular fa-floppy-disk"></i> : <i className="fa-regular fa-pen-to-square"></i> }
 		</button>
 	</>
 
-	return <div className="table">
-		{editFieldsButton}
-		<EditModeContext.Provider value={editFields}>
-			<div className={`table-wrapper ${active ? 'active' : ''}`} onMouseEnter={setActive}>
-				{tableElem}
-			</div>
-		</EditModeContext.Provider>
-	</div>
-}
+	const nRows = Math.max(
+		state?.length ?? 0,
+		table.fields
+			.map(field => field.fixedArgs?.length ?? 0)
+			.reduce((prev, curr) => { return prev > curr ? prev : curr }, 0)
+	)
 
-/**
- * TableDefault rappresenta la sezione di una pagina con la tabella di opzioni.
- * TODO
- * @param table attributo derivato dallo stato globale
- * @param update funzione di produzione per informare lo stato globale dei cambiamenti
- * @return ReactNode
- */
-function TableDefault({ table, state, renderRowField }: {
-	table: AnatomStructTable, state: AnatomStructTableState,
-	renderRowField: RenderRowFieldFunc
-}) {
-	const rows = table.fields
-		.filter(field => field.mode === AnatomStructInputMode.Fixed)
-		.map(field => field.fixedArgs?.length ?? 0)
-		.reduce((prev, curr) => { return prev > curr ? prev : curr }, 0)
+	const addRow = (ev: MouseEvent): void => {
+		ev.preventDefault()
 
-	return <>
-		<table>
-			<thead>
-				<tr>
-					{/* Generazione degli header della tabella */}
-					{table.headers.map(th => {
-						return <th key={th}>{th}</th>
-					})}
-				</tr>
-			</thead>
-			<tbody>
-				{[...Array(rows).keys()].map(rowIdx => {
-					return <tr key={rowIdx}>
-						{table.fields.map((field, fieldIdx) => {
-							const row = state?.[rowIdx]
-							return renderRowField(rowIdx, field, fieldIdx, row)
-						})}
-					</tr>
-					
-				})}
-			</tbody>
-		</table>
-	</>
-}
-
-/**
- * TableVariadicButton rappresenta la sezione di una pagina con la tabella di opzioni.
- * TODO
- * @param table attributo derivato dallo stato globale
- * @param update funzione di produzione per informare lo stato globale dei cambiamenti
- * @return ReactNode
- */
-function TableVariadicButton({ table, state, update, renderRowField }: {
-	table: AnatomStructTable, state: AnatomStructTableState,
-	update: UpdateTableFunc, renderRowField: RenderRowFieldFunc
-}) {
-	const editMode = useContext(EditModeContext)
-
-	const addRow = (): void => {
 		update(table => {
-			if (!table) {
+			if (!table)
 				table = []
+
+			if (table.length < nRows) {
+				for (let i = table.length; i < nRows; i++) {
+					table.push([])
+				}
 			}
 
 			table.push([])
@@ -146,53 +86,70 @@ function TableVariadicButton({ table, state, update, renderRowField }: {
 		})
 	}
 
-	const addButton = editMode ? <>
+	const addButton = editTable && table.isVariadic ? <>
 		<button className="table-add-row" onClick={addRow}>Aggiungi riga</button>
 	</> : undefined
 
-	return <>
-		<table>
-			<thead>
-				<tr>
-					<th key={0}></th>
-					<th key={1}>#</th>
-					{/* Generazione degli header della tabella */}
-					{table.headers.map((th, thIdx) => {
-						return <th key={thIdx + 2}>{th}</th>
-					})}
-				</tr>
-			</thead>
-			<tbody>
-				{state?.map((row, rowIdx) => {
-					const deleteRow: () => void = () => {
-						update(table => {
-							if (table == undefined)
-								return table
+	const variadicHeaders = table.isVariadic ? <>
+		{editTable ? <th></th> : undefined}
+		<th>#</th>
+	</> : undefined
 
-							return table.filter((_, index) => {
-								return index !== rowIdx
-							})
-						})
-					}
+	return <div className="table">
+		{editFieldsButton}
+		<EditModeContext.Provider value={editTable}>
+			<div className={`table-wrapper ${active ? 'active' : ''}`} onMouseEnter={setActive}>
+				<table>
+					<thead>
+						<tr>
+							{variadicHeaders}
+							{/* Generazione degli header della tabella */}
+							{table.headers.map((th, thIdx) => {
+								return <th key={thIdx}>{th}</th>
+							})}
+						</tr>
+					</thead>
+					<tbody>
+						{[...Array(nRows).keys()].map(rowIdx => {
+							const row = state?.[rowIdx]
 
-					const removeRowButton = editMode ? <>
-						<button className="table-remove-row" onClick={deleteRow}>-</button>
-					</> : undefined
+							const rowHasFixedField = table.fields.map(field => {
+								return field.fixedArgs ? field.fixedArgs.length > rowIdx : false
+							}).reduce((prev, curr) => {
+								return prev || curr
+							}, false)
 
-					return <tr key={rowIdx}>
-						<td>
-							{removeRowButton}
-						</td>
-						<td>
-							{rowIdx + 1}
-						</td>
-						{table.fields.map((field, fieldIdx) => renderRowField(rowIdx, field, fieldIdx, row))}
-					</tr>
-				})}
-			</tbody>
-		</table>
-		{addButton}
-	</>
+							const deleteRow: () => void = () => {
+								update(table => {
+									if (table == undefined)
+										return table
+
+									return table.filter((_, index) => {
+										return index !== rowIdx
+									})
+								})
+							}
+
+							const removeRowButton = table.isVariadic && editTable ? <td>
+								{rowHasFixedField ? undefined : <button className="table-remove-row" onClick={deleteRow}>-</button>}
+							</td> : undefined
+
+							const rowIndex = table.isVariadic ? <td>
+								{rowIdx + 1}
+							</td> : undefined
+
+							return <tr key={rowIdx}>
+								{removeRowButton}
+								{rowIndex}
+								{table.fields.map((field, fieldIdx) => renderRowField(rowIdx, field, fieldIdx, row))}
+							</tr>
+						})}
+					</tbody>
+				</table>
+				{addButton}
+			</div>
+		</EditModeContext.Provider>
+	</div>
 }
 
 /**
@@ -244,7 +201,7 @@ function TableVariadicMouse({ table, state, update, renderRowField, active, dele
 					const onRowHover = () => {
 						if (circle != undefined)
 							highlightCircle(circle.imageIdx, rowIdx)
-						
+
 						setActiveRow(rowIdx)
 					}
 
