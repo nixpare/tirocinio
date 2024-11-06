@@ -1,7 +1,7 @@
 import { StrictMode, useState } from 'react'
 import { createRoot } from 'react-dom/client'
 import { AnatomStruct, EditModeContext } from '../components/AnatomStruct/AnatomStruct'
-import { AnatomStructState, AnatomStructTemplate, AnatomStructInputMode, AnatomStructTableType, AnatomStructRowSpecial } from '../models/AnatomStructTypes'
+import { AnatomStructState, AnatomStructTemplate, AnatomStructInputMode, AnatomStructRowSpecial } from '../models/AnatomStructTypes'
 
 import '../global.css'
 import './index.css'
@@ -21,8 +21,6 @@ const boneTemplate: AnatomStructTemplate = {
             image: ['/images/slide-image-1.png', '/images/slide-image-2.png'],
             tables: [
                 {
-                    type: AnatomStructTableType.VariadicMouse,
-                    isVariadic: true,
                     headers: ["Nucleo", "Stato"],
                     fields: [
                         {
@@ -32,11 +30,11 @@ const boneTemplate: AnatomStructTemplate = {
                         {
                             mode: AnatomStructInputMode.Text
                         }
-                    ]
+                    ],
+                    isVariadic: true,
+                    interactsWithImage: true
                 },
                 {
-                    type: AnatomStructTableType.VariadicMouse,
-                    isVariadic: true,
                     headers: ["Nucleo 2", "Stato 2"],
                     fields: [
                         {
@@ -46,7 +44,9 @@ const boneTemplate: AnatomStructTemplate = {
                         {
                             mode: AnatomStructInputMode.Text
                         }
-                    ]
+                    ],
+                    isVariadic: true,
+                    interactsWithImage: true
                 }
             ]
         },
@@ -56,7 +56,6 @@ const boneTemplate: AnatomStructTemplate = {
             image: ['/images/slide-image-1.png'],
             tables: [
                 {
-                    type: AnatomStructTableType.Default,
                     headers: ["Nucleo", "Stato", "Lunghezza (cm)"],
                     fields: [
                         {
@@ -80,7 +79,6 @@ const boneTemplate: AnatomStructTemplate = {
             image: ['/images/slide-image-2.png'],
             tables: [
                 {
-                    type: AnatomStructTableType.Default,
                     headers: ["Settore", "Presente/Assente", "Note"],
                     fields: [
                         {
@@ -97,7 +95,6 @@ const boneTemplate: AnatomStructTemplate = {
                     ]
                 },
                 {
-                    type: AnatomStructTableType.Default,
                     headers: ["Area", "Dettagli", "Colore"],
                     fields: [
                         {
@@ -121,7 +118,6 @@ const boneTemplate: AnatomStructTemplate = {
             image: ['/images/slide-image-3.png', '/images/slide-image-4.png'],
             tables: [
                 {
-                    type: AnatomStructTableType.Default,
                     headers: ["Codice Misura", "Nome Misura", "Misura (cm)"],
                     fields: [
                         {
@@ -156,8 +152,6 @@ const boneTemplate: AnatomStructTemplate = {
             title: "Caratteri non metrici",
             tables: [
                 {
-                    type: AnatomStructTableType.VariadicButton,
-                    isVariadic: true,
                     headers: ["Caratteri non metrici", "Stato"],
                     fields: [
                         {
@@ -173,7 +167,8 @@ const boneTemplate: AnatomStructTemplate = {
                             mode: AnatomStructInputMode.Dropdown,
                             dropdownArgs: ["Assente", "Non valutabile", "Presente"]
                         }
-                    ]
+                    ],
+                    isVariadic: true,
                 }
             ]
         },
@@ -185,7 +180,6 @@ const boneTemplate: AnatomStructTemplate = {
             image: ["/images/slide-image-5.png"],
             tables: [
                 {
-                    type: AnatomStructTableType.Default,
                     headers: ["#", "Classe", "Descrizione segni"],
                     fields: [
                         {

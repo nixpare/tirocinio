@@ -1,12 +1,12 @@
 import { createContext, FormEvent, MouseEvent, useContext, useState } from 'react'
 import { produce } from 'immer'
-import { AnatomStructPage, AnatomStructState, AnatomStructTableType, AnatomStructPageState, AnatomStructPropertyImageRef, AnatomStructRowSpecial } from '../../models/AnatomStructTypes'
+import { AnatomStructPage, AnatomStructState, AnatomStructPageState, AnatomStructPropertyImageRef, AnatomStructRowSpecial } from '../../models/AnatomStructTypes'
 import { Table, UpdateTableFunc } from './Table'
 import { Carousel } from '../UI/Carousel'
 
 import './AnatomStruct.css'
 
-type UpdatePageFunc = (fn: (page: AnatomStructPageState) => AnatomStructPageState) => void
+export type UpdatePageFunc = (fn: (page: AnatomStructPageState) => AnatomStructPageState) => void
 
 type CreateImageCircleGenericFunc = (tableIdx: number, imageIdx: number, circleIdx: number, x: number, y: number) => void
 type DeleteImageCircleGenericFunc = (tableIdx: number, imageIdx: number, circleIdx: number) => void
@@ -16,6 +16,7 @@ export type DeleteImageCircleFunc = (imageIdx: number, circleIdx: number) => voi
 export type HighlightImageCircleFunc = (imageIdx: number, circleIdx: number) => void
 
 export const EditModeContext = createContext(false)
+export const VerticalSplitContext = createContext(false)
 
 /**
  * AnatomStruct è il macro elemento che gestisce la visualizzazione e la modifica / inserimento
@@ -64,7 +65,9 @@ export function AnatomStruct({ anatomStruct, setAnatomStruct }: { anatomStruct: 
 			})
 		}
 
-		return <PropertyPage key={page.title} page={page} state={anatomStruct.props?.[pageIdx]} update={updatePage} />;
+		return <VerticalSplitContext.Provider value={false}>
+			<PropertyPage key={page.title} page={page} state={anatomStruct.props?.[pageIdx]} update={updatePage} />
+		</VerticalSplitContext.Provider>
 	})
 
 	if (!editMode) {
@@ -102,13 +105,14 @@ type PropertyPageImageCircle = (((({ x: number, y: number } | undefined)[]) | un
  * @param update funzione di produzione per informare lo stato globale dei cambiamenti
  * @return ReactNode
  */
-function PropertyPage({ page, state, update }: { page: AnatomStructPage, state: AnatomStructPageState, update: UpdatePageFunc }) {
+export function PropertyPage({ page, state, update }: { page: AnatomStructPage, state: AnatomStructPageState, update: UpdatePageFunc }) {
 	const [activeTable, setActiveTable] = useState(0)
 	const [activeImage, setActiveImage] = useState(0)
 	const [activeCircles, setActiveCircles] = useState([] as boolean[][][])
+	const verticalSplit = useContext(VerticalSplitContext)
 
 	const circles: PropertyPageImageCircle = state?.map((table, tableIdx) => {
-		if (page.tables[tableIdx].type !== AnatomStructTableType.VariadicMouse)
+		if (!page.tables[tableIdx].interactsWithImage)
 			return undefined
 
 		return page.image?.map((_, imageIdx) => {
@@ -214,9 +218,11 @@ function PropertyPage({ page, state, update }: { page: AnatomStructPage, state: 
 		</div>
 	}
 
+	const splitClassName = verticalSplit ? undefined : 'split'
+
 	return <div className="property-page">
 		<h3>{page.title}</h3>
-		<div className="split">
+		<div className={splitClassName}>
 			<div>
 				{tables}
 			</div>
@@ -248,7 +254,7 @@ function PropertyPageImage({ image, idx, page, pageState, activeTable, circles, 
 		if (!editMode)
 			return
 
-		if (page.tables[activeTable].type !== AnatomStructTableType.VariadicMouse)
+		if (!page.tables[activeTable].interactsWithImage)
 			return
 
 		const img = ev.nativeEvent.target as HTMLImageElement

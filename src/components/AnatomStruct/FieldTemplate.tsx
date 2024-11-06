@@ -11,9 +11,10 @@ export function FieldTemplate({ field, updateField, deleteField }: { field: Anat
 	const selectedField = getInputModeID(field.mode)
 
 	const setSelectedField = (selected?: string) => {
-		const field = anatomStructInputModes[selected ?? ''] ?? AnatomStructInputMode.Text
-		updateField(() => {
-			return { mode: field }
+		const fieldID = anatomStructInputModes[selected ?? ''] ?? AnatomStructInputMode.Text
+		updateField(field => {
+			field.mode = fieldID
+			return field
 		})
 	}
 
@@ -36,16 +37,20 @@ export function FieldTemplate({ field, updateField, deleteField }: { field: Anat
 
 function FieldTemplateArgs({ field, updateField }: { field: AnatomStructTableField, updateField: UpdateFieldTemplateFunc }) {
 	switch (field.mode) {
-		case AnatomStructInputMode.Fixed:
-			return <FixedFieldTemplate field={field} updateField={updateField} />
 		case AnatomStructInputMode.Text:
-			return undefined
+			return <FixedFieldTemplate field={field} updateField={updateField} />
 		case AnatomStructInputMode.Number:
-			return undefined
+			return <FixedFieldTemplate field={field} updateField={updateField} />
 		case AnatomStructInputMode.Dropdown:
-			return <DropdownFieldTemplate field={field} updateField={updateField} />
+			return <>
+				<DropdownFieldTemplate field={field} updateField={updateField} />
+				<FixedFieldTemplate field={field} updateField={updateField} />
+			</>
 		case AnatomStructInputMode.Multistage:
-			return <MultistageFieldTemplate field={field} updateField={updateField} />
+			return <div>
+				<MultistageFieldTemplate field={field} updateField={updateField} />
+				<FixedFieldTemplate field={field} updateField={updateField} />
+			</div> 
 	}
 }
 
@@ -68,8 +73,17 @@ function FixedFieldTemplate({ field, updateField }: { field: AnatomStructTableFi
 		setArg(ev.target.value ?? '')
 	}
 
-	return <div className="container w-100 fixed-field">
+	return <div className="container w-100 m-0 fixed-field">
 		<div className="container container-horiz container-start w-100">
+			<label htmlFor="fixed-arg">Aggiungi campo fisso:</label>
+			<div>
+				<input type="text" name="fixed-arg" value={arg} onChange={handleInputChange} />
+				<button className="add-arg" onClick={addArg}>
+					<i className="fa-solid fa-circle-plus"></i>
+				</button>
+			</div>
+		</div>
+		{ field.fixedArgs && field.fixedArgs.length > 0 ? <div className="container container-horiz container-start w-100 m-0">
 			{field.fixedArgs?.map((arg, argIdx) => {
 				const onArgChange = (ev: ChangeEvent<HTMLInputElement>): void => {
 					updateField(field => {
@@ -87,7 +101,7 @@ function FixedFieldTemplate({ field, updateField }: { field: AnatomStructTableFi
 
 				const deleteHeader = (ev: MouseEvent) => {
 					ev.preventDefault()
-					
+
 					updateField(field => {
 						if (!field.fixedArgs)
 							return field
@@ -106,16 +120,7 @@ function FixedFieldTemplate({ field, updateField }: { field: AnatomStructTableFi
 					</div>
 				</div>
 			})}
-		</div>
-		<div className="container container-horiz container-start w-100">
-			<label htmlFor="fixed-arg">Aggiungi campo fisso:</label>
-			<div>
-				<input type="text" name="fixed-arg" value={arg} onChange={handleInputChange} />
-				<button className="add-arg" onClick={addArg}>
-					<i className="fa-solid fa-circle-plus"></i>
-				</button>
-			</div>
-		</div>
+		</div> : undefined }
 	</div>
 }
 
@@ -138,8 +143,17 @@ function DropdownFieldTemplate({ field, updateField }: { field: AnatomStructTabl
 		setArg(ev.target.value ?? '')
 	}
 
-	return <div className="container w-100 dropdown-field">
+	return <div className="container w-100 dropdown-field m-0">
 		<div className="container container-horiz container-start w-100">
+			<label htmlFor="dropdown-arg">Aggiungi opzione:</label>
+			<div>
+				<input type="text" name="dropdown-arg" value={arg} onChange={handleInputChange} />
+				<button className="add-arg" onClick={addArg}>
+					<i className="fa-solid fa-circle-plus"></i>
+				</button>
+			</div>
+		</div>
+		{ field.dropdownArgs && field.dropdownArgs.length > 0 ? <div className="container container-horiz container-start w-100">
 			{field.dropdownArgs?.map((arg, argIdx) => {
 				const onArgChange = (ev: ChangeEvent<HTMLInputElement>): void => {
 					updateField(field => {
@@ -177,16 +191,7 @@ function DropdownFieldTemplate({ field, updateField }: { field: AnatomStructTabl
 					</div>
 				</div>
 			})}
-		</div>
-		<div className="container container-horiz container-start w-100">
-			<label htmlFor="dropdown-arg">Aggiungi opzione:</label>
-			<div>
-				<input type="text" name="dropdown-arg" value={arg} onChange={handleInputChange} />
-				<button className="add-arg" onClick={addArg}>
-					<i className="fa-solid fa-circle-plus"></i>
-				</button>
-			</div>
-		</div>
+		</div> : undefined }
 	</div>
 }
 
@@ -232,8 +237,8 @@ function MultistageFieldTemplate({ field, updateField }: { field: AnatomStructTa
 		})
 	}
 
-	return <div className="container w-100 multistage-field">
-		<div>
+	return <div className="container w-100 m-0">
+		{field.multistageArgs && field.multistageArgs.length > 0 ? <div className="w-100 container section">
 			{field.multistageArgs?.map((arg, argIdx) => {
 				const updateArg: UpdateMultistageArgTemplateFunc = (fn) => {
 					updateField(field => {
@@ -256,8 +261,8 @@ function MultistageFieldTemplate({ field, updateField }: { field: AnatomStructTa
 					arg={arg} updateArg={updateArg} deleteArg={deleteArg}
 				/>
 			})}
-		</div>
-		<div className="container container-horiz container-start w-100 add-multistage-arg">
+		</div> : undefined}
+		<div className="container container-horiz container-start w-100">
 			<label htmlFor="multistage-arg">Aggiungi opzione:</label>
 			<input type="text" name="multistage-arg" value={stage.value ?? ''} onChange={handleStageValueChange} />
 			<Dropdown name="table-fields"
@@ -304,9 +309,7 @@ function MultistageNextArgTemplate({ arg, updateArg, deleteArg }: { arg: AnatomS
 		})
 	}
 
-	const nextClassName = arg.next.mode === AnatomStructInputMode.Multistage ? 'container' : 'container multistage-next'
-
-	return <div className="container container-start w-100 multistage-arg">
+	return <div className="container container-start w-100 m-0 multistage-arg">
 		<div className="w-100 arg-input">
 			<button className="delete-field" onClick={deleteMultistageArg}>
 				<i className="fa-solid fa-trash"></i>
@@ -319,8 +322,6 @@ function MultistageNextArgTemplate({ arg, updateArg, deleteArg }: { arg: AnatomS
 				selectedField={fieldType} setSelectedField={setFieldType}
 			/>
 		</div>
-		<div className={nextClassName}>
-			<FieldTemplateArgs field={arg.next} updateField={updateNextField} />
-		</div>
+		<FieldTemplateArgs field={arg.next} updateField={updateNextField} />
 	</div>
 }

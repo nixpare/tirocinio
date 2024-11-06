@@ -38,11 +38,7 @@ export function Table({ table, state, update, active, setActive, deleteCircle, h
 		}
 
 		const key = `${rowIdx}-${fieldIdx}`
-		const fixedArg = field.fixedArgs?.[rowIdx]
 		const propertyState = row?.[fieldIdx]
-
-		if (fixedArg != undefined)
-			return <td key={key}>{fixedArg}</td>
 
 		return <Property key={key}
 			template={field} rowIdx={rowIdx}

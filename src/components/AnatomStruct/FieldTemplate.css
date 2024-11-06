@@ -50,8 +50,7 @@
 .field-template .fixed-field,
 .field-template .dropdown-field,
 .field-template .multistage-field,
-.field-template .multistage-arg,
-.field-template .multistage-arg>div {
+.field-template .multistage-arg {
 	gap: 0;
 }
 
@@ -62,16 +61,4 @@
 .field-template .arg-input>input {
 	font-size: 1.05em;
 	box-sizing: content-box;
-}
-
-.field-template .multistage-field,
-.field-template .multistage-next {
-	background-color: rgba(var(--primary-color), .2);
-	border-radius: .4em;
-	padding: 0 1em;
-}
-
-.field-template .multistage-arg,
-.field-template .multistage-arg>.container {
-	margin-bottom: 0;
 }

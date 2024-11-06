@@ -25,71 +25,27 @@ export type AnatomStructTemplate = {
 export type AnatomStructPage = {
 	/** titolo della pagina */
 	title: string
-	/** immagini da affiancare alle tabelle delle proprietà */
-	image?: string[]
 	/** le tabelle delle proprietà */
 	tables: AnatomStructTable[]
+	/** immagini da affiancare alle tabelle delle proprietà */
+	image?: string[]
 }
 
 /**
  * AnatomStructTable contiene il template della tabella per la sua generazione
  * ed eventualmente anche delle informazioni già esistenti (es. i campi fissi di una tabella).
+ * 
+ * TODO: importare documentazione precedente
  */
 export type AnatomStructTable = {
-	/** la tipologia di tabella */
-	type: AnatomStructTableType
-	/** se la tabella è espandibile */
-	isVariadic?: boolean,
 	/** le intestazioni della tabella */
 	headers: string[]
 	/** elenco dei vari campi di input presenti per ogni riga della tabella */
 	fields: AnatomStructTableField[]
-}
-
-/** AnatomStructTableType contiene le varie tipologie di tabella supportate */
-export enum AnatomStructTableType {
-	/**
-	 * Default è una tabella non variabile nel numero di righe,
-	 * quindi la presenza delle righe è definita dai campi che hanno
-	 * tipo AnatomStructInputMode.Fixed
-	 */
-	Default,
-	/**
-	 * VariadicButton è una tabella variabile nel numero di righe.
-	 * Il numero di righe è aggiunto dinamicamente con un pulsante e viene
-	 * aggiunto in automatico l'intestazione "#" come prima intestazione
-	 * e un numero crescente per ogni riga.
-	 * Quando si caricano dei dati già presenti nella tabella, il numero di
-	 * righe è preso dinamicamente dai dati
-	 */
-	VariadicButton,
-	/**
-	 * VariadicButton è una tabella variabile nel numero di righe.
-	 * Il numero di righe è aggiunto dinamicamente cliccando su una delle
-	 * immagini presenti a lato della pagina, quando la tabella è attiva
-	 * (evidenziata), viene aggiunto in automatico l'intestazione "#" come
-	 * prima intestazione e un numero crescente per ogni riga e quando si
-	 * fa hovering sulla riga in automatico viene portato in evidenza il punto
-	 * selezionato originariamente sull'immagine.
-	 * Quando si caricano dei dati già presenti nella tabella, il numero di
-	 * righe è preso dinamicamente dai dati, inclusa la posizione del punto
-	 * selezionato nell'immagine
-	 */
-	VariadicMouse
-}
-
-/** anatomStructTableTypes è usato per mappare nomi dedicati all'UI con i tipi di tabella */
-export const anatomStructTableTypes: Record<string, AnatomStructTableType> = {
-	"Default": AnatomStructTableType.Default,
-	"Variabile con pulsante": AnatomStructTableType.VariadicButton,
-	"Variabile su immagine": AnatomStructTableType.VariadicMouse
-}
-
-/** getTableTypeID è usato per mappare i tipi di tabella con i nomi dedicati all'UI */
-export function getTableTypeID(table?: AnatomStructTableType): string | undefined {
-	return Object.entries(anatomStructTableTypes).filter(([_, tableType]) => {
-		return tableType === table
-	}).map(([tableID, _]) => tableID)[0] ?? undefined
+	/** se la tabella è espandibile */
+	isVariadic?: boolean,
+	/** se la tabella interagisce tramite cerchi con le immagini */
+	interactsWithImage?: boolean,
 }
 
 /**
@@ -109,8 +65,6 @@ export type AnatomStructTableField = {
 
 /** AnatomStructInputMode contiene le varie tipologie di input supportate dalle proprietà */
 export enum AnatomStructInputMode {
-	/** una semplice stringa non modificabile */
-	Fixed,
 	/** un semplice <input type="text" /> */
 	Text,
 	/** un semplice <input type="number" /> */
@@ -130,7 +84,6 @@ export enum AnatomStructInputMode {
 
 /** anatomStructInputModes è usato per mappare nomi dedicati all'UI con i tipi di modalità di input */
 export const anatomStructInputModes: Record<string, AnatomStructInputMode> = {
-	"Fissato": AnatomStructInputMode.Fixed,
 	"Testo": AnatomStructInputMode.Text,
 	"Numbero": AnatomStructInputMode.Number,
 	"Scelta multipla": AnatomStructInputMode.Dropdown,

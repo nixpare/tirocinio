@@ -1,18 +1,16 @@
 import { ChangeEvent, FormEvent, MouseEvent, useState } from "react"
-import { AnatomStructInputMode, anatomStructInputModes, AnatomStructTable, AnatomStructTableField, AnatomStructTableState, AnatomStructTableType, anatomStructTableTypes, getInputModeID, getTableTypeID } from "../../models/AnatomStructTypes"
-import { Dropdown } from "../UI/Dropdown"
 import { produce } from "immer"
+import { AnatomStructInputMode, anatomStructInputModes, AnatomStructPage, AnatomStructPageState, AnatomStructTable, AnatomStructTableField, getInputModeID } from "../../models/AnatomStructTypes"
+import { FieldTemplate, UpdateFieldTemplateFunc } from "./FieldTemplate"
+import { EditModeContext, PropertyPage, UpdatePageFunc, VerticalSplitContext } from "./AnatomStruct"
+import { Dropdown } from "../UI/Dropdown"
 
 import "./TableTemplate.css"
-import { FieldTemplate, UpdateFieldTemplateFunc } from "./FieldTemplate"
-import { Table, UpdateTableFunc } from "./Table"
-import { EditModeContext } from "./AnatomStruct"
 
 type UpdateTableTemplateFunc = (fn: (table: AnatomStructTable) => AnatomStructTable) => void
 
 export function TableTemplate() {
 	const [table, setTable] = useState({
-		type: undefined as unknown as AnatomStructTableType,
 		headers: [],
 		fields: []
 	} as AnatomStructTable)
@@ -25,12 +23,15 @@ export function TableTemplate() {
 		setTable(produce(fn))
 	}
 
-	const tableType = getTableTypeID(table.type)
-	const setTableType = (value?: string): void => {
+	const toggleVariadicTable = () => {
 		updateTable(table => {
-			// Non imposto il tipo della tabella di fallback apposta così che lo switch
-			// non selezioni nulla se il tipo della tabella non è stata ancora selezionato
-			table.type = anatomStructTableTypes[value ?? '']
+			table.isVariadic = !table.isVariadic
+			return table
+		})
+	}
+	const toggleImageIteractiveTable = () => {
+		updateTable(table => {
+			table.interactsWithImage = !table.interactsWithImage
 			return table
 		})
 	}
@@ -49,34 +50,33 @@ export function TableTemplate() {
 		})
 	}
 
-	const tableTemplateHeader = table.type != undefined ? <TableTemplateHeaders
-		table={table} updateTable={updateTable}
-		header={header} addHeader={addHeader} onNewHeaderChange={onHeaderChange}
-	/> : undefined
-
 	return <div className="container table-template">
 		<div className="split">
 			<form onSubmit={saveTable}>
-				<TableTemplateType tableType={tableType} setTableType={setTableType} />
-				{tableTemplateHeader}
+				<div className="w-100 container container-horiz container-start section">
+					<h4>Opzioni Tabella:</h4>
+					<div className="container container-horiz">
+						<label htmlFor="isVariadic">Variabile:</label>
+						<input type="checkbox" name="isVariadic" checked={table.isVariadic ?? false} onChange={toggleVariadicTable} />
+					</div>
+					<div className="container container-horiz">
+						<label htmlFor="isVariadic">Interattiva:</label>
+						<input type="checkbox" name="interactsWithImage" checked={table.interactsWithImage ?? false} onChange={toggleImageIteractiveTable} />
+					</div>
+				</div>
+				<TableTemplateHeaders
+					table={table} updateTable={updateTable}
+					header={header} addHeader={addHeader} onNewHeaderChange={onHeaderChange}
+				/>
 				<TableTemplateFields table={table} updateTable={updateTable} />
 				<button type="submit">Salva Tabella</button>
 			</form>
 			<div className="fake-table">
-				<h3>Prototipo Tabella</h3>
-				<FakeTable table={table} />
+				<VerticalSplitContext.Provider value={true}>
+					<FakePage table={table} />
+				</VerticalSplitContext.Provider>
 			</div>
 		</div>
-	</div>
-}
-
-function TableTemplateType({ tableType, setTableType }: { tableType?: string, setTableType: (newState?: string) => void }) {
-	return <div className="container container-horiz container-start">
-		<label htmlFor="table-type">Tipo della tabella:</label>
-		<Dropdown name="table-type"
-			options={Object.keys(anatomStructTableTypes)}
-			selectedField={tableType} setSelectedField={setTableType}
-		/>
 	</div>
 }
 
@@ -86,7 +86,16 @@ function TableTemplateHeaders({ table, updateTable, header, addHeader, onNewHead
 }) {
 	return <div className="container container-start section">
 		<h4>Intestazioni Tabella</h4>
-		<div className="container container-horiz container-start">
+		<div className="w-100 container container-horiz container-start">
+			<label htmlFor="table-headers">Aggiungi intestazione:</label>
+			<div>
+				<input type="text" name="table-headers" value={header} onChange={onNewHeaderChange} />
+				<button className="add-header" onClick={addHeader}>
+					<i className="fa-solid fa-circle-plus"></i>
+				</button>
+			</div>
+		</div>
+		{table.headers.length > 0 ? <div className="w-100 container container-horiz container-start mt-0">
 			{table.headers.map((header, headerIdx) => {
 				const onHeaderChange = (ev: ChangeEvent<HTMLInputElement>): void => {
 					updateTable(table => {
@@ -102,7 +111,7 @@ function TableTemplateHeaders({ table, updateTable, header, addHeader, onNewHead
 
 				const deleteHeader = (ev: MouseEvent) => {
 					ev.preventDefault()
-					
+
 					updateTable(table => {
 						table.headers = table.headers.filter((_, idx) => idx !== headerIdx)
 						return table
@@ -118,32 +127,11 @@ function TableTemplateHeaders({ table, updateTable, header, addHeader, onNewHead
 					</div>
 				</div>
 			})}
-		</div>
-		<div className="container container-horiz container-start">
-			<label htmlFor="table-headers">Aggiungi intestazione:</label>
-			<div>
-				<input type="text" name="table-headers" value={header} onChange={onNewHeaderChange} />
-				<button className="add-header" onClick={addHeader}>
-					<i className="fa-solid fa-circle-plus"></i>
-				</button>
-			</div>
-		</div>
-		
+		</div> : undefined }
 	</div>
 }
 
 function TableTemplateFields({ table, updateTable }: { table: AnatomStructTable, updateTable: UpdateTableTemplateFunc }) {
-	switch (table.type) {
-		case AnatomStructTableType.Default:
-			return <DefaultTableTemplateFields table={table} updateTable={updateTable} />
-		case AnatomStructTableType.VariadicButton:
-			return <DefaultTableTemplateFields table={table} updateTable={updateTable} />
-		case AnatomStructTableType.VariadicMouse:
-			return <h2>To be implemented</h2>
-	}
-}
-
-function DefaultTableTemplateFields({ table, updateTable }: { table: AnatomStructTable, updateTable: UpdateTableTemplateFunc }) {
 	const [field, setField] = useState({} as AnatomStructTableField)
 	const updateField = (fn: (field: AnatomStructTableField) => AnatomStructTableField): void => {
 		setField(produce(field => {
@@ -172,25 +160,23 @@ function DefaultTableTemplateFields({ table, updateTable }: { table: AnatomStruc
 
 	return <div className="container container-start section">
 		<h4>Campi Tabella</h4>
-		<div>
-			{table.fields.map((field, fieldIdx) => {
-				const updateField: UpdateFieldTemplateFunc = (fn) => {
-					updateTable(table => {
-						table.fields[fieldIdx] = fn(table.fields[fieldIdx])
-						return table
-					})
-				}
+		{table.fields.map((field, fieldIdx) => {
+			const updateField: UpdateFieldTemplateFunc = (fn) => {
+				updateTable(table => {
+					table.fields[fieldIdx] = fn(table.fields[fieldIdx])
+					return table
+				})
+			}
 
-				const deleteField = () => {
-					updateTable(table => {
-						table.fields = table.fields.filter((_, idx) => idx !== fieldIdx)
-						return table
-					})
-				}
+			const deleteField = () => {
+				updateTable(table => {
+					table.fields = table.fields.filter((_, idx) => idx !== fieldIdx)
+					return table
+				})
+			}
 
-				return <FieldTemplate key={fieldIdx} field={field} updateField={updateField} deleteField={deleteField} />
-			})}
-		</div>
+			return <FieldTemplate key={fieldIdx} field={field} updateField={updateField} deleteField={deleteField} />
+		})}
 		<div className="container container-horiz container-start">
 			<label htmlFor="table-fields">Aggiungi campo:</label>
 			<div>
@@ -206,19 +192,21 @@ function DefaultTableTemplateFields({ table, updateTable }: { table: AnatomStruc
 	</div>
 }
 
-function FakeTable({ table }: { table: AnatomStructTable }) {
-	const [fakeState, setFakeState] = useState([] as AnatomStructTableState)
-	const updateFakeState: UpdateTableFunc = (fn) => {
-		setFakeState(produce(state => {
-			return fn(state)
+function FakePage({ table }: { table: AnatomStructTable }) {
+	const [fakeState, setFakeState] = useState([] as AnatomStructPageState)
+	const updateFakeState: UpdatePageFunc = (fn) => {
+		setFakeState(produce(page => {
+			return fn(page)
 		}))
 	}
 
+	const fakePage: AnatomStructPage = {
+		title: 'Prototipo Tabella',
+		tables: [table],
+		image: table.interactsWithImage ? ['/images/template_placeholder.png'] : undefined,
+	}
+
 	return <EditModeContext.Provider value={true}>
-		<Table
-			table={table} state={fakeState} update={updateFakeState}
-			active={true} setActive={() => {}}
-			deleteCircle={() => {}} highlightCircle={() => {}}
-		/>
+		<PropertyPage page={fakePage} state={fakeState} update={updateFakeState} />
 	</EditModeContext.Provider>
 }

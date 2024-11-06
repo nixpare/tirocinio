@@ -22,9 +22,11 @@ export function Property({ template, rowIdx, state, update }: {
 }) {
 	const editMode = useContext(EditModeContext)
 
+	const fixedArg = template.fixedArgs?.[rowIdx]
+	if (fixedArg != undefined)
+		return <td>{fixedArg}</td>
+
 	switch (template.mode) {
-		case AnatomStructInputMode.Fixed:
-			return <td>{template.fixedArgs?.[rowIdx]}</td>
 		case AnatomStructInputMode.Text:
 			const handleTextInput = (ev: ChangeEvent<HTMLInputElement>): void => {
 				update(() => {
