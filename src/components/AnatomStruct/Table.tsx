@@ -68,6 +68,8 @@ export function Table({ table, state, update, active, setActive, deleteCircle, h
 			.reduce((prev, curr) => { return prev > curr ? prev : curr }, 0)
 	)
 
+	const [activeRow, setActiveRow] = useState(-1)
+
 	const addRow = (ev: MouseEvent): void => {
 		ev.preventDefault()
 
@@ -90,10 +92,10 @@ export function Table({ table, state, update, active, setActive, deleteCircle, h
 		<button className="table-add-row" onClick={addRow}>Aggiungi riga</button>
 	</> : undefined
 
-	const variadicHeaders = table.isVariadic ? <>
-		{editTable ? <th></th> : undefined}
-		<th>#</th>
-	</> : undefined
+	const variadicHeaders = <>
+		<th></th>
+		{ table.isVariadic ? <th>#</th> : undefined }
+	</> 
 
 	return <div className="table">
 		{editFieldsButton}
@@ -119,7 +121,14 @@ export function Table({ table, state, update, active, setActive, deleteCircle, h
 								return prev || curr
 							}, false)
 
-							const deleteRow: () => void = () => {
+							const circle = row?.[AnatomStructRowSpecial.CircleInfo] as AnatomStructPropertyImageRef | undefined
+
+							const deleteRow = (ev: MouseEvent): void => {
+								ev.preventDefault()
+
+								if (circle != undefined)
+									deleteCircle(circle?.imageIdx, rowIdx)
+
 								update(table => {
 									if (table == undefined)
 										return table
@@ -130,18 +139,23 @@ export function Table({ table, state, update, active, setActive, deleteCircle, h
 								})
 							}
 
-							const removeRowButton = table.isVariadic && editTable ? <td>
-								{rowHasFixedField ? undefined : <button className="table-remove-row" onClick={deleteRow}>-</button>}
-							</td> : undefined
+							const onRowHover = () => {
+								if (circle != undefined)
+									highlightCircle(circle.imageIdx, rowIdx)
 
-							const rowIndex = table.isVariadic ? <td>
-								{rowIdx + 1}
-							</td> : undefined
+								setActiveRow(rowIdx)
+							}
+							const className = active && activeRow === rowIdx ? 'active' : undefined
 
-							return <tr key={rowIdx}>
-								{removeRowButton}
-								{rowIndex}
-								{table.fields.map((field, fieldIdx) => renderRowField(rowIdx, field, fieldIdx, row))}
+							return <tr key={rowIdx} className={className} onMouseEnter={onRowHover}>
+								<TableVariadicControl
+									rowIdx={rowIdx} editTable={editTable}
+									isVariadic={table.isVariadic ?? false} rowHasFixedField={rowHasFixedField}
+									deleteRow={deleteRow}
+								/>
+								{
+									table.fields.map((field, fieldIdx) => renderRowField(rowIdx, field, fieldIdx, row))
+								}
 							</tr>
 						})}
 					</tbody>
@@ -152,79 +166,24 @@ export function Table({ table, state, update, active, setActive, deleteCircle, h
 	</div>
 }
 
-/**
- * TableVariadicMouse rappresenta la sezione di una pagina con la tabella di opzioni.
- * TODO
- * @param table attributo derivato dallo stato globale
- * @param update funzione di produzione per informare lo stato globale dei cambiamenti
- * @return ReactNode
- */
-function TableVariadicMouse({ table, state, update, renderRowField, active, deleteCircle, highlightCircle }: {
-	table: AnatomStructTable, state: AnatomStructTableState,
-	update: UpdateTableFunc, renderRowField: RenderRowFieldFunc,
-	active: boolean, deleteCircle: DeleteImageCircleFunc, highlightCircle: HighlightImageCircleFunc
+function TableVariadicControl({ rowIdx, editTable, isVariadic, rowHasFixedField, deleteRow }: {
+	rowIdx: number, editTable: boolean,
+	isVariadic: boolean, rowHasFixedField: boolean,
+	deleteRow: (ev: MouseEvent) => void
 }) {
-	const editMode = useContext(EditModeContext)
-	const [activeRow, setActiveRow] = useState(-1)
+	const removeRowButton = editTable && !rowHasFixedField ? <>
+		<button className="table-remove-row" onClick={deleteRow}>-</button>
+	</> : undefined
 
 	return <>
-		<table>
-			<thead>
-				<tr>
-					<th key={0}></th>
-					<th key={1}>#</th>
-					{/* Generazione degli header della tabella */}
-					{table.headers.map((th, thIdx) => {
-						return <th key={thIdx + 2}>{th}</th>
-					})}
-				</tr>
-			</thead>
-			<tbody>
-				{/* Generazione dei valori già esistenti della tabella */}
-				{state?.map((row, rowIdx) => {
-					const circle = row?.[AnatomStructRowSpecial.CircleInfo] as AnatomStructPropertyImageRef | undefined
-
-					const deleteRow: () => void = () => {
-						if (circle != undefined)
-							deleteCircle(circle?.imageIdx, rowIdx)
-
-						update(table => {
-							if (!table)
-								return table
-
-							return table.filter((_, index) => {
-								return index !== rowIdx
-							})
-						})
-					}
-
-					const onRowHover = () => {
-						if (circle != undefined)
-							highlightCircle(circle.imageIdx, rowIdx)
-
-						setActiveRow(rowIdx)
-					}
-
-					const className = active && activeRow === rowIdx ? 'active' : undefined
-
-					const variadicControl = editMode ? <>
-						<button className="table-remove-row" onClick={deleteRow}>-</button>
-					</> : undefined
-
-					return <tr key={rowIdx} className={className} onMouseEnter={onRowHover}>
-						<td>
-							<div className="table-variadic-control">
-								<span>&gt;</span>
-								{variadicControl}
-							</div>
-						</td>
-						<td>
-							{rowIdx + 1}
-						</td>
-						{table.fields.map((field, fieldIdx) => renderRowField(rowIdx, field, fieldIdx, row))}
-					</tr>
-				})}
-			</tbody>
-		</table>
+		<td>
+			<div className="table-variadic-control">
+				<span>&gt;</span>
+				{removeRowButton}
+			</div>
+		</td>
+		{ isVariadic ? <>
+			<td>{rowIdx + 1}</td>
+		</> : undefined }
 	</>
 }
