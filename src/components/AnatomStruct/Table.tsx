@@ -225,9 +225,11 @@ function TableVariadicMouse({ table, state, update, renderRowField, active, dele
 			<tbody>
 				{/* Generazione dei valori già esistenti della tabella */}
 				{state?.map((row, rowIdx) => {
+					const circle = row?.[AnatomStructRowSpecial.CircleInfo] as AnatomStructPropertyImageRef | undefined
+
 					const deleteRow: () => void = () => {
-						const circle = row[AnatomStructRowSpecial.CircleInfo] as AnatomStructPropertyImageRef
-						deleteCircle(circle.imageIdx, rowIdx)
+						if (circle != undefined)
+							deleteCircle(circle?.imageIdx, rowIdx)
 
 						update(table => {
 							if (!table)
@@ -239,10 +241,10 @@ function TableVariadicMouse({ table, state, update, renderRowField, active, dele
 						})
 					}
 
-					const circle = row[AnatomStructRowSpecial.CircleInfo] as AnatomStructPropertyImageRef
-
 					const onRowHover = () => {
-						highlightCircle(circle.imageIdx, rowIdx)
+						if (circle != undefined)
+							highlightCircle(circle.imageIdx, rowIdx)
+						
 						setActiveRow(rowIdx)
 					}
 
