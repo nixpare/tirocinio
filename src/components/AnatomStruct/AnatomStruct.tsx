@@ -65,8 +65,8 @@ export function AnatomStruct({ anatomStruct, setAnatomStruct }: { anatomStruct: 
 			})
 		}
 
-		return <VerticalSplitContext.Provider value={false}>
-			<PropertyPage key={page.title} page={page} state={anatomStruct.props?.[pageIdx]} update={updatePage} />
+		return <VerticalSplitContext.Provider value={false} key={page.title}>
+			<PropertyPage page={page} state={anatomStruct.props?.[pageIdx]} update={updatePage} />
 		</VerticalSplitContext.Provider>
 	})
 

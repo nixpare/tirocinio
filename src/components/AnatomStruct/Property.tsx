@@ -27,6 +27,8 @@ export function Property({ template, rowIdx, state, update }: {
 		return <td>{fixedArg}</td>
 
 	switch (template.mode) {
+		case AnatomStructInputMode.Blank:
+			return <td></td>
 		case AnatomStructInputMode.Text:
 			const handleTextInput = (ev: ChangeEvent<HTMLInputElement>): void => {
 				update(() => {

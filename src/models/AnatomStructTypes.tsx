@@ -57,6 +57,8 @@ export type AnatomStructTableField = {
 	mode: AnatomStructInputMode
 	/** presente quando l'input è del tipo `Fixed`, contiene la lista dei campi fissi indicizzata sulle righe */
 	fixedArgs?: string[]
+	/** se presente crea un pulsante che imposta a tutte le celle sottostanti il valore di default */
+	defaultValue?: AnatomStructProperty
 	/** presente quando l'input è del tipo `Dropdown`, contiene la lista di valori possibili */
 	dropdownArgs?: string[]
 	/** presente quando l'input è del tipo `Multistage`, contiene la lista di valori possibili */
@@ -65,6 +67,8 @@ export type AnatomStructTableField = {
 
 /** AnatomStructInputMode contiene le varie tipologie di input supportate dalle proprietà */
 export enum AnatomStructInputMode {
+	/** una cella vuota */
+	Blank,
 	/** un semplice <input type="text" /> */
 	Text,
 	/** un semplice <input type="number" /> */
@@ -84,6 +88,7 @@ export enum AnatomStructInputMode {
 
 /** anatomStructInputModes è usato per mappare nomi dedicati all'UI con i tipi di modalità di input */
 export const anatomStructInputModes: Record<string, AnatomStructInputMode> = {
+	"Blank": AnatomStructInputMode.Blank,
 	"Testo": AnatomStructInputMode.Text,
 	"Numbero": AnatomStructInputMode.Number,
 	"Scelta multipla": AnatomStructInputMode.Dropdown,
@@ -157,6 +162,16 @@ export type AnatomStructMultistageProperty = {
 /** isAnatomStructMultistageProperty determina il risultato in base alla presenza del campo `value` */
 export function isAnatomStructMultistageProperty(object: any): object is AnatomStructMultistageProperty {
 	return typeof object === 'object' && 'value' in object
+}
+
+export function propertyDepth(prop: AnatomStructProperty): number {
+	if (!isAnatomStructMultistageProperty(prop))
+		return 1
+	
+	if (prop.next == undefined)
+		return 1
+
+	return 1 + propertyDepth(prop.next)
 }
 
 /** AnatomStructPropertyImageRef contiene le informazioni relative al cerchio selezionato per una riga */

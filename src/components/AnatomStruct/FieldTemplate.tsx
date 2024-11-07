@@ -37,6 +37,8 @@ export function FieldTemplate({ field, updateField, deleteField }: { field: Anat
 
 function FieldTemplateArgs({ field, updateField }: { field: AnatomStructTableField, updateField: UpdateFieldTemplateFunc }) {
 	switch (field.mode) {
+		case AnatomStructInputMode.Blank:
+			return undefined
 		case AnatomStructInputMode.Text:
 			return <FixedFieldTemplate field={field} updateField={updateField} />
 		case AnatomStructInputMode.Number:

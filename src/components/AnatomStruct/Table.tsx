@@ -1,5 +1,5 @@
 import { useContext, useState, MouseEvent } from "react";
-import { AnatomStructPropertyImageRef, AnatomStructTable, AnatomStructTableField, AnatomStructTableState, AnatomStructRowSpecial, TableRowState } from "../../models/AnatomStructTypes";
+import { AnatomStructPropertyImageRef, AnatomStructTable, AnatomStructTableField, AnatomStructTableState, AnatomStructRowSpecial, TableRowState, propertyDepth } from "../../models/AnatomStructTypes";
 import { DeleteImageCircleFunc, EditModeContext, HighlightImageCircleFunc } from "./AnatomStruct";
 import { Property, UpdatePropertyFunc } from "./Property";
 
@@ -53,7 +53,7 @@ export function Table({ table, state, update, active, setActive, deleteCircle, h
 	}
 	const editFieldsButton = editMode ? undefined : <>
 		<button className="table-edit-button" onClick={toggleEditFields}>
-			{editTable ? <i className="fa-regular fa-floppy-disk"></i> : <i className="fa-regular fa-pen-to-square"></i> }
+			{editTable ? <i className="fa-regular fa-floppy-disk"></i> : <i className="fa-regular fa-pen-to-square"></i>}
 		</button>
 	</>
 
@@ -62,6 +62,29 @@ export function Table({ table, state, update, active, setActive, deleteCircle, h
 		table.fields
 			.map(field => field.fixedArgs?.length ?? 0)
 			.reduce((prev, curr) => { return prev > curr ? prev : curr }, 0)
+	)
+
+	const nCols = Math.max(
+		table.headers.length,
+		table.fields.length,
+		state?.reduce((prev, curr) => {
+			if (curr == undefined)
+				return prev
+
+			return Math.max(
+				prev,
+				Object.entries(curr).reduce((prev, [key, value]) => {
+					const idx = Number(key)
+					if (idx < 0)
+						return 0
+
+					return Math.max(
+						prev,
+						idx+1 + propertyDepth(value)
+					)
+				}, 0)
+			)
+		}, 0) ?? 0
 	)
 
 	const [activeRow, setActiveRow] = useState(-1)
@@ -90,8 +113,14 @@ export function Table({ table, state, update, active, setActive, deleteCircle, h
 
 	const variadicHeaders = <>
 		<th></th>
-		{ table.isVariadic ? <th>#</th> : undefined }
-	</> 
+		{table.isVariadic ? <th>#</th> : undefined}
+	</>
+
+	const someHasDefault = table.fields.reduce((prev, curr) => {
+		if (curr.defaultValue != undefined)
+			prev++
+		return prev
+	}, 0) > 0
 
 	return <div className="table">
 		{editFieldsButton}
@@ -105,7 +134,54 @@ export function Table({ table, state, update, active, setActive, deleteCircle, h
 							{table.headers.map((th, thIdx) => {
 								return <th key={thIdx}>{th}</th>
 							})}
+							{table.headers.length < nCols ? (() => {
+								const emptyCells: React.ReactNode[] = []
+								for (let i = table.headers.length; i < nCols; i++) {
+									emptyCells.push(<th key={i}></th>)
+								}
+
+								return emptyCells
+							})() : undefined}
 						</tr>
+						{someHasDefault ? <tr>
+							<th></th>
+							{table.fields.map((field, fieldIdx) => {
+								if (field.defaultValue == undefined)
+									return <th key={fieldIdx}></th>
+
+								const setDefaultValue = (ev: MouseEvent): void => {
+									ev.preventDefault()
+
+									update(tableState => {
+										if (!tableState)
+											tableState = []
+
+										for (let i = 0; i < nRows; i++) {
+											if (!tableState[i])
+												tableState[i] = {}
+											// @ts-ignore
+											tableState[i][fieldIdx] = field.defaultValue
+										}
+
+										return tableState
+									})
+								}
+
+								return <th key={fieldIdx}>
+									<button onClick={setDefaultValue}>
+										Default value
+									</button>
+								</th>
+							})}
+							{table.fields.length < nCols ? (() => {
+								const emptyCells: React.ReactNode[] = []
+								for (let i = table.headers.length; i < nCols; i++) {
+									emptyCells.push(<th key={i}></th>)
+								}
+
+								return emptyCells
+							})() : undefined}
+						</tr> : undefined}
 					</thead>
 					<tbody>
 						{[...Array(nRows).keys()].map(rowIdx => {
@@ -152,6 +228,11 @@ export function Table({ table, state, update, active, setActive, deleteCircle, h
 								{
 									table.fields.map((field, fieldIdx) => renderRowField(rowIdx, field, fieldIdx, row))
 								}
+								{(() => {
+									table.fields.map((field, fieldIdx) => {
+										const fieldState = state?.[rowIdx]?.[fieldIdx] ?? undefined
+									})
+								})()}
 							</tr>
 						})}
 					</tbody>
@@ -178,8 +259,8 @@ function TableVariadicControl({ rowIdx, editTable, isVariadic, rowHasFixedField,
 				{removeRowButton}
 			</div>
 		</td>
-		{ isVariadic ? <>
+		{isVariadic ? <>
 			<td>{rowIdx + 1}</td>
-		</> : undefined }
+		</> : undefined}
 	</>
 }
