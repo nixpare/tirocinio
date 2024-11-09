@@ -83,7 +83,7 @@ export function AnatomStruct({ anatomStruct, setAnatomStruct }: { anatomStruct: 
 
 	return (
 		<div className="container anatom-struct">
-			<h4 className="anatom-struct-name">{anatomStruct.name}</h4>
+			<h4 className="name">{anatomStruct.name}</h4>
 			<form className="property-pages" onSubmit={handleSubmit}>
 				<Carousel>
 					{pages}
@@ -212,7 +212,7 @@ export function PropertyPage({ page, state, update }: { page: AnatomStructPage, 
 	})
 
 	if (!page.image) {
-		return <div className="property-page">
+		return <div className="container property-page">
 			<h3>{page.title}</h3>
 			{tables}
 		</div>
@@ -223,19 +223,21 @@ export function PropertyPage({ page, state, update }: { page: AnatomStructPage, 
 	return <div className="property-page">
 		<h3>{page.title}</h3>
 		<div className={splitClassName}>
-			<div>
+			<div className="container">
 				{tables}
 			</div>
-			<div className="property-page-images">
-				<Carousel visibleState={{ visible: activeImage, setVisible: setActiveImage }} >
-					{page.image?.map((image, imageIdx) => {
-						return <PropertyPageImage key={`${page.title}-${imageIdx}`}
-							image={image} idx={imageIdx}
-							page={page} pageState={state} activeTable={activeTable}
-							circles={circles} activeCircles={activeCircles} createCircleGeneric={createCircleGeneric}
-						/>
-					})}
-				</Carousel>
+			<div className="container">
+				<div className="images">
+					<Carousel visibleState={{ visible: activeImage, setVisible: setActiveImage }} >
+						{page.image?.map((image, imageIdx) => {
+							return <PropertyPageImage key={`${page.title}-${imageIdx}`}
+								image={image} idx={imageIdx}
+								page={page} pageState={state} activeTable={activeTable}
+								circles={circles} activeCircles={activeCircles} createCircleGeneric={createCircleGeneric}
+							/>
+						})}
+					</Carousel>
+				</div>
 			</div>
 		</div>
 	</div>
@@ -266,7 +268,7 @@ function PropertyPageImage({ image, idx, page, pageState, activeTable, circles, 
 		createCircleGeneric(activeTable, idx, rowIdx, imageLeft, imageTop)
 	}
 
-	return <div className="property-page-image">
+	return <div className="image">
 		<img
 			src={image}
 			alt={page.title}
@@ -278,7 +280,7 @@ function PropertyPageImage({ image, idx, page, pageState, activeTable, circles, 
 					return undefined
 
 				const activeClassName = activeCircles[tableIdx]?.[idx]?.[circleIdx] ? ' active' : ''
-				const className = 'property-page-image-circle' + activeClassName
+				const className = 'image-circle' + activeClassName
 
 				return <div key={`${tableIdx}-${idx}-${circleIdx}`} className={className} style={{
 					left: `${circle.x}%`,

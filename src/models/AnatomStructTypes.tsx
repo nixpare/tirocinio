@@ -55,6 +55,8 @@ export type AnatomStructTable = {
 export type AnatomStructTableField = {
 	/** il tipo di input sottostante alla proprietà */
 	mode: AnatomStructInputMode
+	/** un simil table header per questo campo specifico */
+	header?: string
 	/** presente quando l'input è del tipo `Fixed`, contiene la lista dei campi fissi indicizzata sulle righe */
 	fixedArgs?: string[]
 	/** se presente crea un pulsante che imposta a tutte le celle sottostanti il valore di default */
@@ -106,8 +108,8 @@ export function getInputModeID(mode?: AnatomStructInputMode): string | undefined
 export type AnatomStructMultistageArg = {
 	/** il valore selezionabile nel menu a tendina */
 	value: string
-	/** il template del campo della tabella generato alla selezione del valore sopra */
-	next: AnatomStructTableField
+	/** i template dei campi della tabella generati alla selezione del valore sopra */
+	next: AnatomStructTableField[]
 }
 
 /**
@@ -145,14 +147,37 @@ export type TableRowState = Record<number, AnatomStructProperty> | undefined
  */
 export type AnatomStructProperty = string | number | AnatomStructMultistageProperty | AnatomStructPropertyImageRef | undefined
 
-function propertyCells(prop: AnatomStructProperty): number {
+function propertyCells(field: AnatomStructTableField, prop?: AnatomStructProperty): number {
+	// La cella è disponibile all'utente ma non è stato ancora impostato un suo valore
+	if (prop == undefined)
+		return 1
+
+	// prop non è del tipo Multistage, quindi ha per forza dimensione 1 cella,
+	// oppure prop è Multistage, ma il suo valore non è stato ancora impostato,
 	if (!isAnatomStructMultistageProperty(prop))
 		return 1
 
-	if (prop.next == undefined)
+	// il Multistage in realtà funziona come un Dropdown senza opzioni
+	if (field.multistageArgs == undefined)
 		return 1
 
-	return 1 + propertyCells(prop.next)
+	const selectedIndex = field.multistageArgs.reduce((prev, arg, argIdx) => {
+		if (arg.value != prop.value)
+			return prev
+		return argIdx
+	}, 0)
+
+	// Multistage non ha next e quindi nessun valore delle proprietà successive è stato impostato
+	if (prop.next == undefined)
+		return 1 + field.multistageArgs[selectedIndex].next.length
+
+	return 1 + prop.next.reduce<number>((prev, nextProp, nextPropIdx) => {
+		return prev + propertyCells(
+			// @ts-ignore
+			field.multistageArgs[selectedIndex].next[nextPropIdx],
+			nextProp
+		)
+	}, 0)
 }
 
 export function rowCells(row: TableRowState, fields: AnatomStructTableField[]): number {
@@ -162,11 +187,11 @@ export function rowCells(row: TableRowState, fields: AnatomStructTableField[]): 
 	return Object.entries(row).reduce((prev, [key, value]) => {
 		const idx = Number(key)
 		if (idx < 0)
-			return 0
+			return prev
 
 		return Math.max(
 			prev,
-			idx + 1 + propertyCells(value)
+			idx + propertyCells(fields[idx], value)
 		)
 	}, 0)
 }
@@ -181,8 +206,8 @@ export enum AnatomStructRowSpecial {
 export type AnatomStructMultistageProperty = {
 	/** il valore selezionato dal menu a tendina */
 	value: string
-	/** la `AnatomStructProperty` innestata, opzionale, indica il valore della proprietà derivata dalla selezione corrente */
-	next?: AnatomStructProperty
+	/** le `AnatomStructProperty` innestate, opzionale, indica i valori della proprietà derivate dalla selezione corrente */
+	next?: AnatomStructProperty[]
 }
 
 /** isAnatomStructMultistageProperty determina il risultato in base alla presenza del campo `value` */

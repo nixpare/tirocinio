@@ -3,7 +3,6 @@ import { createRoot } from 'react-dom/client'
 import { AnatomStruct, EditModeContext } from '../components/AnatomStruct/AnatomStruct'
 import { AnatomStructState, AnatomStructTemplate, AnatomStructInputMode, AnatomStructRowSpecial } from '../models/AnatomStructTypes'
 
-import '../global.css'
 import './index.css'
 
 createRoot(document.getElementById('root')!).render(
@@ -191,7 +190,7 @@ const boneTemplate: AnatomStructTemplate = {
                             multistageArgs: [
                                 {
                                     value: "Soluzione di continuo",
-                                    next: {
+                                    next: [{
                                         mode: AnatomStructInputMode.Dropdown,
                                         dropdownArgs: [
                                             "A tutto spessore e tutta circonferenza",
@@ -201,27 +200,27 @@ const boneTemplate: AnatomStructTemplate = {
                                             "Soluzione di continuo interessante lo strato di osso trabecolare (visibili in RX e TC)",
                                             "Multiple soluzioni di continuo (comminuzione)"
                                         ]
-                                    }
+                                    }]
                                 },
                                 {
                                     value: "Perdita di sostanza",
-                                    next: { mode: AnatomStructInputMode.Text }
+                                    next: [{ mode: AnatomStructInputMode.Text }]
                                 },
                                 {
                                     value: "Aspetto margine (esempio nested multistage)",
-                                    next: {
+                                    next: [{
                                         mode: AnatomStructInputMode.Multistage,
                                         multistageArgs: [
                                             {
                                                 value: "Aspetto della superficie di frattura (indicare la localizzazione - mediale, laterale, anteriore e posteriore)",
-                                                next: { mode: AnatomStructInputMode.Text }
+                                                next: [{ mode: AnatomStructInputMode.Text }]
                                             },
                                             {
                                                 value: "Aspetto superficie di taglio (indicare la localizzazione - mediale, laterale, anteriore e posteriore)",
-                                                next: { mode: AnatomStructInputMode.Text }
+                                                next: [{ mode: AnatomStructInputMode.Text }]
                                             }
                                         ]
-                                    }
+                                    }]
                                 }
                             ]
                         }

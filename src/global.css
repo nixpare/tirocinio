@@ -86,7 +86,7 @@ input[type=checkbox] {
   align-items: center;
   justify-content: center;
   flex-wrap: wrap;
-  margin: 1em;
+  padding: 1em;
   gap: 1em;
 }
 .container.container-horiz {
@@ -104,13 +104,6 @@ input[type=checkbox] {
 }
 .split-no-gap {
   gap: 0;
-}
-
-.split > * {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
 }
 
 .w-100 {

@@ -26,6 +26,8 @@ export function Property({ template, rowIdx, state, update }: {
 	if (fixedArg != undefined)
 		return <td>{fixedArg}</td>
 
+	const header = template.header ? <p className="property-header">{template.header}</p> : undefined
+
 	switch (template.mode) {
 		case AnatomStructInputMode.Blank:
 			return <td></td>
@@ -40,6 +42,7 @@ export function Property({ template, rowIdx, state, update }: {
 				state = undefined
 
 			return <td>
+				{header}
 				<input type="text"
 					value={state ?? ''}
 					onChange={handleTextInput} disabled={!editMode}
@@ -57,6 +60,7 @@ export function Property({ template, rowIdx, state, update }: {
 				state = undefined
 
 			return <td>
+				{header}
 				<input type="number"
 					value={(state ?? 0).toString()}
 					onChange={handleNumberInput} disabled={!editMode}
@@ -73,6 +77,7 @@ export function Property({ template, rowIdx, state, update }: {
 				state = undefined
 
 			return <td>
+				{header}
 				<Dropdown
 					options={template.dropdownArgs ?? []}
 					selectedField={state}
@@ -91,15 +96,15 @@ export function Property({ template, rowIdx, state, update }: {
 
 			return <MultistageProperty
 				template={template} rowIdx={rowIdx}
-				state={state}
-				update={updateMultistage} disabled={!editMode}
+				state={state} update={updateMultistage}
+				disabled={!editMode} header={header}
 			/>
 	}
 }
 
-function MultistageProperty({ template, rowIdx, state, update, disabled }: {
+function MultistageProperty({ template, rowIdx, state, update, disabled, header }: {
 	template: AnatomStructTableField, rowIdx: number, state?: AnatomStructMultistageProperty,
-	update: UpdateMultistagePropertyFunc, disabled: boolean
+	update: UpdateMultistagePropertyFunc, disabled: boolean, header?: JSX.Element
 }) {
 	const options: string[] | undefined = template.multistageArgs?.map(arg => arg.value)
 
@@ -115,48 +120,47 @@ function MultistageProperty({ template, rowIdx, state, update, disabled }: {
 		})
 	}
 
-	if (!state) {
-		return <td>
-			<Dropdown
-				options={options ?? []}
-				setSelectedField={setSelected}
-				disabled={disabled}
-			/>
-		</td>
-	}
-
 	const firstStage = <td>
+		{header}
 		<Dropdown
 			options={options ?? []}
-			selectedField={state.value}
+			selectedField={state?.value ?? undefined}
 			setSelectedField={setSelected}
 			disabled={disabled}
 		/>
 	</td>
 
-	const nextTemplate = template.multistageArgs?.filter(arg => arg.value === state.value)[0]?.next
-	if (!nextTemplate)
+	if (!state)
+		return firstStage
+
+	const nextTemplates = template.multistageArgs?.filter(arg => arg.value === state.value)[0]?.next
+	if (!nextTemplates)
 		return <>
 			{firstStage}
 			<td>Errore, template non trovato</td>
 		</>
 
-	const nextValue = state.next
-	const nextUpdate = (fn: (value?: AnatomStructProperty) => AnatomStructProperty): void => {
-		update(multistage => {
-			if (!multistage)
-				throw new Error('multistage is undefined after the first stage')
-
-			multistage.next = fn(multistage?.next)
-			return multistage
-		})
-	}
-
 	return <>
 		{firstStage}
-		<Property
-			template={nextTemplate} rowIdx={rowIdx}
-			state={nextValue} update={nextUpdate}
-		/>
+		{nextTemplates.map((next, nextIdx) => {
+			const nextUpdate = (fn: (value?: AnatomStructProperty) => AnatomStructProperty): void => {
+				update(multistage => {
+					if (!multistage)
+						throw new Error('multistage is undefined after the first stage')
+
+					if (!multistage.next)
+						multistage.next = []
+
+					multistage.next[nextIdx] = fn(multistage.next[nextIdx])
+					return multistage
+				})
+			}
+
+			return <Property key={nextIdx}
+				template={next} rowIdx={rowIdx}
+				state={state.next?.[nextIdx]} update={nextUpdate}
+			/>
+		})}
+		
 	</>
 }

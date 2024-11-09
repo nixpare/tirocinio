@@ -104,11 +104,11 @@ export function Table({ table, state, update, active, setActive, deleteCircle, h
 		{table.isVariadic ? <th>#</th> : undefined}
 	</>
 
-	const someHasDefault = table.fields.reduce((prev, curr) => {
+	const nHasDefault = table.fields.reduce((prev, curr, currIdx) => {
 		if (curr.defaultValue != undefined)
-			prev++
+			return currIdx
 		return prev
-	}, 0) > 0
+	}, -1)
 
 	return <div className="table">
 		{editFieldsButton}
@@ -122,16 +122,16 @@ export function Table({ table, state, update, active, setActive, deleteCircle, h
 							{table.headers.map((th, thIdx) => {
 								return <th key={thIdx}>{th}</th>
 							})}
-							{table.headers.length < nCols ? (() => {
+							{(() => {
 								const emptyCells: React.ReactNode[] = []
 								for (let i = table.headers.length; i < nCols; i++) {
 									emptyCells.push(<th key={i}></th>)
 								}
 
 								return emptyCells
-							})() : undefined}
+							})()}
 						</tr>
-						{someHasDefault ? <tr>
+						{nHasDefault >= 0 ? <tr>
 							<th></th>
 							{table.fields.map((field, fieldIdx) => {
 								if (field.defaultValue == undefined)
@@ -161,14 +161,14 @@ export function Table({ table, state, update, active, setActive, deleteCircle, h
 									</button>
 								</th>
 							})}
-							{table.fields.length < nCols ? (() => {
+							{(() => {
 								const emptyCells: React.ReactNode[] = []
-								for (let i = table.headers.length; i < nCols; i++) {
+								for (let i = nHasDefault + 1; i < nCols; i++) {
 									emptyCells.push(<th key={i}></th>)
 								}
 
 								return emptyCells
-							})() : undefined}
+							})()}
 						</tr> : undefined}
 					</thead>
 					<tbody>
@@ -218,7 +218,7 @@ export function Table({ table, state, update, active, setActive, deleteCircle, h
 								}
 								{(() => {
 									const emptyCells: React.ReactNode[] = []
-									for (let i = rowCells(row, table.fields); i < nCols; i++) {
+									for (let i = rowCells(row, table.fields); i < nCols - (table.isVariadic ? 1 : 0); i++) {
 										emptyCells.push(<td key={i}></td>)
 									}
 
