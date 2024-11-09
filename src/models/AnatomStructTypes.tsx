@@ -145,6 +145,32 @@ export type TableRowState = Record<number, AnatomStructProperty> | undefined
  */
 export type AnatomStructProperty = string | number | AnatomStructMultistageProperty | AnatomStructPropertyImageRef | undefined
 
+function propertyCells(prop: AnatomStructProperty): number {
+	if (!isAnatomStructMultistageProperty(prop))
+		return 1
+
+	if (prop.next == undefined)
+		return 1
+
+	return 1 + propertyCells(prop.next)
+}
+
+export function rowCells(row: TableRowState, fields: AnatomStructTableField[]): number {
+	if (row == undefined)
+		return fields.length
+
+	return Object.entries(row).reduce((prev, [key, value]) => {
+		const idx = Number(key)
+		if (idx < 0)
+			return 0
+
+		return Math.max(
+			prev,
+			idx + 1 + propertyCells(value)
+		)
+	}, 0)
+}
+
 /** AnatomStructRowSpecial contiene gli indici speciali per salvare determinate informazioni su una riga */
 export enum AnatomStructRowSpecial {
 	/** Indice per contenere informazioni relative ai cerchi nella tabella `VariadicMouse` */
@@ -162,16 +188,6 @@ export type AnatomStructMultistageProperty = {
 /** isAnatomStructMultistageProperty determina il risultato in base alla presenza del campo `value` */
 export function isAnatomStructMultistageProperty(object: any): object is AnatomStructMultistageProperty {
 	return typeof object === 'object' && 'value' in object
-}
-
-export function propertyDepth(prop: AnatomStructProperty): number {
-	if (!isAnatomStructMultistageProperty(prop))
-		return 1
-	
-	if (prop.next == undefined)
-		return 1
-
-	return 1 + propertyDepth(prop.next)
 }
 
 /** AnatomStructPropertyImageRef contiene le informazioni relative al cerchio selezionato per una riga */

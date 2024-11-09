@@ -1,5 +1,5 @@
 import { useContext, useState, MouseEvent } from "react";
-import { AnatomStructPropertyImageRef, AnatomStructTable, AnatomStructTableField, AnatomStructTableState, AnatomStructRowSpecial, TableRowState, propertyDepth } from "../../models/AnatomStructTypes";
+import { AnatomStructPropertyImageRef, AnatomStructTable, AnatomStructTableField, AnatomStructTableState, AnatomStructRowSpecial, TableRowState, rowCells } from "../../models/AnatomStructTypes";
 import { DeleteImageCircleFunc, EditModeContext, HighlightImageCircleFunc } from "./AnatomStruct";
 import { Property, UpdatePropertyFunc } from "./Property";
 
@@ -68,21 +68,9 @@ export function Table({ table, state, update, active, setActive, deleteCircle, h
 		table.headers.length,
 		table.fields.length,
 		state?.reduce((prev, curr) => {
-			if (curr == undefined)
-				return prev
-
 			return Math.max(
 				prev,
-				Object.entries(curr).reduce((prev, [key, value]) => {
-					const idx = Number(key)
-					if (idx < 0)
-						return 0
-
-					return Math.max(
-						prev,
-						idx+1 + propertyDepth(value)
-					)
-				}, 0)
+				rowCells(curr, table.fields)
 			)
 		}, 0) ?? 0
 	)
@@ -229,9 +217,12 @@ export function Table({ table, state, update, active, setActive, deleteCircle, h
 									table.fields.map((field, fieldIdx) => renderRowField(rowIdx, field, fieldIdx, row))
 								}
 								{(() => {
-									table.fields.map((field, fieldIdx) => {
-										const fieldState = state?.[rowIdx]?.[fieldIdx] ?? undefined
-									})
+									const emptyCells: React.ReactNode[] = []
+									for (let i = rowCells(row, table.fields); i < nCols; i++) {
+										emptyCells.push(<td key={i}></td>)
+									}
+
+									return emptyCells
 								})()}
 							</tr>
 						})}
