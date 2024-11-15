@@ -179,7 +179,7 @@ const boneTemplate: AnatomStructTemplate = {
             ]
         },
         {
-            title: 'Completezza, qualità, colore generale',
+            title: 'Completezza, qualità, colore generale 2',
             tables: [
                 {
                     headers: ['', 'Numero', 'Numero < di 2cm'],
@@ -203,6 +203,49 @@ const boneTemplate: AnatomStructTemplate = {
                     ]
                 }
             ]
+        },
+        {
+            title: 'Caratteri metrici',
+            tables: [
+                {
+                    headers: ['Codice Misura', 'Nome Misura', 'Misura (mm)'],
+                    isVariadic: true,
+                    fields: [
+                        {
+                            mode: AnatomStructInputMode.Number,
+                            fixedArgs: ['75', '76', '...', '85']
+                        },
+                        {
+                            mode: AnatomStructInputMode.Text,
+                            fixedArgs: ['Lunghezza massima', 'Lunghezza bicondilare', '...', 'Lunghezza antero-posteriore massima del condilomediale']
+                        },
+                        {
+                            mode: AnatomStructInputMode.Number,
+                            max: 100,
+                            min: 0
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            title: 'Caratteri non metrici',
+            tables: [
+                {
+                    headers: ['Carattere non metrico', 'Stato'],
+                    isVariadic: true,
+                    fields: [
+                        {
+                            mode: AnatomStructInputMode.Text,
+                            fixedArgs: ['Fossa di Allen', 'Faccetta di Poirier', 'Placca III trocantere', 'Fossa subtrocanterica']
+                        },
+                        {
+                            mode: AnatomStructInputMode.Dropdown,
+                            dropdownArgs: ['Assente', 'Non valutabile', 'Presente']
+                        }
+                    ]
+                }
+            ]
         }
     ]
 }
@@ -218,7 +261,7 @@ function App() {
     return (
         <div className="container app">
             <EditModeContext.Provider value={true}>
-                <AnatomStruct anatomStruct={state} setAnatomStruct={setState} />
+                <AnatomStruct anatomStruct={state} setAnatomStruct={setState} initialPage={4} />
             </EditModeContext.Provider>
         </div>
     )

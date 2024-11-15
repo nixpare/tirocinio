@@ -163,7 +163,7 @@ export function Table({ table, state, update, active, setActive, deleteCircle, h
 							})}
 							{(() => {
 								const emptyCells: React.ReactNode[] = []
-								for (let i = nHasDefault + 1; i < nCols; i++) {
+								for (let i = table.fields.length; i < nCols; i++) {
 									emptyCells.push(<th key={i}></th>)
 								}
 

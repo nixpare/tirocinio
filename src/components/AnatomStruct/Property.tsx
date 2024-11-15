@@ -59,9 +59,18 @@ export function Property({ template, rowIdx, state, update }: {
 			if (state != undefined && typeof state !== 'number')
 				state = undefined
 
+			let className: string | undefined
+
+			if (state != undefined && (
+				(template.min != undefined && state < template.min) ||
+				(template.max != undefined && state > template.max)
+			)) {
+				className = 'invalid'
+			}
+
 			return <td>
 				{header}
-				<input type="number"
+				<input type="number" className={className}
 					value={(state ?? 0).toString()}
 					onChange={handleNumberInput} disabled={!editMode}
 				/>
@@ -94,7 +103,7 @@ export function Property({ template, rowIdx, state, update }: {
 			if (state != undefined && !isAnatomStructMultistageProperty(state))
 				state = undefined
 
-			return <MultistageProperty
+			return <PropertyMultistage
 				template={template} rowIdx={rowIdx}
 				state={state} update={updateMultistage}
 				disabled={!editMode} header={header}
@@ -102,7 +111,7 @@ export function Property({ template, rowIdx, state, update }: {
 	}
 }
 
-function MultistageProperty({ template, rowIdx, state, update, disabled, header }: {
+function PropertyMultistage({ template, rowIdx, state, update, disabled, header }: {
 	template: AnatomStructTableField, rowIdx: number, state?: AnatomStructMultistageProperty,
 	update: UpdateMultistagePropertyFunc, disabled: boolean, header?: JSX.Element
 }) {

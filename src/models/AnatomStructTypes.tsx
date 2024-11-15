@@ -65,6 +65,8 @@ export type AnatomStructTableField = {
 	dropdownArgs?: string[]
 	/** presente quando l'input è del tipo `Multistage`, contiene la lista di valori possibili */
 	multistageArgs?: AnatomStructMultistageArg[]
+	min?: number
+	max?: number
 }
 
 /** AnatomStructInputMode contiene le varie tipologie di input supportate dalle proprietà */

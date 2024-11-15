@@ -76,8 +76,12 @@ input[type=checkbox] {
   font-size: 1.2em;
   height: 1em;
   aspect-ratio: 1 / 1;
-  background-color: red;
   accent-color: rgba(var(--primary-color));
+}
+
+input.invalid {
+  color: red;
+  background-color: rgba(255, 0, 0, .1);
 }
 
 .container {

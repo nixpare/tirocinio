@@ -36,7 +36,10 @@ export const VerticalSplitContext = createContext(false)
  * @param state stato utilizzato per la creazione del componente
  * @return ReactNode
  */
-export function AnatomStruct({ anatomStruct, setAnatomStruct }: { anatomStruct: AnatomStructState, setAnatomStruct: (newState: AnatomStructState) => void }) {
+export function AnatomStruct({ anatomStruct, setAnatomStruct, initialPage }: {
+	anatomStruct: AnatomStructState, setAnatomStruct: (newState: AnatomStructState) => void,
+	initialPage?: number
+}) {
 	const editMode = useContext(EditModeContext)
 
 	function updateState(fn: (prev: AnatomStructState) => AnatomStructState): void {
@@ -81,11 +84,13 @@ export function AnatomStruct({ anatomStruct, setAnatomStruct }: { anatomStruct: 
 		</div>
 	}
 
+	const [visiblePage, setVisiblePage] = useState(initialPage && initialPage < anatomStruct.template.pages.length ? initialPage : 0)
+
 	return (
 		<div className="container anatom-struct">
 			<h4 className="name">{anatomStruct.name}</h4>
 			<form className="property-pages" onSubmit={handleSubmit}>
-				<Carousel>
+				<Carousel visibleState={{ visible: visiblePage, setVisible: setVisiblePage }}>
 					{pages}
 				</Carousel>
 				<button type="submit">Invia</button>
