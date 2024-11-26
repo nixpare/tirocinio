@@ -1,7 +1,7 @@
 import { StrictMode, useState } from 'react'
 import { createRoot } from 'react-dom/client'
-import { AnatomStruct, EditModeContext } from '../components/AnatomStruct/AnatomStruct'
-import { AnatomStructState, AnatomStructTemplate, AnatomStructInputMode } from '../models/AnatomStructTypes'
+import { Form, EditModeContext } from '../components/Form/Form'
+import { FormData, FormTemplate, FormTableFieldType } from '../models/Form'
 
 import './femore.css'
 
@@ -11,7 +11,7 @@ createRoot(document.getElementById('root')!).render(
     </StrictMode>,
 )
 
-const boneTemplate: AnatomStructTemplate = {
+const boneTemplate: FormTemplate = {
     name: "Femore",
     pages: [
         {
@@ -21,38 +21,38 @@ const boneTemplate: AnatomStructTemplate = {
                     headers: ['Nuclei di ossificazione', 'Stato'],
                     fields: [
                         {
-                            mode: AnatomStructInputMode.Text,
+                            mode: FormTableFieldType.Text,
                             fixedArgs: ['A', 'B', 'C', 'D', 'E']
                         },
                         {
-                            mode: AnatomStructInputMode.Multistage,
+                            mode: FormTableFieldType.Multistage,
                             defaultValue: { value: 'Presente fuso' },
                             multistageArgs: [
                                 {
                                     value: 'Assente per immaturità',
                                     next: [{
-                                        mode: AnatomStructInputMode.Text,
+                                        mode: FormTableFieldType.Text,
                                         header: 'Commenti'
                                     }]
                                 },
                                 {
                                     value: 'Assente per tafonomia',
                                     next: [{
-                                        mode: AnatomStructInputMode.Text,
+                                        mode: FormTableFieldType.Text,
                                         header: 'Commenti'
                                     }]
                                 },
                                 {
                                     value: 'Assente non valutabile',
                                     next: [{
-                                        mode: AnatomStructInputMode.Text,
+                                        mode: FormTableFieldType.Text,
                                         header: 'Commenti'
                                     }]
                                 },
                                 {
                                     value: 'Presente ma fusione non valutabile',
                                     next: [{
-                                        mode: AnatomStructInputMode.Text,
+                                        mode: FormTableFieldType.Text,
                                         header: 'Commenti'
                                     }]
                                 },
@@ -60,11 +60,11 @@ const boneTemplate: AnatomStructTemplate = {
                                     value: 'Presente non fuso',
                                     next: [
                                         {
-                                            mode: AnatomStructInputMode.Number,
+                                            mode: FormTableFieldType.Number,
                                             header: 'dimensione massima (mm)'
                                         },
                                         {
-                                            mode: AnatomStructInputMode.Text,
+                                            mode: FormTableFieldType.Text,
                                             header: 'Commenti'
                                         }
                                     ]
@@ -72,14 +72,14 @@ const boneTemplate: AnatomStructTemplate = {
                                 {
                                     value: 'Presente in fusione',
                                     next: [{
-                                        mode: AnatomStructInputMode.Text,
+                                        mode: FormTableFieldType.Text,
                                         header: 'Commenti'
                                     }]
                                 },
                                 {
                                     value: 'Presente fuso',
                                     next: [{
-                                        mode: AnatomStructInputMode.Text,
+                                        mode: FormTableFieldType.Text,
                                         header: 'Commenti'
                                     }]
                                 }
@@ -96,11 +96,11 @@ const boneTemplate: AnatomStructTemplate = {
                     headers: ['Nuclei di ossificazione', 'Stato', 'Commenti'],
                     fields: [
                         {
-                            mode: AnatomStructInputMode.Text,
+                            mode: FormTableFieldType.Text,
                             fixedArgs: ['A', 'B', 'C', 'D', 'E']
                         },
                         {
-                            mode: AnatomStructInputMode.Multistage,
+                            mode: FormTableFieldType.Multistage,
                             defaultValue: { value: 'Presente fuso' },
                             multistageArgs: [
                                 {
@@ -110,37 +110,37 @@ const boneTemplate: AnatomStructTemplate = {
                                 {
                                     value: 'Assente per tafonomia',
                                     next: [{
-                                        mode: AnatomStructInputMode.Text,
+                                        mode: FormTableFieldType.Text,
                                     }]
                                 },
                                 {
                                     value: 'Assente non valutabile',
                                     next: [{
-                                        mode: AnatomStructInputMode.Text,
+                                        mode: FormTableFieldType.Text,
                                     }]
                                 },
                                 {
                                     value: 'Presente ma fusione non valutabile',
                                     next: [{
-                                        mode: AnatomStructInputMode.Text,
+                                        mode: FormTableFieldType.Text,
                                     }]
                                 },
                                 {
                                     value: 'Presente non fuso',
                                     next: [{
-                                        mode: AnatomStructInputMode.Text,
+                                        mode: FormTableFieldType.Text,
                                     }]
                                 },
                                 {
                                     value: 'Presente in fusione',
                                     next: [{
-                                        mode: AnatomStructInputMode.Text,
+                                        mode: FormTableFieldType.Text,
                                     }]
                                 },
                                 {
                                     value: 'Presente fuso',
                                     next: [{
-                                        mode: AnatomStructInputMode.Text,
+                                        mode: FormTableFieldType.Text,
                                     }]
                                 }
                             ]
@@ -151,28 +151,28 @@ const boneTemplate: AnatomStructTemplate = {
                     headers: ['Nuclei di ossificazione', 'Presenza / Assenza', 'Quantità', 'Qualità', 'Colore', 'Commenti'],
                     fields: [
                         {
-                            mode: AnatomStructInputMode.Text,
+                            mode: FormTableFieldType.Text,
                             fixedArgs: ['A', 'B', 'C', 'D', 'E']
                         },
                         {
-                            mode: AnatomStructInputMode.Dropdown,
+                            mode: FormTableFieldType.Dropdown,
                             defaultValue: 'Presente',
                             dropdownArgs: ['Assente', 'Presente']
                         },
                         {
-                            mode: AnatomStructInputMode.Dropdown,
+                            mode: FormTableFieldType.Dropdown,
                             dropdownArgs: ['1 (1%-25%)', '2 (26% - 50%)']
                         },
                         {
-                            mode: AnatomStructInputMode.Dropdown,
+                            mode: FormTableFieldType.Dropdown,
                             dropdownArgs: ['0% of sound cortical surface', '1-24% of sound cortical surface']
                         },
                         {
-                            mode: AnatomStructInputMode.Dropdown,
+                            mode: FormTableFieldType.Dropdown,
                             dropdownArgs: ['da marrone a marrone scuro', 'grigio']
                         },
                         {
-                            mode: AnatomStructInputMode.Text
+                            mode: FormTableFieldType.Text
                         }
                     ]
                 }
@@ -185,11 +185,11 @@ const boneTemplate: AnatomStructTemplate = {
                     headers: ['', 'Numero', 'Numero < di 2cm'],
                     fields: [
                         {
-                            mode: AnatomStructInputMode.Text,
+                            mode: FormTableFieldType.Text,
                             fixedArgs: ['Frammenti']
                         },
-                        { mode: AnatomStructInputMode.Number },
-                        { mode: AnatomStructInputMode.Number }
+                        { mode: FormTableFieldType.Number },
+                        { mode: FormTableFieldType.Number }
                     ]
                 },
                 {
@@ -197,7 +197,7 @@ const boneTemplate: AnatomStructTemplate = {
                     isVariadic: true,
                     fields: [
                         {
-                            mode: AnatomStructInputMode.Dropdown,
+                            mode: FormTableFieldType.Dropdown,
                             dropdownArgs: ['1', '2', '3', '...', '11', 'ND']
                         }
                     ]
@@ -212,15 +212,15 @@ const boneTemplate: AnatomStructTemplate = {
                     isVariadic: true,
                     fields: [
                         {
-                            mode: AnatomStructInputMode.Number,
+                            mode: FormTableFieldType.Number,
                             fixedArgs: ['75', '76', '...', '85']
                         },
                         {
-                            mode: AnatomStructInputMode.Text,
+                            mode: FormTableFieldType.Text,
                             fixedArgs: ['Lunghezza massima', 'Lunghezza bicondilare', '...', 'Lunghezza antero-posteriore massima del condilomediale']
                         },
                         {
-                            mode: AnatomStructInputMode.Number,
+                            mode: FormTableFieldType.Number,
                             max: 100,
                             min: 0
                         }
@@ -236,11 +236,11 @@ const boneTemplate: AnatomStructTemplate = {
                     isVariadic: true,
                     fields: [
                         {
-                            mode: AnatomStructInputMode.Text,
+                            mode: FormTableFieldType.Text,
                             fixedArgs: ['Fossa di Allen', 'Faccetta di Poirier', 'Placca III trocantere', 'Fossa subtrocanterica']
                         },
                         {
-                            mode: AnatomStructInputMode.Dropdown,
+                            mode: FormTableFieldType.Dropdown,
                             dropdownArgs: ['Assente', 'Non valutabile', 'Presente']
                         }
                     ]
@@ -250,7 +250,7 @@ const boneTemplate: AnatomStructTemplate = {
     ]
 }
 
-const boneState: AnatomStructState = {
+const boneState: FormData = {
     name: "OSSO INNOMINATO",
     template: boneTemplate
 }
@@ -261,7 +261,7 @@ function App() {
     return (
         <div className="container app">
             <EditModeContext.Provider value={true}>
-                <AnatomStruct anatomStruct={state} setAnatomStruct={setState} initialPage={4} />
+                <Form data={state} setFormData={setState} initialSection={4} />
             </EditModeContext.Provider>
         </div>
     )

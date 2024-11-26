@@ -1,0 +1,6 @@
+.field-header {
+	background-color: rgba(var(--primary-color), .4);
+	border-radius: .2em;
+	margin-bottom: .2em;
+	padding: 0 .4em;
+}

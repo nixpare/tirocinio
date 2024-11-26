@@ -1,6 +1,6 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
-import { TableTemplate } from '../components/AnatomStruct/TableTemplate'
+import { TableTemplate } from '../components/Form/TableTemplate'
 
 import './template.css'
 

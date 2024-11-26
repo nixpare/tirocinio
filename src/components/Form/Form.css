@@ -1,0 +1,67 @@
+.form {
+	background-color: rgba(var(--primary-color), 0.2);
+	border-radius: .4em;
+	width: 100%;
+	position: relative;
+}
+
+.form .name {
+	font-size: 2em;
+	background-color: rgba(var(--primary-color), .5);
+	width: 100%;
+	border-radius: .1em;
+	text-align: center;
+}
+
+.form-sections {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 2em;
+	margin-bottom: 2em;
+}
+
+.form-sections>button {
+	width: fit-content;
+}
+
+.form-section {
+	background-color: rgba(var(--primary-color), .1);
+	border-radius: .4em;
+}
+
+.form-section h3 {
+	background-color: rgba(var(--primary-color), .2);
+	text-align: center;
+	padding: .4em 1em;
+	border-radius: .2em;
+}
+
+.form-section .images {
+	background-color: rgba(var(--primary-color), .1);
+	padding: 1em .5em;
+	height: fit-content;
+	border-radius: .4em;
+}
+
+.form-section .image {
+	position: relative;
+}
+
+.form-section .image img {
+	width: 100%;
+	height: fit-content;
+}
+
+.form-section .image-circle {
+	position: absolute;
+	width: 50px;
+	aspect-ratio: 1 / 1;
+	border: 2px solid red;
+	border-radius: 50%;
+	transform: translate(-50%, -50%);
+}
+
+.form-section .image-circle.active {
+	border-color: green;
+}
