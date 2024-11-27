@@ -23,7 +23,7 @@ function App() {
     return (
         <div className="container app">
             <EditModeContext.Provider value={true}>
-                <Form data={state} setFormData={setState} initialSection={4} />
+                <Form data={state} setFormData={setState} />
             </EditModeContext.Provider>
         </div>
     )

@@ -48,7 +48,14 @@ export function Form({ data, setFormData, initialSection }: {
 
 	function handleSubmit(ev: FormEvent) {
 		ev.preventDefault()
-		console.log(data.sections)
+
+		const strippedData = {
+			name: data.name,
+			sections: data.sections,
+			template: 'This is stripped' // instead of data.template
+		}
+		console.log(strippedData)
+		console.log(JSON.stringify(strippedData))
 	}
 
 	const sections = data.template.pages.map((section, sectionIdx) => {
