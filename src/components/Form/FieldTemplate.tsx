@@ -229,12 +229,12 @@ function MultistageFieldTemplate({ field, updateField }: { field: FormTableField
 		})
 	}
 
-	const nextFieldType = getFormTableFieldTypeID(stage.next?.mode)
+	const nextFieldType = getFormTableFieldTypeID(stage.next?.[0].mode) // TODO: fix for stage.next being a slice
 	const setNextFieldType = (nextFieldType?: string): void => {
 		updateStage(stage => {
-			stage.next = {
+			stage.next = [{ // TODO: fix for stage.next being a slice
 				mode: formTableFieldTypes[nextFieldType ?? '']
-			}
+			}]
 			return stage
 		})
 	}
@@ -296,17 +296,17 @@ function MultistageNextArgTemplate({ arg, updateArg, deleteArg }: { arg: FormTab
 		deleteArg()
 	}
 
-	const fieldType = getFormTableFieldTypeID(arg.next.mode)
+	const fieldType = getFormTableFieldTypeID(arg.next[0].mode) // TODO: fix for stage.next being a slice
 	const setFieldType = (modeID?: string): void => {
 		updateArg(arg => {
-			arg.next = { mode: formTableFieldTypes[modeID ?? ''] ?? FormTableFieldType.Text }
+			arg.next = [{ mode: formTableFieldTypes[modeID ?? ''] ?? FormTableFieldType.Text }] // TODO: fix for stage.next being a slice
 			return arg
 		})
 	}
 
 	const updateNextField: UpdateFieldTemplateFunc = (fn) => {
 		updateArg(arg => {
-			arg.next = fn(arg.next)
+			arg.next[0] = fn(arg.next[0]) // TODO: fix for stage.next being a slice
 			return arg
 		})
 	}
@@ -324,6 +324,6 @@ function MultistageNextArgTemplate({ arg, updateArg, deleteArg }: { arg: FormTab
 				selectedField={fieldType} setSelectedField={setFieldType}
 			/>
 		</div>
-		<FieldTemplateArgs field={arg.next} updateField={updateNextField} />
+		<FieldTemplateArgs field={arg.next[0]} updateField={updateNextField} /> {/* TODO: fix for stage.next being a slice */}
 	</div>
 }
