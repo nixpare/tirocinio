@@ -1,11 +1,10 @@
 import { AnatomStruct, AnatomStructType } from "./AnatomStruct";
-
-export type Skeleton = Record<string, Bone>
+import { FormData } from "./Form"
 
 export type Bone = AnatomStruct & {
 	type: AnatomStructType.Bone;
 };
 
-export type SkeletonData = Record<string, BoneData>
-
 export type BoneData = FormData
+
+export type SkeletonData = Record<string, BoneData>

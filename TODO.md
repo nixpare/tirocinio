@@ -2,7 +2,7 @@
 
 + [ ] Rivedere la documentazione dopo un redesign pesante
 + [ ] Creare una scheda scheletro con:
-  + [ ] selezione delle ossa presenti, di cui si vuole raccogliere informazioni
+  + [x] selezione delle ossa presenti, di cui si vuole raccogliere informazioni
   + [ ] scelta dell'osso da aggiungere
   + [ ] scelta dell'osso da visualizzare / modificare
   + [ ] eliminare osso già inserito
