@@ -5,8 +5,7 @@ import { Table, UpdateTableFunc } from './Table'
 import { Carousel } from '../UI/Carousel'
 
 import './Form.css'
-
-export type UpdateSectionFunc = (fn: (page: FormSectionData) => FormSectionData) => void
+import { DraftFunction } from 'use-immer'
 
 type CreateImageCircleGenericFunc = (tableIdx: number, imageIdx: number, circleIdx: number, x: number, y: number) => void
 type DeleteImageCircleGenericFunc = (tableIdx: number, imageIdx: number, circleIdx: number) => void
@@ -36,15 +35,11 @@ export const VerticalSplitContext = createContext(false)
  * @param state stato utilizzato per la creazione del componente
  * @return ReactNode
  */
-export function Form({ data, setFormData, initialSection }: {
-	data: FormData, setFormData: (newState: FormData) => void,
+export function Form({ data, updateData, initialSection }: {
+	data: FormData, updateData: (fn: DraftFunction<FormData>) => void,
 	initialSection?: number
 }) {
 	const editMode = useContext(EditModeContext)
-
-	function updateState(fn: (prev: FormData) => FormData): void {
-		setFormData(produce(data, fn))
-	}
 
 	function handleSubmit(ev: FormEvent) {
 		ev.preventDefault()
@@ -60,18 +55,12 @@ export function Form({ data, setFormData, initialSection }: {
 
 	const sections = data.template.pages.map((section, sectionIdx) => {
 		// updatePage è la funzione di produzione sullo stato per la pagina specifica
-		const updateSection: UpdateSectionFunc = (fn) => {
-			updateState(sectionData => {
-				const newSectionData = fn(sectionData.sections?.[sectionIdx])
-				if (!newSectionData)
-					return sectionData
+		const updateSection = (fn: DraftFunction<FormSectionData>) => {
+			updateData(formData => {
+				if (!formData.sections)
+					formData.sections = []
 
-				if (!sectionData.sections) {
-					sectionData.sections = []
-				}
-
-				sectionData.sections[sectionIdx] = newSectionData
-				return sectionData
+				fn(formData.sections?.[sectionIdx])
 			})
 		}
 
@@ -119,7 +108,7 @@ type FormSectionImageCircle = (((({ x: number, y: number } | undefined)[]) | und
  */
 export function FormSection({ section, data, update }: {
 	section: FormSectionTemplate, data: FormSectionData,
-	update: UpdateSectionFunc
+	update: (fn: DraftFunction<FormSectionData>) => void
 }) {
 	const [activeTable, setActiveTable] = useState(0)
 	const [activeImage, setActiveImage] = useState(0)

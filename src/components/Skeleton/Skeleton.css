@@ -1,7 +1,7 @@
 .skeleton {
 	width: 100%;
 	align-items: start;
-	padding: 2em 6em
+	padding: 2em 6em;
 }
 
 .skeleton h1 {
@@ -10,17 +10,51 @@
 	margin-bottom: 1em;
 }
 
-.skeleton .bones-selection ul,
-.skeleton .add-bone ul,
-.skeleton .edit-bone ul {
+.bones-selection ul,
+.add-bones ul,
+.edit-bones ul {
 	list-style: none;
 }
 
-.skeleton .bones-selection > p {
+.bones-selection > p {
 	font-size: 1.2em;
 }
 
-.skeleton .bones-selection>p>span {
+.bones-selection>p>span {
 	font-size: .9em;
 	margin-left: .6em;
+}
+
+.add-bones ul,
+.edit-bones ul {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: center;
+	padding: 1em;
+	gap: 1em;
+}
+
+.add-bone,
+.edit-bone {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: .5em;
+	padding: .5em;
+	background-color: red;
+	border-radius: .4em;
+}
+
+.edit-bone-popup {
+	background-color: #ddd;
+	padding: 2em 3em;
+	border-radius: 1em;
+	position: relative;
+}
+
+.edit-bone-popup > button {
+	position: absolute;
+	top: .5em;
+	right: .5em;
 }
