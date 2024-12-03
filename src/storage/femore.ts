@@ -7,7 +7,7 @@ export const femore: Bone = {
 	name: 'Femore',
 	template: {
 		name: "Femore",
-		pages: [
+		sections: [
 			{
 				title: 'Centri di ossificazione: presenza/assenza, fusione lunghezza diafisi',
 				tables: [

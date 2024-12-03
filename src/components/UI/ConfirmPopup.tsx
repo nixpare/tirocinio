@@ -1,5 +1,6 @@
-import { DetailedHTMLProps, HTMLAttributes } from 'react'
 import './ConfirmPopup.css'
+
+import { DetailedHTMLProps, HTMLAttributes } from 'react'
 
 export type ConfirmPopupProps = {
 	confirmLabel?: string

@@ -1,9 +1,10 @@
-import { StrictMode, useState } from 'react'
+import './femore.css'
+
+import { StrictMode } from 'react'
+import { useImmer } from 'use-immer'
 import { createRoot } from 'react-dom/client'
 import { Form, EditModeContext } from '../components/Form/Form'
 import { FormData } from '../models/Form'
-
-import './femore.css'
 import { femore } from '../storage/femore'
 
 createRoot(document.getElementById('root')!).render(
@@ -18,12 +19,12 @@ const boneState: FormData = {
 }
 
 function App() {
-    const [state, setState] = useState(boneState)
+    const [state, updateState] = useImmer(boneState)
 
     return (
         <div className="container app">
             <EditModeContext.Provider value={true}>
-                <Form data={state} setFormData={setState} />
+                <Form data={state} updateData={updateState} />
             </EditModeContext.Provider>
         </div>
     )

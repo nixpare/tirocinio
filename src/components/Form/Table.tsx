@@ -1,11 +1,12 @@
+import './Table.css'
+
 import { useContext, useState, MouseEvent } from "react";
+import { Updater } from "use-immer";
 import { FormTableFieldImageRef, FormTableTemplate, FormTableFieldTemplate, FormTableData, FormTableRowSpecial, FormTableRowData, calculateRowCellCount } from "../../models/Form";
 import { DeleteImageCircleFunc, EditModeContext, HighlightImageCircleFunc } from "./Form";
 import { Field, UpdateFieldFunc } from "./Field";
 
-import './Table.css'
-
-export type UpdateTableFunc = (fn: (tableData: FormTableData) => FormTableData) => void
+export type UpdateTableFunc = Updater<FormTableData>
 type RenderRowFieldFunc = (rowIdx: number, field: FormTableFieldTemplate, fieldIdx: number, rowData?: FormTableRowData) => React.ReactNode
 
 /**
@@ -22,18 +23,21 @@ export function Table({ table, data, update, active, setActive, deleteCircle, hi
 }) {
 	const renderRowField: RenderRowFieldFunc = (rowIdx, field, fieldIdx, row) => {
 		// updatePropertyRow è la funzione di produzione sullo stato per la proprietà specifica
-		const updateField: UpdateFieldFunc = (fn) => {
+		const updateField: UpdateFieldFunc = (updater) => {
 			update(tableData => {
-				if (!tableData) {
-					tableData = []
-				}
+				if (!tableData)
+					throw new Error('updating state of non-existing table data')
 
 				if (!tableData[rowIdx]) {
 					tableData[rowIdx] = {}
 				}
 
-				tableData[rowIdx][fieldIdx] = fn(tableData?.[rowIdx]?.[fieldIdx])
-				return tableData
+				if (typeof updater !== 'function') {
+					tableData[rowIdx][fieldIdx] = updater
+					return
+				}
+
+				updater(tableData[rowIdx][fieldIdx])
 			})
 		}
 
@@ -80,18 +84,17 @@ export function Table({ table, data, update, active, setActive, deleteCircle, hi
 	const addRow = (ev: MouseEvent): void => {
 		ev.preventDefault()
 
-		update(table => {
-			if (!table)
-				table = []
+		update(tableData => {
+			if (!tableData)
+				throw new Error('updating state of non-existing table data')
 
-			if (table.length < nRows) {
-				for (let i = table.length; i < nRows; i++) {
-					table.push([])
+			if (tableData.length < nRows) {
+				for (let i = tableData.length; i < nRows; i++) {
+					tableData.push([])
 				}
 			}
 
-			table.push([])
-			return table
+			tableData.push([])
 		})
 	}
 
@@ -140,18 +143,16 @@ export function Table({ table, data, update, active, setActive, deleteCircle, hi
 								const setDefaultValue = (ev: MouseEvent): void => {
 									ev.preventDefault()
 
-									update(tableState => {
-										if (!tableState)
-											tableState = []
+									update(tableData => {
+										if (!tableData)
+											throw new Error('updating state of non-existing table data')
 
 										for (let i = 0; i < nRows; i++) {
-											if (!tableState[i])
-												tableState[i] = {}
+											if (!tableData[i])
+												tableData[i] = {}
 											// @ts-ignore
-											tableState[i][fieldIdx] = field.defaultValue
+											tableData[i][fieldIdx] = field.defaultValue
 										}
-
-										return tableState
 									})
 								}
 
@@ -189,13 +190,14 @@ export function Table({ table, data, update, active, setActive, deleteCircle, hi
 								if (circle != undefined)
 									deleteCircle(circle?.imageIdx, rowIdx)
 
-								update(table => {
-									if (table == undefined)
-										return table
+								update(tableData => {
+									if (tableData == undefined)
+										throw new Error('updating state of non-existing table data')
 
-									return table.filter((_, index) => {
-										return index !== rowIdx
-									})
+									for (let i = rowIdx; i+1 < tableData.length; i++) {
+										tableData[i] = tableData[i+1]
+									}
+									tableData.length--
 								})
 							}
 

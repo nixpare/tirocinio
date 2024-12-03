@@ -1,11 +1,13 @@
+import './Form.css'
+
 import { createContext, FormEvent, MouseEvent, useContext, useState } from 'react'
-import { produce } from 'immer'
+import { Updater } from 'use-immer'
 import { FormSectionTemplate, FormData, FormSectionData, FormTableFieldImageRef, FormTableRowSpecial } from '../../models/Form'
 import { Table, UpdateTableFunc } from './Table'
 import { Carousel } from '../UI/Carousel'
 
-import './Form.css'
-import { DraftFunction } from 'use-immer'
+export type UpdateFormFunc = Updater<FormData>
+export type UpdateSectionFunc = Updater<FormSectionData>
 
 type CreateImageCircleGenericFunc = (tableIdx: number, imageIdx: number, circleIdx: number, x: number, y: number) => void
 type DeleteImageCircleGenericFunc = (tableIdx: number, imageIdx: number, circleIdx: number) => void
@@ -36,7 +38,7 @@ export const VerticalSplitContext = createContext(false)
  * @return ReactNode
  */
 export function Form({ data, updateData, initialSection }: {
-	data: FormData, updateData: (fn: DraftFunction<FormData>) => void,
+	data: FormData, updateData: UpdateFormFunc,
 	initialSection?: number
 }) {
 	const editMode = useContext(EditModeContext)
@@ -44,23 +46,25 @@ export function Form({ data, updateData, initialSection }: {
 	function handleSubmit(ev: FormEvent) {
 		ev.preventDefault()
 
-		const strippedData = {
-			name: data.name,
-			sections: data.sections,
-			template: 'This is stripped' // instead of data.template
-		}
-		console.log(strippedData)
-		console.log(JSON.stringify(strippedData))
+		console.log(data)
 	}
 
-	const sections = data.template.pages.map((section, sectionIdx) => {
+	const sections = data.template.sections.map((section, sectionIdx) => {
 		// updatePage è la funzione di produzione sullo stato per la pagina specifica
-		const updateSection = (fn: DraftFunction<FormSectionData>) => {
+		const updateSection: UpdateSectionFunc = (updater) => {
 			updateData(formData => {
 				if (!formData.sections)
 					formData.sections = []
 
-				fn(formData.sections?.[sectionIdx])
+				if (typeof updater !== 'function') {
+					formData.sections[sectionIdx] = updater
+					return
+				}
+
+				if (!formData.sections[sectionIdx])
+					formData.sections[sectionIdx] = []
+
+				updater(formData.sections[sectionIdx])
 			})
 		}
 
@@ -80,7 +84,7 @@ export function Form({ data, updateData, initialSection }: {
 		</div>
 	}
 
-	const [visiblePage, setVisiblePage] = useState(initialSection && initialSection < data.template.pages.length ? initialSection : 0)
+	const [visiblePage, setVisiblePage] = useState(initialSection && initialSection < data.template.sections.length ? initialSection : 0)
 
 	return (
 		<div className="container form">
@@ -96,6 +100,7 @@ export function Form({ data, updateData, initialSection }: {
 }
 
 type FormSectionImageCircle = (((({ x: number, y: number } | undefined)[]) | undefined)[] | undefined)[] | undefined
+type FormSectionActiveImageCircle = boolean[][][]
 
 /**
  * PropertyPage rappresenta una pagina di opzioni per la struttura anatomica, la quale contiene, eventualmente, una o più immagini
@@ -108,11 +113,11 @@ type FormSectionImageCircle = (((({ x: number, y: number } | undefined)[]) | und
  */
 export function FormSection({ section, data, update }: {
 	section: FormSectionTemplate, data: FormSectionData,
-	update: (fn: DraftFunction<FormSectionData>) => void
+	update: UpdateSectionFunc
 }) {
 	const [activeTable, setActiveTable] = useState(0)
 	const [activeImage, setActiveImage] = useState(0)
-	const [activeCircles, setActiveCircles] = useState([] as boolean[][][])
+	const [activeCircles, setActiveCircles] = useState([] as FormSectionActiveImageCircle)
 	const verticalSplit = useContext(VerticalSplitContext)
 
 	const circles: FormSectionImageCircle = data?.map((table, tableIdx) => {
@@ -136,7 +141,7 @@ export function FormSection({ section, data, update }: {
 	const createCircleGeneric: CreateImageCircleGenericFunc = (tableIdx, imageIdx, circleIdx, x, y) => {
 		update(sectionData => {
 			if (!sectionData)
-				sectionData = []
+				throw new Error('updating state of non-existing form section data')
 
 			if (!sectionData[tableIdx])
 				sectionData[tableIdx] = []
@@ -148,51 +153,52 @@ export function FormSection({ section, data, update }: {
 					y: y
 				}
 			}
-
-			return sectionData
 		})
 	}
 
 	const deleteCircleGeneric: DeleteImageCircleGenericFunc = (tableIdx, imageIdx, circleIdx) => {
 		update(sectionData => {
-			if (!sectionData || !sectionData[tableIdx] || !sectionData[tableIdx][imageIdx] || !sectionData[tableIdx][imageIdx][circleIdx])
+			if (!sectionData)
+				throw new Error('updating state of non-existing form section data')
+
+			if (!sectionData[tableIdx] || !sectionData[tableIdx][imageIdx] || !sectionData[tableIdx][imageIdx][circleIdx])
 				return
 
 			delete sectionData[tableIdx][imageIdx][circleIdx]
-			return sectionData
 		})
 	}
 
 	const highlightCircleGeneric: HighlightImageCircleGenericFunc = (tableIdx, imageIdx, circleIdx) => {
-		setActiveCircles(produce(activeCircles => {
-			if (!circles || !circles[tableIdx] || !circles[tableIdx][imageIdx] || !circles[tableIdx][imageIdx][circleIdx])
-				return
+		if (!circles || !circles[tableIdx] || !circles[tableIdx][imageIdx] || !circles[tableIdx][imageIdx][circleIdx]) {
+			setActiveCircles([])
+			return
+		}
 
-			activeCircles = []
-			activeCircles[tableIdx] = []
-			activeCircles[tableIdx][imageIdx] = []
+		let newActiveCircles: FormSectionActiveImageCircle = []
+		newActiveCircles[tableIdx] = []
+		newActiveCircles[tableIdx][imageIdx] = []
+		newActiveCircles[tableIdx][imageIdx][circleIdx] = true
 
-			activeCircles[tableIdx][imageIdx][circleIdx] = true
-			return activeCircles
-		}))
-
-		setActiveImage(imageIdx)
+		setActiveCircles(newActiveCircles)
 	}
 
 	const tables = section.tables.map((table, tableIdx) => {
 		// updateSection è la funzione di produzione sullo stato per la sezione specifica della pagina
-		const updateTable: UpdateTableFunc = (fn) => {
+		const updateTable: UpdateTableFunc = (updater) => {
 			update(sectionData => {
-				const newTableData = fn(sectionData?.[tableIdx])
-				if (!newTableData)
-					return sectionData
+				if (!sectionData)
+					throw new Error('updating state of non-existing form section data')
 
-				if (!sectionData) {
-					sectionData = []
+				if (typeof updater !== 'function') {
+					sectionData[tableIdx] = updater
+					return
 				}
 
-				sectionData[tableIdx] = newTableData
-				return sectionData
+				if (!sectionData[tableIdx]) {
+					sectionData[tableIdx] = []
+				}
+
+				updater(sectionData[tableIdx])
 			})
 		}
 

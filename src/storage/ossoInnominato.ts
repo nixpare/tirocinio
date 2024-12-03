@@ -7,7 +7,7 @@ export const ossoInnominato: Bone = {
 	name: 'Osso Innominato',
 	template: {
 		name: "OSSO INNOMINATO",
-		pages: [
+		sections: [
 			// Page Test
 			{
 				title: "Test variadic mouse",

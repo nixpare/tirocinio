@@ -1,6 +1,6 @@
-import { MouseEvent, useState } from 'react'
-
 import './Dropdown.css'
+
+import { MouseEvent, useState } from 'react'
 
 /**
  * Dropdown simula il comportamento dell'elemento <select>. Normalmente il chiamante dovrebbe passare al componente uno stato e la sua funzione per cambiarlo

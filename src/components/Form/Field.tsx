@@ -1,12 +1,13 @@
+import './Field.css'
+
 import { ChangeEvent, useContext } from "react";
+import { Updater } from "use-immer";
 import { FormTableFieldType, FormTableFieldData, FormTableMultistageFieldData, FormTableFieldTemplate, isFormTableMultistageFieldData } from "../../models/Form";
 import { Dropdown } from "../UI/Dropdown";
 import { EditModeContext } from "./Form";
 
-import './Field.css'
-
-export type UpdateFieldFunc = (fn: (fieldData: FormTableFieldData) => FormTableFieldData) => void
-type UpdateMultistageFieldFunc = (fn: (multistageFieldData?: FormTableMultistageFieldData) => FormTableMultistageFieldData | undefined) => void
+export type UpdateFieldFunc = Updater<FormTableFieldData>
+type UpdateMultistageFieldFunc = Updater<FormTableMultistageFieldData>
 
 /**
  * Property rappresenta un'opzione della tabella. In base al valore `mode` in `template` il componente genera l'input sottostante
@@ -33,9 +34,7 @@ export function Field({ field, rowIdx, data, update }: {
 			return <td></td>
 		case FormTableFieldType.Text:
 			const handleTextInput = (ev: ChangeEvent<HTMLInputElement>): void => {
-				update(() => {
-					return ev.target.value
-				})
+				update(ev.target.value)
 			}
 
 			if (data != undefined && typeof data !== 'string')
@@ -50,10 +49,8 @@ export function Field({ field, rowIdx, data, update }: {
 			</td>
 		case FormTableFieldType.Number:
 			const handleNumberInput = (ev: ChangeEvent<HTMLInputElement>): void => {
-				update(() => {
-					const n = Number(ev.target.value)
-					return Number.isNaN(n) ? 0 : n
-				})
+				const n = Number(ev.target.value)
+				update(Number.isNaN(n) ? 0 : n)
 			}
 
 			if (data != undefined && typeof data !== 'number')
@@ -77,9 +74,7 @@ export function Field({ field, rowIdx, data, update }: {
 			</td>
 		case FormTableFieldType.Dropdown:
 			const setSelected = (selected?: string): void => {
-				update(() => {
-					return selected
-				})
+				update(selected)
 			}
 
 			if (data != undefined && typeof data !== 'string')
@@ -94,9 +89,14 @@ export function Field({ field, rowIdx, data, update }: {
 				/>
 			</td>
 		case FormTableFieldType.Multistage:
-			const updateMultistage: UpdateMultistageFieldFunc = (fn) => {
+			const updateMultistage: UpdateMultistageFieldFunc = (updater) => {
+				if (typeof updater !== 'function') {
+					update(updater)
+					return
+				}
+					
 				update(fieldData => {
-					return fn(fieldData as (FormTableMultistageFieldData | undefined))
+					updater(fieldData as FormTableMultistageFieldData)
 				})
 			}
 
@@ -118,15 +118,7 @@ function MultistageField({ field, rowIdx, data, update, disabled, header }: {
 	const options: string[] | undefined = field.multistageArgs?.map(arg => arg.value)
 
 	const setSelected = (selected?: string): void => {
-		update(() => {
-			if (!selected) {
-				return undefined
-			}
-
-			return {
-				value: selected
-			}
-		})
+		update(selected ? { value: selected } : undefined)
 	}
 
 	const firstStage = <td>
@@ -152,7 +144,7 @@ function MultistageField({ field, rowIdx, data, update, disabled, header }: {
 	return <>
 		{firstStage}
 		{nextFields.map((next, nextIdx) => {
-			const nextUpdate = (fn: (value?: FormTableFieldData) => FormTableFieldData): void => {
+			const nextUpdate: Updater<FormTableFieldData> = (updater) => {
 				update(multistageData => {
 					if (!multistageData)
 						throw new Error('multistage is undefined after the first stage')
@@ -160,8 +152,12 @@ function MultistageField({ field, rowIdx, data, update, disabled, header }: {
 					if (!multistageData.next)
 						multistageData.next = []
 
-					multistageData.next[nextIdx] = fn(multistageData.next[nextIdx])
-					return multistageData
+					if (typeof updater !== 'function') {
+						multistageData.next[nextIdx] = updater
+						return
+					}
+
+					updater(multistageData.next[nextIdx])
 				})
 			}
 

@@ -1,10 +1,11 @@
 import './Skeleton.css'
 
+import { ChangeEvent, DetailedHTMLProps, HTMLAttributes, useState } from 'react'
+import { Updater, useImmer } from 'use-immer'
 import { Bone, BoneData, SkeletonData } from '../../models/Skeleton'
-import { ChangeEvent, DetailedHTMLProps, HTMLAttributes } from 'react'
-import { DraftFunction, Updater, useImmer } from 'use-immer'
 import { ConfirmPopup } from '../UI/ConfirmPopup'
-import { Form } from '../Form/Form'
+import { EditModeContext, Form } from '../Form/Form'
+import { FullScreenOverlay } from '../UI/FullscreenOverlay'
 
 type SkeletonProps = {
 	data: SkeletonData
@@ -74,7 +75,7 @@ export function Skeleton({ data, updateData, bones, setOverlay }: SkeletonProps)
 				</ul>
 			</div>
 			<AddBonesSection bones={newBones} updateSkeleton={updateData} />
-			<EditBonesSection bones={availableBones} updateSkeleton={updateData} setOverlay={setOverlay} />
+			<EditBonesSection bones={availableBones} updateSkeleton={updateData} />
 		</div>
 	)
 }
@@ -123,25 +124,27 @@ function AddBone({ bone, updateSkeleton }: AddBoneProps) {
 type EditBonesSection = {
 	bones: BoneData[]
 	updateSkeleton: Updater<SkeletonData>
-	setOverlay: (overlay: React.ReactNode) => void
 }
 
-function EditBonesSection({ bones, updateSkeleton, setOverlay }: EditBonesSection) {
+function EditBonesSection({ bones, updateSkeleton }: EditBonesSection) {
 	return (
 		<div className="edit-bones">
 			<p>Ossa disponibili:</p>
 			{bones.length > 0 ? <ul>
 				{bones.map(bone => {
-					const updateBone = (fn: DraftFunction<BoneData>) => {
+					const updateBone: Updater<BoneData> = (updater) => {
 						updateSkeleton(skeletonData => {
-							fn(skeletonData[bone.name])
+							if (typeof updater !== 'function') {
+								skeletonData[bone.name] = updater
+								return
+							}
+
+							updater(skeletonData[bone.name])
 						})
 					}
 
 					return (
-						<EditBone key={bone.name}
-							bone={bone} updateBone={updateBone}
-							setOverlay={setOverlay} />
+						<EditBone key={bone.name} bone={bone} updateBone={updateBone} />
 					)
 				})}
 			</ul> : <div>
@@ -153,29 +156,48 @@ function EditBonesSection({ bones, updateSkeleton, setOverlay }: EditBonesSectio
 
 type EditBoneProps = {
 	bone: BoneData
-	updateBone: (fn: DraftFunction<BoneData>) => void
-	setOverlay: (overlay: React.ReactNode) => void
+	updateBone: Updater<BoneData>
 }
 
-function EditBone({ bone, updateBone, setOverlay }: EditBoneProps) {
-	const editBone = () => {
-		const onClick = () => {
-			setOverlay(undefined)
-		}
+function EditBone({ bone, updateBone }: EditBoneProps) {
+	const [popupOpened, setPopupOpened] = useState(false)
 
-		setOverlay(<>
-			<div className="edit-bone-popup">
-				<Form data={bone} updateData={updateBone} />
-				<button onClick={onClick}>Close</button>
-			</div>
-		</>)
+	const editBone = () => {
+		setPopupOpened(true)
+	}
+
+	const closePopup = () => {
+		setPopupOpened(false)
 	}
 
 	return (
 		<li className="edit-bone">
 			{bone.name}
 			<button onClick={editBone}>Edit</button>
+			{popupOpened && <>
+				<BonePopup bone={bone} updateBone={updateBone} onClose={closePopup} editMode={true} />
+			</>}
 		</li>
+	)
+}
+
+type BonePopupProps = {
+	bone: BoneData
+	updateBone: Updater<BoneData>
+	onClose: () => void
+	editMode?: boolean
+}
+
+function BonePopup({ bone, updateBone, onClose, editMode = false }: BonePopupProps) {
+	return (
+		<FullScreenOverlay>
+			<div className="edit-bone-popup">
+				<EditModeContext.Provider value={editMode}>
+					<Form data={bone} updateData={updateBone} />
+				</EditModeContext.Provider>
+				<button onClick={onClose}>Close</button>
+			</div>
+		</FullScreenOverlay>
 	)
 }
 

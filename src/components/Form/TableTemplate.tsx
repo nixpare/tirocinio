@@ -1,11 +1,12 @@
+import "./TableTemplate.css"
+
 import { ChangeEvent, FormEvent, MouseEvent, useState } from "react"
 import { produce } from "immer"
+import { useImmer } from 'use-immer'
 import { FormTableFieldType, formTableFieldTypes, FormSectionTemplate, FormSectionData, FormTableTemplate, FormTableFieldTemplate, getFormTableFieldTypeID } from "../../models/Form"
 import { FieldTemplate, UpdateFieldTemplateFunc } from "./FieldTemplate"
-import { EditModeContext, FormSection, UpdateSectionFunc, VerticalSplitContext } from "./Form"
+import { EditModeContext, FormSection, VerticalSplitContext } from "./Form"
 import { Dropdown } from "../UI/Dropdown"
-
-import "./TableTemplate.css"
 
 type UpdateTableTemplateFunc = (fn: (table: FormTableTemplate) => FormTableTemplate) => void
 
@@ -193,12 +194,7 @@ function TableTemplateFields({ table, updateTable }: { table: FormTableTemplate,
 }
 
 function FakePage({ table }: { table: FormTableTemplate }) {
-	const [fakeData, setFakeData] = useState([] as FormSectionData)
-	const updateFakeState: UpdateSectionFunc = (fn) => {
-		setFakeData(produce(page => {
-			return fn(page)
-		}))
-	}
+	const [fakeData, updateFakeData] = useImmer([] as FormSectionData)
 
 	const fakeTemplate: FormSectionTemplate = {
 		title: 'Prototipo Tabella',
@@ -207,6 +203,6 @@ function FakePage({ table }: { table: FormTableTemplate }) {
 	}
 
 	return <EditModeContext.Provider value={true}>
-		<FormSection section={fakeTemplate} data={fakeData} update={updateFakeState} />
+		<FormSection section={fakeTemplate} data={fakeData} update={updateFakeData} />
 	</EditModeContext.Provider>
 }

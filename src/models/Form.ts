@@ -8,7 +8,7 @@ export type FormTemplate = {
 	/** il nome della struttura anatomica */
 	name: string
 	/** le pagine di proprietà della struttura anatomica */
-	pages: FormSectionTemplate[]
+	sections: FormSectionTemplate[]
 }
 
 /**
@@ -210,7 +210,7 @@ export type FormTableMultistageFieldData = {
 	value: string
 	/** le `AnatomStructProperty` innestate, opzionale, indica i valori della proprietà derivate dalla selezione corrente */
 	next?: FormTableFieldData[]
-}
+} | undefined
 
 /** isAnatomStructMultistageProperty determina il risultato in base alla presenza del campo `value` */
 export function isFormTableMultistageFieldData(object: any): object is FormTableMultistageFieldData {

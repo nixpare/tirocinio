@@ -1,8 +1,9 @@
+import "./FieldTemplate.css"
+
 import { ChangeEvent, MouseEvent, useState } from 'react'
+import { produce } from 'immer'
 import { FormTableFieldType, formTableFieldTypes, FormTableFieldMultistageArg, FormTableFieldTemplate, getFormTableFieldTypeID } from "../../models/Form"
 import { Dropdown } from "../UI/Dropdown"
-import "./FieldTemplate.css"
-import { produce } from 'immer'
 
 export type UpdateFieldTemplateFunc = (fn: (table: FormTableFieldTemplate) => FormTableFieldTemplate) => void
 type UpdateMultistageArgTemplateFunc = (fn: (arg: FormTableFieldMultistageArg) => FormTableFieldMultistageArg) => void

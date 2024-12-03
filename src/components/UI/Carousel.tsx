@@ -1,6 +1,6 @@
-import React, { ReactNode, MouseEvent, useState } from 'react'
-
 import './Carousel.css'
+
+import React, { ReactNode, MouseEvent, useState } from 'react'
 
 /**
  * Carousel implementa un semplice componente per mostrare più contenuti in successione,

@@ -1,11 +1,11 @@
+import './index.css'
+
 import { StrictMode, useState } from 'react'
 import { createRoot } from 'react-dom/client'
-
-import './index.css'
+import { useImmer } from 'use-immer'
 import { Skeleton } from '../components/Skeleton/Skeleton'
 import { femore } from '../storage/femore'
 import { ossoInnominato } from '../storage/ossoInnominato'
-import { useImmer } from 'use-immer'
 import { SkeletonData } from '../models/Skeleton'
 import { FullScreenOverlay } from '../components/UI/FullscreenOverlay'
 
