@@ -60,14 +60,7 @@ function SelectBonesSection({ bones, skeletonData, selectedBones, updateSelected
 
 	return (
 		<div className="select-bones">
-			<p>Seleziona le ossa presenti:
-				<span>(Selezionati: {
-					selectedBones
-						.filter(bone => bone != undefined)
-						.map(bone => bone.name)
-						.join(', ') || 'Nessuno'
-				})</span>
-			</p>
+			<p>Seleziona le ossa presenti:</p>
 			{bones.length > 0 ? (
 				<ul>
 					{bones.map((bone, boneIdx) => {
@@ -143,7 +136,7 @@ function AddBonesSection({ bones, updateSkeleton }: AddBonesSection) {
 					))}
 				</ul>
 			) : (
-				<div>Nessuna</div>
+				<div>Nessuna disponibile</div>
 			)}
 		</div>
 	)
@@ -166,7 +159,9 @@ function AddBone({ bone, updateSkeleton }: AddBoneProps) {
 
 	return <li className="add-bone">
 		{bone.name}
-		<button onClick={addNewBone}>Add</button>
+		<button className="icon-button" onClick={addNewBone}>
+			<i className="fa-solid fa-plus"></i>
+		</button>
 	</li>
 }
 
@@ -203,7 +198,7 @@ function EditBonesSection({ bones, updateSkeleton, setOverlay }: EditBonesSectio
 					})}
 				</ul>
 			) : (
-				<div>Nessuna</div>
+				<div>Nessuna registrata</div>
 			)}
 		</div>
 	)
@@ -242,11 +237,13 @@ function EditBone({ bone, updateBone, updateSkeleton, setOverlay }: EditBoneProp
 
 	const deleteBone = () => {
 		setOverlay((
-			<DeleteBonePopup
+			<DeleteBonePopup className="delete-bone-popup"
 				boneName={bone.name} updateSkeleton={updateSkeleton}
 				setOverlay={setOverlay}
 			>
-				<div>Sei sicuro di voler eliminare {bone.name}?</div>
+				<div>
+					Sei sicuro di voler eliminare <span className="bone-name">{bone.name}</span>?
+				</div>
 			</DeleteBonePopup>
 		))
 	}
@@ -261,9 +258,17 @@ function EditBone({ bone, updateBone, updateSkeleton, setOverlay }: EditBoneProp
 	return (
 		<li className="edit-bone">
 			{bone.name}
-			<button onClick={viewBone}>View</button>
-			<button onClick={editBone}>Edit</button>
-			<button onClick={deleteBone}>Delete</button>
+			<div>
+				<button className="icon-button" onClick={viewBone}>
+					<i className="fa-solid fa-eye"></i>
+				</button>
+				<button className="icon-button" onClick={editBone}>
+					<i className="fa-solid fa-pen-to-square"></i>
+				</button>
+				<button className="icon-button delete-button" onClick={deleteBone}>
+					<i className="fa-solid fa-trash"></i>
+				</button>
+			</div>
 			{popupOpened.opened && <>
 				<BonePopup bone={bone} updateBone={updateBone} onClose={closePopup} editMode={popupOpened.editMode} />
 			</>}
@@ -289,7 +294,7 @@ function showMessage(message: string, setOverlay: SetOverlayFunc) {
 		return (
 			<div className={`message ${stateClass}`}>
 				<div>{message}</div>
-				<button onClick={dismiss}>Dismiss</button>
+				<button onClick={dismiss}>Chiudi</button>
 			</div>
 		)
 	}
@@ -342,7 +347,9 @@ function DeleteBonePopup({ boneName, updateSkeleton, setOverlay, children, ...pr
 	}
 	
 	return (
-		<ConfirmPopup {...props} onConfirm={deleteBone} onCancel={closeOverlay}>
+		<ConfirmPopup {...props}
+			onConfirm={deleteBone} onCancel={closeOverlay}
+			confirmLabel='Conferma' cancelLabel='Annulla' >
 			{children}
 		</ConfirmPopup>
 	)

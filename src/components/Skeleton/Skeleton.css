@@ -21,7 +21,6 @@
 	list-style: none;
 	display: flex;
 	flex-wrap: wrap;
-	align-items: center;
 	background-color: rgba(var(--primary-color), .2);
 	border-radius: .4em;
 	padding: 1em;
@@ -29,13 +28,14 @@
 	gap: 1em;
 }
 
-.select-bones > p {
-	font-size: 1.2em;
+.edit-bones>ul {
+	flex-direction: column;
 }
 
-.select-bones>p>span {
-	font-size: .9em;
-	margin-left: .6em;
+.select-bones>p,
+.add-bones>p,
+.edit-bones>p {
+	font-size: 1.2em;
 }
 
 .select-bone,
@@ -44,10 +44,23 @@
 	display: flex;
 	align-items: center;
 	justify-content: center;
-	gap: .5em;
+	gap: 1em;
 	padding: .5em;
 	background-color: rgba(var(--primary-color), .6);
 	border-radius: .4em;
+}
+
+.edit-bone {
+	justify-content: space-between;
+}
+
+.edit-bone > div {
+	display: flex;
+	gap: .5em;
+}
+
+.edit-bone > div > button.delete-button {
+	background-color: rgb(230, 55, 55);
 }
 
 .edit-bone-popup {
@@ -106,4 +119,9 @@
 
 .window-message .message>button {
 	margin-top: 1em;
+}
+
+.confirm-popup.delete-bone-popup .bone-name {
+	font-weight: bold;
+	color: rgb(var(--primary-color));
 }

@@ -1,12 +1,12 @@
 # Todo list
 
-+ [ ] Rivedere la documentazione dopo un redesign pesante
-+ [ ] Creare una scheda scheletro con:
++ [x] Creare una scheda scheletro con:
   + [x] selezione delle ossa presenti, di cui si vuole raccogliere informazioni
-  + [ ] scelta dell'osso da aggiungere
-  + [ ] scelta dell'osso da visualizzare / modificare
-  + [ ] eliminare osso già inserito
+  + [x] scelta dell'osso da aggiungere
+  + [x] scelta dell'osso da visualizzare / modificare
+  + [x] eliminare osso già inserito
 + [ ] Rivedere come le farie stringhe possano essere sanitificare per essere inserite nel db (struttura { value, display })
++ [ ] Rivedere la documentazione dopo un redesign pesante
 
 # Extras
 
