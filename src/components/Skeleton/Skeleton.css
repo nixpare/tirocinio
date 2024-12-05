@@ -2,6 +2,8 @@
 	width: 100%;
 	align-items: start;
 	padding: 2em 6em;
+	background-color: rgba(var(--primary-color), .4);
+	border-radius: .4em;
 }
 
 .skeleton h1 {
@@ -10,31 +12,27 @@
 	margin-bottom: 1em;
 }
 
-.bones-selection ul,
-.add-bones ul,
-.edit-bones ul {
+.select-bones > ul,
+.add-bones > ul,
+.edit-bones > ul {
 	list-style: none;
-}
-
-.bones-selection > p {
-	font-size: 1.2em;
-}
-
-.bones-selection>p>span {
-	font-size: .9em;
-	margin-left: .6em;
-}
-
-.add-bones ul,
-.edit-bones ul {
 	display: flex;
 	flex-wrap: wrap;
 	align-items: center;
-	justify-content: center;
 	padding: 1em;
 	gap: 1em;
 }
 
+.select-bones > p {
+	font-size: 1.2em;
+}
+
+.select-bones>p>span {
+	font-size: .9em;
+	margin-left: .6em;
+}
+
+.select-bone,
 .add-bone,
 .edit-bone {
 	display: flex;
@@ -42,7 +40,7 @@
 	justify-content: center;
 	gap: .5em;
 	padding: .5em;
-	background-color: red;
+	background-color: rgba(var(--primary-color), .6);
 	border-radius: .4em;
 }
 
@@ -51,10 +49,20 @@
 	padding: 2em 3em;
 	border-radius: 1em;
 	position: relative;
+	height: 100%;
+	max-width: 100%;
+	overflow: auto;
 }
 
 .edit-bone-popup > button {
 	position: absolute;
-	top: .5em;
-	right: .5em;
+	top: 0em;
+	right: 0em;
+	padding: .5em 1em .3em;
+	border-top-right-radius: .9em;
+	background-color: #e57676;
+}
+
+.edit-bone-popup>button>i {
+	font-size: 1.2em;
 }

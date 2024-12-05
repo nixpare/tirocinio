@@ -1,6 +1,6 @@
 import './Skeleton.css'
 
-import { ChangeEvent, DetailedHTMLProps, HTMLAttributes, useState } from 'react'
+import { ChangeEvent, ChangeEventHandler, DetailedHTMLProps, HTMLAttributes, useState } from 'react'
 import { Updater, useImmer } from 'use-immer'
 import { Bone, BoneData, SkeletonData } from '../../models/Skeleton'
 import { ConfirmPopup } from '../UI/ConfirmPopup'
@@ -24,23 +24,6 @@ export function Skeleton({ data, updateData, bones, setOverlay }: SkeletonProps)
 	})
 
 	const [selectedBones, updateSelectedBones] = useImmer<(Bone | undefined)[]>(initialBones)
-	
-	const setChecked = (idx: number, checked: boolean) => {
-		updateSelectedBones(selected => {
-			const bone = bones[idx]
-
-			if (!checked && data[bone.name] != undefined) {
-				setOverlay(<DeleteBonePopup
-					bone={bone} updateSkeleton={updateData} setOverlay={setOverlay}
-					confirmLabel='Conferma' cancelLabel='Cancella'>
-						<div>Sei sicuro di voler cancellare {bone.name}?</div>
-				</DeleteBonePopup>)
-				return
-			}
-
-			selected[idx] = checked ? bone : undefined
-		})
-	}
 
 	const newBones = selectedBones.filter(bone => {
 		return bone && data[bone.name] == undefined
@@ -49,35 +32,87 @@ export function Skeleton({ data, updateData, bones, setOverlay }: SkeletonProps)
 	return (
 		<div className="container skeleton">
 			<h1>Scheletro</h1>
-			<div className="bones-selection">
-				<p>Seleziona le ossa presenti:
-					<span>(Selezionati: {
-					selectedBones
-						.filter(bone => bone != undefined)
-						.map(bone => bone.name)
-						.join(', ') || 'Nessuno'
-					})</span>
-				</p>
-				<ul>
-					{bones.map((bone, boneIdx) => {
-						const onChange = (ev: ChangeEvent<HTMLInputElement>) => {
-							setChecked(boneIdx, ev.target.checked)
-						}
-
-						return <li key={bone.name}>
-							<input
-								type="checkbox" name={bone.name}
-								checked={selectedBones[boneIdx] != undefined}
-								onChange={onChange} />
-							<label htmlFor={bone.name}>{bone.name}</label>
-						</li>
-					})}
-				</ul>
-			</div>
+			<SelectBones bones={bones} skeletonData={data} updateSkeletonData={updateData} 
+				selectedBones={selectedBones} updateSelectedBones={updateSelectedBones}
+				setOverlay={setOverlay}/>
 			<AddBonesSection bones={newBones} updateSkeleton={updateData} />
 			<EditBonesSection bones={availableBones} updateSkeleton={updateData} />
 		</div>
 	)
+}
+
+type SelectBonesProps = {
+	bones: Bone[]
+	skeletonData: SkeletonData
+	updateSkeletonData: Updater<SkeletonData>
+	selectedBones: (Bone | undefined)[]
+	updateSelectedBones: Updater<(Bone | undefined)[]>
+	setOverlay: (overlay: React.ReactNode) => void
+}
+
+function SelectBones({ bones, skeletonData, updateSkeletonData, selectedBones, updateSelectedBones, setOverlay }: SelectBonesProps) {
+	const setChecked = (idx: number, checked: boolean) => {
+		updateSelectedBones(selected => {
+			const bone = bones[idx]
+
+			if (!checked && skeletonData[bone.name] != undefined) {
+				const deletePopup = (
+					<DeleteBonePopup
+						bone={bone} updateSkeleton={updateSkeletonData} setOverlay={setOverlay}
+						confirmLabel='Conferma' cancelLabel='Cancella'>
+						<div>Sei sicuro di voler cancellare {bone.name}?</div>
+					</DeleteBonePopup>
+				)
+				
+				setOverlay(deletePopup)
+				return
+			}
+
+			selected[idx] = checked ? bone : undefined
+		})
+	}
+
+	return (
+		<div className="select-bones">
+			<p>Seleziona le ossa presenti:
+				<span>(Selezionati: {
+					selectedBones
+						.filter(bone => bone != undefined)
+						.map(bone => bone.name)
+						.join(', ') || 'Nessuno'
+				})</span>
+			</p>
+			<ul>
+				{bones.map((bone, boneIdx) => {
+					const setBoneChecked = (ev: ChangeEvent<HTMLInputElement>) => {
+						setChecked(boneIdx, ev.target.checked)
+					}
+
+					return (
+						<SelectBone bone={bone} key={bone.name}
+							checked={selectedBones[boneIdx] != undefined}
+							onChange={setBoneChecked} />
+					)
+				})}
+			</ul>
+		</div>
+	)
+}
+
+type SelectBoneProps = {
+	bone: Bone
+	checked: boolean
+	onChange: ChangeEventHandler<HTMLInputElement>
+}
+
+function SelectBone({ bone, checked, onChange }: SelectBoneProps) {
+	return <li className="select-bone">
+		<input
+			type="checkbox" name={bone.name}
+			checked={checked}
+			onChange={onChange} />
+		<label htmlFor={bone.name}>{bone.name}</label>
+	</li>
 }
 
 type AddBonesSection = {
@@ -88,7 +123,7 @@ type AddBonesSection = {
 function AddBonesSection({ bones, updateSkeleton }: AddBonesSection) {
 	return (
 		<div className="add-bones">
-			<p>Nuove ossa:</p>
+			<p>Aggiungi ossa:</p>
 			{bones.length > 0 ? <ul>
 				{bones.map(bone => <>
 					<AddBone key={bone.name} bone={bone} updateSkeleton={updateSkeleton} />
@@ -129,7 +164,7 @@ type EditBonesSection = {
 function EditBonesSection({ bones, updateSkeleton }: EditBonesSection) {
 	return (
 		<div className="edit-bones">
-			<p>Ossa disponibili:</p>
+			<p>Gestisci ossa registrate:</p>
 			{bones.length > 0 ? <ul>
 				{bones.map(bone => {
 					const updateBone: Updater<BoneData> = (updater) => {
@@ -195,7 +230,9 @@ function BonePopup({ bone, updateBone, onClose, editMode = false }: BonePopupPro
 				<EditModeContext.Provider value={editMode}>
 					<Form data={bone} updateData={updateBone} />
 				</EditModeContext.Provider>
-				<button onClick={onClose}>Close</button>
+				<button onClick={onClose}>
+					<i className="fa-solid fa-xmark"></i>
+				</button>
 			</div>
 		</FullScreenOverlay>
 	)
