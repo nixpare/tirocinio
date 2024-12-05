@@ -17,3 +17,7 @@
 	justify-content: center;
 	padding: 2em;
 }
+
+.fullscreen-overlay > div > * {
+	isolation: isolate;
+}

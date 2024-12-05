@@ -52,8 +52,8 @@
 
 .edit-bone-popup {
 	background-color: #ddd;
-	padding: 2em 3em;
-	border-radius: 1em;
+	padding: 1em;
+	border-radius: .6em;
 	position: relative;
 	height: 100%;
 	max-width: 100%;
@@ -61,9 +61,10 @@
 }
 
 .edit-bone-popup > button {
-	position: absolute;
-	top: 0em;
-	right: 0em;
+	position: fixed;
+	top: 2em;
+	right: 2em;
+	border-top-right-radius: 0;
 	padding: .5em 1em .3em;
 	background-color: #e57676;
 }
