@@ -4,6 +4,7 @@
 	background-color: rgba(30, 30, 30, .6);
 	backdrop-filter: blur(10px);
 	overflow: auto;
+	z-index: 1000;
 }
 
 .fullscreen-overlay > div {

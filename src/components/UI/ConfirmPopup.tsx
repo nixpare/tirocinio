@@ -16,7 +16,7 @@ export function ConfirmPopup({
 	return (
 		<div className={['confirm-popup', className].join(' ')} {...props}>
 			{children}
-			<div>
+			<div className="buttons">
 				<button className="confirm-button" onClick={onConfirm}>{confirmLabel}</button>
 				<button className="cancel-button" onClick={onCancel}>{cancelLabel}</button>
 			</div>

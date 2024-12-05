@@ -1,17 +1,18 @@
 import './Skeleton.css'
 
-import { ChangeEvent, ChangeEventHandler, DetailedHTMLProps, HTMLAttributes, useState } from 'react'
+import { ChangeEvent, ChangeEventHandler, DetailedHTMLProps, HTMLAttributes, useEffect, useRef, useState } from 'react'
 import { Updater, useImmer } from 'use-immer'
 import { Bone, BoneData, SkeletonData } from '../../models/Skeleton'
 import { ConfirmPopup } from '../UI/ConfirmPopup'
 import { EditModeContext, Form } from '../Form/Form'
 import { FullScreenOverlay } from '../UI/FullscreenOverlay'
+import { SetOverlayFunc } from '../../pages'
 
 type SkeletonProps = {
 	data: SkeletonData
 	updateData: Updater<SkeletonData>
 	bones: Bone[]
-	setOverlay: (overlay: React.ReactNode) => void
+	setOverlay: SetOverlayFunc
 }
 
 export function Skeleton({ data, updateData, bones, setOverlay }: SkeletonProps) {
@@ -32,42 +33,27 @@ export function Skeleton({ data, updateData, bones, setOverlay }: SkeletonProps)
 	return (
 		<div className="container skeleton">
 			<h1>Scheletro</h1>
-			<SelectBones bones={bones} skeletonData={data} updateSkeletonData={updateData} 
+			<SelectBonesSection bones={bones} skeletonData={data}
 				selectedBones={selectedBones} updateSelectedBones={updateSelectedBones}
 				setOverlay={setOverlay}/>
 			<AddBonesSection bones={newBones} updateSkeleton={updateData} />
-			<EditBonesSection bones={availableBones} updateSkeleton={updateData} />
+			<EditBonesSection bones={availableBones} updateSkeleton={updateData} setOverlay={setOverlay} />
 		</div>
 	)
 }
 
-type SelectBonesProps = {
+type SelectBonesSectionProps = {
 	bones: Bone[]
 	skeletonData: SkeletonData
-	updateSkeletonData: Updater<SkeletonData>
 	selectedBones: (Bone | undefined)[]
 	updateSelectedBones: Updater<(Bone | undefined)[]>
-	setOverlay: (overlay: React.ReactNode) => void
+	setOverlay: SetOverlayFunc
 }
 
-function SelectBones({ bones, skeletonData, updateSkeletonData, selectedBones, updateSelectedBones, setOverlay }: SelectBonesProps) {
+function SelectBonesSection({ bones, skeletonData, selectedBones, updateSelectedBones, setOverlay }: SelectBonesSectionProps) {
 	const setChecked = (idx: number, checked: boolean) => {
 		updateSelectedBones(selected => {
 			const bone = bones[idx]
-
-			if (!checked && skeletonData[bone.name] != undefined) {
-				const deletePopup = (
-					<DeleteBonePopup
-						bone={bone} updateSkeleton={updateSkeletonData} setOverlay={setOverlay}
-						confirmLabel='Conferma' cancelLabel='Cancella'>
-						<div>Sei sicuro di voler cancellare {bone.name}?</div>
-					</DeleteBonePopup>
-				)
-				
-				setOverlay(deletePopup)
-				return
-			}
-
 			selected[idx] = checked ? bone : undefined
 		})
 	}
@@ -82,19 +68,27 @@ function SelectBones({ bones, skeletonData, updateSkeletonData, selectedBones, u
 						.join(', ') || 'Nessuno'
 				})</span>
 			</p>
-			<ul>
-				{bones.map((bone, boneIdx) => {
-					const setBoneChecked = (ev: ChangeEvent<HTMLInputElement>) => {
-						setChecked(boneIdx, ev.target.checked)
-					}
+			{bones.length > 0 ? (
+				<ul>
+					{bones.map((bone, boneIdx) => {
+						const checked = selectedBones[boneIdx] != undefined
+						const disabled = checked && skeletonData[bone.name] != undefined
 
-					return (
-						<SelectBone bone={bone} key={bone.name}
-							checked={selectedBones[boneIdx] != undefined}
-							onChange={setBoneChecked} />
-					)
-				})}
-			</ul>
+						const setBoneChecked = (ev: ChangeEvent<HTMLInputElement>) => {
+							setChecked(boneIdx, ev.target.checked)
+						}
+
+						return (
+							<SelectBone bone={bone} key={bone.name}
+								checked={checked} disabled={disabled}
+								onChange={setBoneChecked} setOverlay={setOverlay}/>
+						)
+					})}
+				</ul>
+			) : (
+				<div>Nessuna</div>
+			)}
+			
 		</div>
 	)
 }
@@ -102,15 +96,34 @@ function SelectBones({ bones, skeletonData, updateSkeletonData, selectedBones, u
 type SelectBoneProps = {
 	bone: Bone
 	checked: boolean
+	disabled: boolean
 	onChange: ChangeEventHandler<HTMLInputElement>
+	setOverlay: SetOverlayFunc
 }
 
-function SelectBone({ bone, checked, onChange }: SelectBoneProps) {
+function SelectBone({ bone, checked, disabled, onChange, setOverlay }: SelectBoneProps) {
+	const onClick: ChangeEventHandler<HTMLInputElement> = (ev) => {
+		if (checked && disabled) {
+			showMessage(`Non puoi deselezionare ${bone.name} perchè sono registrati dei dati. Eliminali prima nella sezione sotto`, setOverlay);
+			return;
+		}
+		
+		onChange(ev)
+	}
+
+	const className = disabled ? 'disabled' : undefined
+
+	const inputRef = useRef<HTMLInputElement>(null)
+	useEffect(() => {
+		if (inputRef.current) {
+			inputRef.current.checked = checked
+		}
+	}, [inputRef, checked])
+	
 	return <li className="select-bone">
-		<input
+		<input className={className} ref={inputRef}
 			type="checkbox" name={bone.name}
-			checked={checked}
-			onChange={onChange} />
+			onChange={onClick} />
 		<label htmlFor={bone.name}>{bone.name}</label>
 	</li>
 }
@@ -124,13 +137,15 @@ function AddBonesSection({ bones, updateSkeleton }: AddBonesSection) {
 	return (
 		<div className="add-bones">
 			<p>Aggiungi ossa:</p>
-			{bones.length > 0 ? <ul>
-				{bones.map(bone => <>
-					<AddBone key={bone.name} bone={bone} updateSkeleton={updateSkeleton} />
-				</>)}
-			</ul> : <div>
-				Nessuna
-			</div>}
+			{bones.length > 0 ? (
+				<ul>
+					{bones.map(bone => (
+						<AddBone key={bone.name} bone={bone} updateSkeleton={updateSkeleton} />
+					))}
+				</ul>
+			) : (
+				<div>Nessuna</div>
+			)}
 		</div>
 	)
 }
@@ -159,32 +174,38 @@ function AddBone({ bone, updateSkeleton }: AddBoneProps) {
 type EditBonesSection = {
 	bones: BoneData[]
 	updateSkeleton: Updater<SkeletonData>
+	setOverlay: SetOverlayFunc
 }
 
-function EditBonesSection({ bones, updateSkeleton }: EditBonesSection) {
+function EditBonesSection({ bones, updateSkeleton, setOverlay }: EditBonesSection) {
 	return (
 		<div className="edit-bones">
 			<p>Gestisci ossa registrate:</p>
-			{bones.length > 0 ? <ul>
-				{bones.map(bone => {
-					const updateBone: Updater<BoneData> = (updater) => {
-						updateSkeleton(skeletonData => {
-							if (typeof updater !== 'function') {
-								skeletonData[bone.name] = updater
-								return
-							}
+			{bones.length > 0 ? (
+				<ul>
+					{bones.map(bone => {
+						const updateBone: Updater<BoneData> = (updater) => {
+							updateSkeleton(skeletonData => {
+								if (typeof updater !== 'function') {
+									skeletonData[bone.name] = updater
+									return
+								}
 
-							updater(skeletonData[bone.name])
-						})
-					}
+								updater(skeletonData[bone.name])
+							})
+						}
 
-					return (
-						<EditBone key={bone.name} bone={bone} updateBone={updateBone} />
-					)
-				})}
-			</ul> : <div>
-				Nessuna
-			</div>}
+						return (
+							<EditBone key={bone.name}
+								bone={bone} updateBone={updateBone}
+								updateSkeleton={updateSkeleton}
+								setOverlay={setOverlay}/>
+						)
+					})}
+				</ul>
+			) : (
+				<div>Nessuna</div>
+			)}
 		</div>
 	)
 }
@@ -192,28 +213,91 @@ function EditBonesSection({ bones, updateSkeleton }: EditBonesSection) {
 type EditBoneProps = {
 	bone: BoneData
 	updateBone: Updater<BoneData>
+	updateSkeleton: Updater<SkeletonData>
+	setOverlay: SetOverlayFunc
 }
 
-function EditBone({ bone, updateBone }: EditBoneProps) {
-	const [popupOpened, setPopupOpened] = useState(false)
+function EditBone({ bone, updateBone, updateSkeleton, setOverlay }: EditBoneProps) {
+	type BonePopupProps = {
+		opened: boolean
+		editMode: boolean
+	}
+	const [popupOpened, setPopupOpened] = useState<BonePopupProps>({
+		opened: false,
+		editMode: false
+	})
+
+	const viewBone = () => {
+		setPopupOpened({
+			opened: true,
+			editMode: false
+		})
+	}
 
 	const editBone = () => {
-		setPopupOpened(true)
+		setPopupOpened({
+			opened: true,
+			editMode: true
+		})
+	}
+
+	const deleteBone = () => {
+		setOverlay((
+			<DeleteBonePopup
+				boneName={bone.name} updateSkeleton={updateSkeleton}
+				setOverlay={setOverlay}
+			>
+				<div>Sei sicuro di voler eliminare {bone.name}?</div>
+			</DeleteBonePopup>
+		))
 	}
 
 	const closePopup = () => {
-		setPopupOpened(false)
+		setPopupOpened({
+			opened: false,
+			editMode: false
+		})
 	}
 
 	return (
 		<li className="edit-bone">
 			{bone.name}
+			<button onClick={viewBone}>View</button>
 			<button onClick={editBone}>Edit</button>
-			{popupOpened && <>
-				<BonePopup bone={bone} updateBone={updateBone} onClose={closePopup} editMode={true} />
+			<button onClick={deleteBone}>Delete</button>
+			{popupOpened.opened && <>
+				<BonePopup bone={bone} updateBone={updateBone} onClose={closePopup} editMode={popupOpened.editMode} />
 			</>}
 		</li>
 	)
+}
+
+function showMessage(message: string, setOverlay: SetOverlayFunc) {
+	const MessageNode = () => {
+		const [stateClass, setStateClass] = useState('')
+		
+		const dismiss = () => {
+			setStateClass('hide')
+			setTimeout(() => {
+				setOverlay(null)
+			}, 600)
+		}
+
+		useEffect(() => {
+			setStateClass('show')
+		}, [])
+
+		return (
+			<div className={`message ${stateClass}`}>
+				<div>{message}</div>
+				<button onClick={dismiss}>Dismiss</button>
+			</div>
+		)
+	}
+	
+	setOverlay(<MessageNode />, {
+		className: 'window-message'
+	})
 }
 
 type BonePopupProps = {
@@ -239,17 +323,17 @@ function BonePopup({ bone, updateBone, onClose, editMode = false }: BonePopupPro
 }
 
 type DeleteBonePopupProps = {
-	bone: Bone
+	boneName: string
 	updateSkeleton: Updater<SkeletonData>
-	setOverlay: (overlay: React.ReactNode) => void
+	setOverlay: SetOverlayFunc
 	confirmLabel?: string
 	cancelLabel?: string
 } & DetailedHTMLProps<HTMLAttributes<HTMLDivElement>, HTMLDivElement>
 
-function DeleteBonePopup({ bone, updateSkeleton, setOverlay, children, ...props }: DeleteBonePopupProps) {
+function DeleteBonePopup({ boneName, updateSkeleton, setOverlay, children, ...props }: DeleteBonePopupProps) {
 	const deleteBone = () => {
 		updateSkeleton(skeletonData => {
-			delete skeletonData[bone.name]
+			delete skeletonData[boneName]
 		})
 		closeOverlay()
 	}
