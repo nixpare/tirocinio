@@ -102,3 +102,7 @@
 .window-message .message.hide {
 	opacity: 0;
 }
+
+.window-message .message>button {
+	margin-top: 1em;
+}

@@ -1,6 +1,6 @@
 import './Skeleton.css'
 
-import { ChangeEvent, ChangeEventHandler, DetailedHTMLProps, HTMLAttributes, useEffect, useRef, useState } from 'react'
+import { ChangeEvent, ChangeEventHandler, DetailedHTMLProps, HTMLAttributes, useEffect, useState } from 'react'
 import { Updater, useImmer } from 'use-immer'
 import { Bone, BoneData, SkeletonData } from '../../models/Skeleton'
 import { ConfirmPopup } from '../UI/ConfirmPopup'
@@ -113,16 +113,15 @@ function SelectBone({ bone, checked, disabled, onChange, setOverlay }: SelectBon
 
 	const className = disabled ? 'disabled' : undefined
 
-	const inputRef = useRef<HTMLInputElement>(null)
+	const [isChecked, setIsChecked] = useState(false)
 	useEffect(() => {
-		if (inputRef.current) {
-			inputRef.current.checked = checked
-		}
-	}, [inputRef, checked])
+		setIsChecked(checked)
+	}, [checked])
 	
 	return <li className="select-bone">
-		<input className={className} ref={inputRef}
+		<input className={className}
 			type="checkbox" name={bone.name}
+			checked={isChecked}
 			onChange={onClick} />
 		<label htmlFor={bone.name}>{bone.name}</label>
 	</li>

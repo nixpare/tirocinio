@@ -99,14 +99,13 @@ input[type=checkbox]::after {
   text-align: center;
   vertical-align: middle;
 }
-input[type=checkbox]:checked::after,
-input[type=checkbox][checked]::after {
+input[type=checkbox]:checked::after {
   opacity: 1;
   transform: scale(1);
 }
 
-input[type=checkbox].disabled:checked::after,
-input[type=checkbox].disabled[checked]::after {
+input[type=checkbox]:checked:disabled::after,
+input[type=checkbox]:checked.disabled::after {
   color: #737373;
 }
 
