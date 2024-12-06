@@ -95,7 +95,7 @@ type SelectBoneProps = {
 }
 
 function SelectBone({ bone, checked, disabled, onChange, setOverlay }: SelectBoneProps) {
-	const onClick: ChangeEventHandler<HTMLInputElement> = (ev) => {
+	const innerOnChange: ChangeEventHandler<HTMLInputElement> = (ev) => {
 		if (checked && disabled) {
 			showMessage(`Non puoi deselezionare ${bone.name} perchè sono registrati dei dati. Eliminali prima nella sezione sotto`, setOverlay);
 			return;
@@ -105,17 +105,12 @@ function SelectBone({ bone, checked, disabled, onChange, setOverlay }: SelectBon
 	}
 
 	const className = disabled ? 'disabled' : undefined
-
-	const [isChecked, setIsChecked] = useState(false)
-	useEffect(() => {
-		setIsChecked(checked)
-	}, [checked])
 	
 	return <li className="select-bone">
 		<input className={className}
 			type="checkbox" name={bone.name}
-			checked={isChecked}
-			onChange={onClick} />
+			checked={checked}
+			onChange={innerOnChange} />
 		<label htmlFor={bone.name}>{bone.name}</label>
 	</li>
 }
