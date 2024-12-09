@@ -15,11 +15,11 @@ export const femore: Bone = {
 						headers: ['Nuclei di ossificazione', 'Stato'],
 						fields: [
 							{
-								mode: FormTableFieldType.Text,
+								type: FormTableFieldType.Text,
 								fixedArgs: ['A', 'B', 'C', 'D', 'E']
 							},
 							{
-								mode: FormTableFieldType.Multistage,
+								type: FormTableFieldType.Multistage,
 								defaultValue: { value: 'Presente fuso' },
 								multistageArgs: [
 									{
@@ -90,11 +90,11 @@ export const femore: Bone = {
 						headers: ['Nuclei di ossificazione', 'Stato', 'Commenti'],
 						fields: [
 							{
-								mode: FormTableFieldType.Text,
+								type: FormTableFieldType.Text,
 								fixedArgs: ['A', 'B', 'C', 'D', 'E']
 							},
 							{
-								mode: FormTableFieldType.Multistage,
+								type: FormTableFieldType.Multistage,
 								defaultValue: { value: 'Presente fuso' },
 								multistageArgs: [
 									{
@@ -145,28 +145,28 @@ export const femore: Bone = {
 						headers: ['Nuclei di ossificazione', 'Presenza / Assenza', 'Quantità', 'Qualità', 'Colore', 'Commenti'],
 						fields: [
 							{
-								mode: FormTableFieldType.Text,
+								type: FormTableFieldType.Text,
 								fixedArgs: ['A', 'B', 'C', 'D', 'E']
 							},
 							{
-								mode: FormTableFieldType.Dropdown,
+								type: FormTableFieldType.Dropdown,
 								defaultValue: 'Presente',
 								dropdownArgs: ['Assente', 'Presente']
 							},
 							{
-								mode: FormTableFieldType.Dropdown,
+								type: FormTableFieldType.Dropdown,
 								dropdownArgs: ['1 (1%-25%)', '2 (26% - 50%)']
 							},
 							{
-								mode: FormTableFieldType.Dropdown,
+								type: FormTableFieldType.Dropdown,
 								dropdownArgs: ['0% of sound cortical surface', '1-24% of sound cortical surface']
 							},
 							{
-								mode: FormTableFieldType.Dropdown,
+								type: FormTableFieldType.Dropdown,
 								dropdownArgs: ['da marrone a marrone scuro', 'grigio']
 							},
 							{
-								mode: FormTableFieldType.Text
+								type: FormTableFieldType.Text
 							}
 						]
 					}
@@ -179,11 +179,11 @@ export const femore: Bone = {
 						headers: ['', 'Numero', 'Numero < di 2cm'],
 						fields: [
 							{
-								mode: FormTableFieldType.Text,
+								type: FormTableFieldType.Text,
 								fixedArgs: ['Frammenti']
 							},
-							{ mode: FormTableFieldType.Number },
-							{ mode: FormTableFieldType.Number }
+							{ type: FormTableFieldType.Number },
+							{ type: FormTableFieldType.Number }
 						]
 					},
 					{
@@ -191,7 +191,7 @@ export const femore: Bone = {
 						isVariadic: true,
 						fields: [
 							{
-								mode: FormTableFieldType.Dropdown,
+								type: FormTableFieldType.Dropdown,
 								dropdownArgs: ['1', '2', '3', '...', '11', 'ND']
 							}
 						]
@@ -206,15 +206,15 @@ export const femore: Bone = {
 						isVariadic: true,
 						fields: [
 							{
-								mode: FormTableFieldType.Number,
+								type: FormTableFieldType.Number,
 								fixedArgs: ['75', '76', '...', '85']
 							},
 							{
-								mode: FormTableFieldType.Text,
+								type: FormTableFieldType.Text,
 								fixedArgs: ['Lunghezza massima', 'Lunghezza bicondilare', '...', 'Lunghezza antero-posteriore massima del condilomediale']
 							},
 							{
-								mode: FormTableFieldType.Number,
+								type: FormTableFieldType.Number,
 								max: 100,
 								min: 0
 							}
@@ -230,11 +230,11 @@ export const femore: Bone = {
 						isVariadic: true,
 						fields: [
 							{
-								mode: FormTableFieldType.Text,
+								type: FormTableFieldType.Text,
 								fixedArgs: ['Fossa di Allen', 'Faccetta di Poirier', 'Placca III trocantere', 'Fossa subtrocanterica']
 							},
 							{
-								mode: FormTableFieldType.Dropdown,
+								type: FormTableFieldType.Dropdown,
 								dropdownArgs: ['Assente', 'Non valutabile', 'Presente']
 							}
 						]

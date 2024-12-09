@@ -2,7 +2,7 @@ import './Field.css'
 
 import { ChangeEvent, useContext } from "react";
 import { Updater } from "use-immer";
-import { FormTableFieldType, FormTableFieldData, FormTableMultistageFieldData, FormTableFieldTemplate, isFormTableMultistageFieldData } from "../../models/Form";
+import { FormTableFieldData, FormTableMultistageFieldData, FormTableFieldTemplate, FormTableBlankFieldTemplate, formFieldIsBlank, formFieldIsText } from "../../models/Form";
 import { Dropdown } from "../UI/Dropdown";
 import { EditModeContext } from "./Form";
 
@@ -29,12 +29,14 @@ export function Field({ field, rowIdx, data, update }: {
 
 	const header = field.header ? <p className="field-header">{field.header}</p> : undefined
 
-	switch (field.mode) {
-		case FormTableFieldType.Blank:
+	switch (true) {
+		case formFieldIsBlank(field):
 			return <td></td>
-		case FormTableFieldType.Text:
+		case formFieldIsText(field):
 			const handleTextInput = (ev: ChangeEvent<HTMLInputElement>): void => {
-				update(ev.target.value)
+				update(data => {
+					data.value = ev.target.value;
+				})
 			}
 
 			if (data != undefined && typeof data !== 'string')
@@ -47,10 +49,12 @@ export function Field({ field, rowIdx, data, update }: {
 					onChange={handleTextInput} disabled={!editMode}
 				/>
 			</td>
-		case FormTableFieldType.Number:
+		case 'number':
 			const handleNumberInput = (ev: ChangeEvent<HTMLInputElement>): void => {
 				const n = Number(ev.target.value)
-				update(Number.isNaN(n) ? 0 : n)
+				update(data => {
+					data.value = Number.isNaN(n) ? 0 : n
+				})
 			}
 
 			if (data != undefined && typeof data !== 'number')
@@ -94,7 +98,7 @@ export function Field({ field, rowIdx, data, update }: {
 					update(updater)
 					return
 				}
-					
+
 				update(fieldData => {
 					updater(fieldData as FormTableMultistageFieldData)
 				})

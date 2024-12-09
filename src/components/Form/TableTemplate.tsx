@@ -140,11 +140,11 @@ function TableTemplateFields({ table, updateTable }: { table: FormTableTemplate,
 		}))
 	}
 
-	const fieldType = getFormTableFieldTypeID(field.mode)
+	const fieldType = getFormTableFieldTypeID(field.type)
 	const setFieldType = (fieldType?: string) => {
 		updateField(() => {
 			return {
-				mode: formTableFieldTypes[fieldType ?? ''] ?? FormTableFieldType.Text
+				type: formTableFieldTypes[fieldType ?? ''] ?? FormTableFieldType.Text
 			}
 		})
 	}

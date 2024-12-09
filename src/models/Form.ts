@@ -54,31 +54,25 @@ export type FormTableTemplate = {
  */
 export type FormTableFieldTemplate = {
 	/** il tipo di input sottostante alla proprietà */
-	mode: FormTableFieldType
+	type: FormTableFieldType
 	/** un simil table header per questo campo specifico */
 	header?: string
 	/** presente quando l'input è del tipo `Fixed`, contiene la lista dei campi fissi indicizzata sulle righe */
 	fixedArgs?: string[]
 	/** se presente crea un pulsante che imposta a tutte le celle sottostanti il valore di default */
 	defaultValue?: FormTableFieldData
-	/** presente quando l'input è del tipo `Dropdown`, contiene la lista di valori possibili */
-	dropdownArgs?: string[]
-	/** presente quando l'input è del tipo `Multistage`, contiene la lista di valori possibili */
-	multistageArgs?: FormTableFieldMultistageArg[]
-	min?: number
-	max?: number
 }
 
 /** AnatomStructInputMode contiene le varie tipologie di input supportate dalle proprietà */
-export enum FormTableFieldType {
+export type FormTableFieldType =
 	/** una cella vuota */
-	Blank,
+	'blank' |
 	/** un semplice <input type="text" /> */
-	Text,
+	'text' |
 	/** un semplice <input type="number" /> */
-	Number,
+	'number' |
 	/** un componente che simula un elemento <select> con varie <option> */
-	Dropdown,
+	'dropdown' |
 	/**
 	 * un componente simile a Dropdown, dove ad ogni valore selezionabile dal
 	 * menu a tendina corrisponde un successivo campo della tabella.
@@ -87,23 +81,44 @@ export enum FormTableFieldType {
 	 * in cui i valori selezionabili dal secondo menu dipendono da quale valore si
 	 * abbia selezionato nel primo
 	*/
-	Multistage
+	'multistage'
+
+export type FormTableBlankFieldTemplate = FormTableFieldTemplate & {
+	mode: 'blank'
+}
+export type FormTableTextFieldTemplate = FormTableFieldTemplate & {
+	mode: 'text'
+}
+export type FormTableNumberFieldTemplate = FormTableFieldTemplate & {
+	mode: 'number'
+	min?: number
+	max?: number
+}
+export type FormTableDropdownFieldTemplate = FormTableFieldTemplate & {
+	mode: 'dropdown'
+	/** contiene la lista di valori possibili */
+	dropdownArgs?: string[]
+}
+export type FormTableMultistageFieldTemplate = FormTableFieldTemplate & {
+	mode: 'multistage'
+	/** contiene la lista di valori possibili */
+	multistageArgs?: FormTableFieldMultistageArg[]
 }
 
-/** anatomStructInputModes è usato per mappare nomi dedicati all'UI con i tipi di modalità di input */
-export const formTableFieldTypes: Record<string, FormTableFieldType> = {
-	"Blank": FormTableFieldType.Blank,
-	"Testo": FormTableFieldType.Text,
-	"Numbero": FormTableFieldType.Number,
-	"Scelta multipla": FormTableFieldType.Dropdown,
-	"Variabile (?)": FormTableFieldType.Multistage
+export function formFieldIsBlank(f: FormTableFieldTemplate): f is FormTableBlankFieldTemplate {
+	return f.type == 'blank';
 }
-
-/** getInputModeID è usato per mappare i tipi di modalità di input con i nomi dedicati all'UI */
-export function getFormTableFieldTypeID(mode?: FormTableFieldType): string | undefined {
-	return Object.entries(formTableFieldTypes).filter(([_, inputMode]) => {
-		return inputMode === mode
-	}).map(([modeID, _]) => modeID)[0] ?? undefined
+export function formFieldIsText(f: FormTableFieldTemplate): f is FormTableTextFieldTemplate {
+	return f.type == 'text';
+}
+export function formFieldIsNumber(f: FormTableFieldTemplate): f is FormTableNumberFieldTemplate {
+	return f.type == 'number';
+}
+export function formFieldIsDropdown(f: FormTableFieldTemplate): f is FormTableDropdownFieldTemplate {
+	return f.type == 'dropdown';
+}
+export function formFieldIsMultistage(f: FormTableFieldTemplate): f is FormTableMultistageFieldTemplate {
+	return f.type == 'multistage';
 }
 
 /** AnatomStructMultistageArg rappresenta un'opzione di un campo Multistage */
@@ -147,7 +162,59 @@ export type FormTableRowData = Record<number, FormTableFieldData> | undefined
  * AnatomStructProperty è il tipo che può avere una proprietà, ogni proprietà ha il suo tipo
  * e prima di utilizzare il dato deve fare i controlli necassari per garantire type-safety
  */
-export type FormTableFieldData = string | number | FormTableMultistageFieldData | FormTableFieldImageRef | undefined
+export type FormTableFieldData = {
+	type: FormTableFieldType | 'image'
+	value: string | number | FormTableMultistageFieldValue | FormTableFieldImageRef | undefined
+}
+
+export type FormTableBlankFieldData = FormTableFieldData & {
+	type: 'blank'
+}
+export type FormTableTextFieldData = FormTableFieldData & {
+	type: 'text'
+	value?: string
+}
+export type FormTableNumberFieldData = FormTableFieldData & {
+	type: 'number'
+	value?: number
+}
+export type FormTableDropdownFieldData = FormTableFieldData & {
+	type: 'dropdown'
+	value?: string
+}
+export type FormTableMultistageFieldData = FormTableFieldData & {
+	type: 'multistage'
+	value?: FormTableMultistageFieldValue
+}
+
+// special data types
+
+export type FormTableImageFieldData = FormTableFieldData & {
+	type: 'image'
+	value?: FormTableFieldImageRef
+}
+
+export function formFieldDataIsBlank(f: FormTableFieldData): f is FormTableBlankFieldData {
+	return f.type == 'blank';
+}
+export function formFieldDataIsText(f: FormTableFieldData): f is FormTableTextFieldData {
+	return f.type == 'text';
+}
+export function formFieldDataIsNumber(f: FormTableFieldData): f is FormTableNumberFieldData {
+	return f.type == 'number';
+}
+export function formFieldDataIsDropdown(f: FormTableFieldData): f is FormTableDropdownFieldData {
+	return f.type == 'dropdown';
+}
+export function formFieldDataIsMultistage(f: FormTableFieldData): f is FormTableMultistageFieldData {
+	return f.type == 'multistage';
+}
+
+// special cases
+
+export function formFieldDataIsImage(f: FormTableFieldData): f is FormTableImageFieldData {
+	return f.type == 'image';
+}
 
 function calculateFieldCellCount(field: FormTableFieldTemplate, data?: FormTableFieldData): number {
 	// La cella è disponibile all'utente ma non è stato ancora impostato un suo valore
@@ -156,11 +223,13 @@ function calculateFieldCellCount(field: FormTableFieldTemplate, data?: FormTable
 
 	// prop non è del tipo Multistage, quindi ha per forza dimensione 1 cella,
 	// oppure prop è Multistage, ma il suo valore non è stato ancora impostato,
-	if (!isFormTableMultistageFieldData(data))
+	if (!formFieldIsMultistage(field))
+		return 1
+	if (!formFieldDataIsMultistage(data))
 		return 1
 
 	// il Multistage in realtà funziona come un Dropdown senza opzioni
-	if (field.multistageArgs == undefined)
+	if (field.multistageArgs == undefined || data.value == undefined)
 		return 1
 
 	const selectedIndex = field.multistageArgs.reduce((prev, arg, argIdx) => {
@@ -170,10 +239,10 @@ function calculateFieldCellCount(field: FormTableFieldTemplate, data?: FormTable
 	}, 0)
 
 	// Multistage non ha next e quindi nessun valore delle proprietà successive è stato impostato
-	if (data.next == undefined)
+	if (data.value.next == undefined)
 		return 1 + field.multistageArgs[selectedIndex].next.length
 
-	return 1 + data.next.reduce<number>((prev, nextProp, nextPropIdx) => {
+	return 1 + data.value.next.reduce<number>((prev, nextProp, nextPropIdx) => {
 		return prev + calculateFieldCellCount(
 			// @ts-ignore
 			field.multistageArgs[selectedIndex].next[nextPropIdx],
@@ -204,17 +273,12 @@ export enum FormTableRowSpecial {
 	CircleInfo = -1,
 }
 
-/** AnatomStructMultistageProperty contiene lo stato di una proprietà `Multistage` */
-export type FormTableMultistageFieldData = {
+/** FormTableMultistageFieldValue contiene lo stato di una proprietà `Multistage` */
+export type FormTableMultistageFieldValue = {
 	/** il valore selezionato dal menu a tendina */
 	value: string
 	/** le `AnatomStructProperty` innestate, opzionale, indica i valori della proprietà derivate dalla selezione corrente */
 	next?: FormTableFieldData[]
-} | undefined
-
-/** isAnatomStructMultistageProperty determina il risultato in base alla presenza del campo `value` */
-export function isFormTableMultistageFieldData(object: any): object is FormTableMultistageFieldData {
-	return typeof object === 'object' && 'value' in object
 }
 
 /** AnatomStructPropertyImageRef contiene le informazioni relative al cerchio selezionato per una riga */

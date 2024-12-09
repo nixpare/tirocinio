@@ -9,12 +9,12 @@ export type UpdateFieldTemplateFunc = (fn: (table: FormTableFieldTemplate) => Fo
 type UpdateMultistageArgTemplateFunc = (fn: (arg: FormTableFieldMultistageArg) => FormTableFieldMultistageArg) => void
 
 export function FieldTemplate({ field, updateField, deleteField }: { field: FormTableFieldTemplate, updateField: UpdateFieldTemplateFunc, deleteField: () => void }) {
-	const selectedField = getFormTableFieldTypeID(field.mode)
+	const selectedField = getFormTableFieldTypeID(field.type)
 
 	const setSelectedField = (selected?: string) => {
 		const fieldID = formTableFieldTypes[selected ?? ''] ?? FormTableFieldType.Text
 		updateField(field => {
-			field.mode = fieldID
+			field.type = fieldID
 			return field
 		})
 	}
@@ -37,7 +37,7 @@ export function FieldTemplate({ field, updateField, deleteField }: { field: Form
 }
 
 function FieldTemplateArgs({ field, updateField }: { field: FormTableFieldTemplate, updateField: UpdateFieldTemplateFunc }) {
-	switch (field.mode) {
+	switch (field.type) {
 		case FormTableFieldType.Blank:
 			return undefined
 		case FormTableFieldType.Text:
@@ -230,11 +230,11 @@ function MultistageFieldTemplate({ field, updateField }: { field: FormTableField
 		})
 	}
 
-	const nextFieldType = getFormTableFieldTypeID(stage.next?.[0].mode) // TODO: fix for stage.next being a slice
+	const nextFieldType = getFormTableFieldTypeID(stage.next?.[0].type) // TODO: fix for stage.next being a slice
 	const setNextFieldType = (nextFieldType?: string): void => {
 		updateStage(stage => {
 			stage.next = [{ // TODO: fix for stage.next being a slice
-				mode: formTableFieldTypes[nextFieldType ?? '']
+				type: formTableFieldTypes[nextFieldType ?? '']
 			}]
 			return stage
 		})
@@ -297,10 +297,10 @@ function MultistageNextArgTemplate({ arg, updateArg, deleteArg }: { arg: FormTab
 		deleteArg()
 	}
 
-	const fieldType = getFormTableFieldTypeID(arg.next[0].mode) // TODO: fix for stage.next being a slice
+	const fieldType = getFormTableFieldTypeID(arg.next[0].type) // TODO: fix for stage.next being a slice
 	const setFieldType = (modeID?: string): void => {
 		updateArg(arg => {
-			arg.next = [{ mode: formTableFieldTypes[modeID ?? ''] ?? FormTableFieldType.Text }] // TODO: fix for stage.next being a slice
+			arg.next = [{ type: formTableFieldTypes[modeID ?? ''] ?? FormTableFieldType.Text }] // TODO: fix for stage.next being a slice
 			return arg
 		})
 	}

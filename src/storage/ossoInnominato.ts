@@ -17,11 +17,11 @@ export const ossoInnominato: Bone = {
 						headers: ["Nucleo", "Stato"],
 						fields: [
 							{
-								mode: FormTableFieldType.Dropdown,
+								type: FormTableFieldType.Dropdown,
 								dropdownArgs: ["assente", "presente non valutabile PND", "presente non fuso PN", "presente in fusione PIF", "presente fuso PF"]
 							},
 							{
-								mode: FormTableFieldType.Text
+								type: FormTableFieldType.Text
 							}
 						],
 						isVariadic: true,
@@ -31,11 +31,11 @@ export const ossoInnominato: Bone = {
 						headers: ["Nucleo 2", "Stato 2"],
 						fields: [
 							{
-								mode: FormTableFieldType.Dropdown,
+								type: FormTableFieldType.Dropdown,
 								dropdownArgs: ["assente", "presente non valutabile PND", "presente non fuso PN", "presente in fusione PIF", "presente fuso PF"]
 							},
 							{
-								mode: FormTableFieldType.Text
+								type: FormTableFieldType.Text
 							}
 						],
 						isVariadic: true,
@@ -52,15 +52,15 @@ export const ossoInnominato: Bone = {
 						headers: ["Nucleo", "Stato", "Lunghezza (cm)"],
 						fields: [
 							{
-								mode: FormTableFieldType.Text,
+								type: FormTableFieldType.Text,
 								fixedArgs: ["A", "B", "C", "D", "E", "F"]
 							},
 							{
-								mode: FormTableFieldType.Dropdown,
+								type: FormTableFieldType.Dropdown,
 								dropdownArgs: ["assente", "presente non valutabile PND", "presente non fuso PN", "presente in fusione PIF", "presente fuso PF"]
 							},
 							{
-								mode: FormTableFieldType.Number
+								type: FormTableFieldType.Number
 							}
 						]
 					}
@@ -75,15 +75,15 @@ export const ossoInnominato: Bone = {
 						headers: ["Settore", "Presente/Assente", "Note"],
 						fields: [
 							{
-								mode: FormTableFieldType.Number,
+								type: FormTableFieldType.Number,
 								fixedArgs: ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12"]
 							},
 							{
-								mode: FormTableFieldType.Dropdown,
+								type: FormTableFieldType.Dropdown,
 								dropdownArgs: ["Assente", "Presente"]
 							},
 							{
-								mode: FormTableFieldType.Text
+								type: FormTableFieldType.Text
 							}
 						]
 					},
@@ -91,14 +91,14 @@ export const ossoInnominato: Bone = {
 						headers: ["Area", "Dettagli", "Colore"],
 						fields: [
 							{
-								mode: FormTableFieldType.Text,
+								type: FormTableFieldType.Text,
 								fixedArgs: ["A", "B", "C", "D", "E", "F"]
 							},
 							{
-								mode: FormTableFieldType.Text
+								type: FormTableFieldType.Text
 							},
 							{
-								mode: FormTableFieldType.Dropdown,
+								type: FormTableFieldType.Dropdown,
 								dropdownArgs: ["da marrone a marrone scuro", "grigio", "naturale", "da arancione a marrone", "da giallo ad arancione"]
 							}
 						]
@@ -114,11 +114,11 @@ export const ossoInnominato: Bone = {
 						headers: ["Codice Misura", "Nome Misura", "Misura (cm)"],
 						fields: [
 							{
-								mode: FormTableFieldType.Number,
+								type: FormTableFieldType.Number,
 								fixedArgs: ["64", "65", "66", "67", "68", "69", "70", "71", "72", "73", "74"]
 							},
 							{
-								mode: FormTableFieldType.Text,
+								type: FormTableFieldType.Text,
 								fixedArgs: [
 									"Maximum Innominate Height",
 									"Maximum Iliac Breadth",
@@ -134,7 +134,7 @@ export const ossoInnominato: Bone = {
 								]
 							},
 							{
-								mode: FormTableFieldType.Number
+								type: FormTableFieldType.Number
 							}
 						]
 					}
@@ -148,7 +148,7 @@ export const ossoInnominato: Bone = {
 						headers: ["Caratteri non metrici", "Stato"],
 						fields: [
 							{
-								mode: FormTableFieldType.Text,
+								type: FormTableFieldType.Text,
 								fixedArgs: [
 									"Accessory Sacroiliac Facet",
 									"Pubic Spine",
@@ -157,7 +157,7 @@ export const ossoInnominato: Bone = {
 								]
 							},
 							{
-								mode: FormTableFieldType.Dropdown,
+								type: FormTableFieldType.Dropdown,
 								dropdownArgs: ["Assente", "Non valutabile", "Presente"]
 							}
 						],
@@ -176,11 +176,11 @@ export const ossoInnominato: Bone = {
 						headers: ["#", "Classe", "Descrizione segni"],
 						fields: [
 							{
-								mode: FormTableFieldType.Text,
+								type: FormTableFieldType.Text,
 								fixedArgs: ["1", "2", "3"]
 							},
 							{
-								mode: FormTableFieldType.Multistage,
+								type: FormTableFieldType.Multistage,
 								multistageArgs: [
 									{
 										value: "Soluzione di continuo",
