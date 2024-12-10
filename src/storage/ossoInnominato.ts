@@ -1,5 +1,5 @@
 import { AnatomStructType } from "../models/AnatomStruct";
-import { FormTableFieldType } from "../models/Form";
+import { FormTableDropdownFieldTemplate, FormTableMultistageFieldTemplate, FormTableNumberFieldTemplate, FormTableTextFieldTemplate } from "../models/Form";
 import { Bone } from "../models/Skeleton";
 
 export const ossoInnominato: Bone = {
@@ -17,12 +17,12 @@ export const ossoInnominato: Bone = {
 						headers: ["Nucleo", "Stato"],
 						fields: [
 							{
-								type: FormTableFieldType.Dropdown,
+								type: 'dropdown',
 								dropdownArgs: ["assente", "presente non valutabile PND", "presente non fuso PN", "presente in fusione PIF", "presente fuso PF"]
-							},
+							} as FormTableDropdownFieldTemplate,
 							{
-								type: FormTableFieldType.Text
-							}
+								type: 'text'
+							} as FormTableTextFieldTemplate
 						],
 						isVariadic: true,
 						interactsWithImage: true
@@ -31,12 +31,12 @@ export const ossoInnominato: Bone = {
 						headers: ["Nucleo 2", "Stato 2"],
 						fields: [
 							{
-								type: FormTableFieldType.Dropdown,
+								type: 'dropdown',
 								dropdownArgs: ["assente", "presente non valutabile PND", "presente non fuso PN", "presente in fusione PIF", "presente fuso PF"]
-							},
+							} as FormTableDropdownFieldTemplate,
 							{
-								type: FormTableFieldType.Text
-							}
+								type: 'text'
+							} as FormTableTextFieldTemplate
 						],
 						isVariadic: true,
 						interactsWithImage: true
@@ -52,16 +52,16 @@ export const ossoInnominato: Bone = {
 						headers: ["Nucleo", "Stato", "Lunghezza (cm)"],
 						fields: [
 							{
-								type: FormTableFieldType.Text,
+								type: 'text',
 								fixedArgs: ["A", "B", "C", "D", "E", "F"]
-							},
+							} as FormTableTextFieldTemplate,
 							{
-								type: FormTableFieldType.Dropdown,
+								type: 'dropdown',
 								dropdownArgs: ["assente", "presente non valutabile PND", "presente non fuso PN", "presente in fusione PIF", "presente fuso PF"]
-							},
+							} as FormTableDropdownFieldTemplate,
 							{
-								type: FormTableFieldType.Number
-							}
+								type: 'number'
+							} as FormTableNumberFieldTemplate
 						]
 					}
 				]
@@ -75,32 +75,32 @@ export const ossoInnominato: Bone = {
 						headers: ["Settore", "Presente/Assente", "Note"],
 						fields: [
 							{
-								type: FormTableFieldType.Number,
+								type: 'number',
 								fixedArgs: ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12"]
-							},
+							} as FormTableNumberFieldTemplate,
 							{
-								type: FormTableFieldType.Dropdown,
+								type: 'dropdown',
 								dropdownArgs: ["Assente", "Presente"]
-							},
+							} as FormTableDropdownFieldTemplate,
 							{
-								type: FormTableFieldType.Text
-							}
+								type: 'text'
+							} as FormTableTextFieldTemplate
 						]
 					},
 					{
 						headers: ["Area", "Dettagli", "Colore"],
 						fields: [
 							{
-								type: FormTableFieldType.Text,
+								type: 'text',
 								fixedArgs: ["A", "B", "C", "D", "E", "F"]
-							},
+							} as FormTableTextFieldTemplate,
 							{
-								type: FormTableFieldType.Text
-							},
+								type: 'text'
+							} as FormTableTextFieldTemplate,
 							{
-								type: FormTableFieldType.Dropdown,
+								type: 'dropdown',
 								dropdownArgs: ["da marrone a marrone scuro", "grigio", "naturale", "da arancione a marrone", "da giallo ad arancione"]
-							}
+							} as FormTableDropdownFieldTemplate
 						]
 					}
 				]
@@ -114,11 +114,11 @@ export const ossoInnominato: Bone = {
 						headers: ["Codice Misura", "Nome Misura", "Misura (cm)"],
 						fields: [
 							{
-								type: FormTableFieldType.Number,
+								type: 'number',
 								fixedArgs: ["64", "65", "66", "67", "68", "69", "70", "71", "72", "73", "74"]
-							},
+							} as FormTableNumberFieldTemplate,
 							{
-								type: FormTableFieldType.Text,
+								type: 'text',
 								fixedArgs: [
 									"Maximum Innominate Height",
 									"Maximum Iliac Breadth",
@@ -132,10 +132,10 @@ export const ossoInnominato: Bone = {
 									"Maximum Posterior Superior Iliac Spine to Symphysion",
 									"Minimum Apical Border to Symphysion"
 								]
-							},
+							} as FormTableTextFieldTemplate,
 							{
-								type: FormTableFieldType.Number
-							}
+								type: 'number'
+							} as FormTableNumberFieldTemplate
 						]
 					}
 				]
@@ -148,18 +148,18 @@ export const ossoInnominato: Bone = {
 						headers: ["Caratteri non metrici", "Stato"],
 						fields: [
 							{
-								type: FormTableFieldType.Text,
+								type: 'text',
 								fixedArgs: [
 									"Accessory Sacroiliac Facet",
 									"Pubic Spine",
 									"Acetabular Crease",
 									"Cotyloid bone"
 								]
-							},
+							} as FormTableTextFieldTemplate,
 							{
-								type: FormTableFieldType.Dropdown,
+								type: 'dropdown',
 								dropdownArgs: ["Assente", "Non valutabile", "Presente"]
-							}
+							} as FormTableDropdownFieldTemplate
 						],
 						isVariadic: true,
 					}
@@ -176,16 +176,16 @@ export const ossoInnominato: Bone = {
 						headers: ["#", "Classe", "Descrizione segni"],
 						fields: [
 							{
-								type: FormTableFieldType.Text,
+								type: 'text',
 								fixedArgs: ["1", "2", "3"]
-							},
+							} as FormTableTextFieldTemplate,
 							{
-								type: FormTableFieldType.Multistage,
+								type: 'multistage',
 								multistageArgs: [
 									{
 										value: "Soluzione di continuo",
 										next: [{
-											mode: FormTableFieldType.Dropdown,
+											type: 'dropdown',
 											dropdownArgs: [
 												"A tutto spessore e tutta circonferenza",
 												"A tutto spessore e parziale circonferenza",
@@ -194,30 +194,36 @@ export const ossoInnominato: Bone = {
 												"Soluzione di continuo interessante lo strato di osso trabecolare (visibili in RX e TC)",
 												"Multiple soluzioni di continuo (comminuzione)"
 											]
-										}]
+										} as FormTableDropdownFieldTemplate]
 									},
 									{
 										value: "Perdita di sostanza",
-										next: [{ mode: FormTableFieldType.Text }]
+										next: [
+											{ type: 'text' } as FormTableTextFieldTemplate
+										]
 									},
 									{
 										value: "Aspetto margine (esempio nested multistage)",
 										next: [{
-											mode: FormTableFieldType.Multistage,
+											type: 'multistage',
 											multistageArgs: [
 												{
 													value: "Aspetto della superficie di frattura (indicare la localizzazione - mediale, laterale, anteriore e posteriore)",
-													next: [{ mode: FormTableFieldType.Text }]
+													next: [
+														{ type: 'text' } as FormTableTextFieldTemplate
+													]
 												},
 												{
 													value: "Aspetto superficie di taglio (indicare la localizzazione - mediale, laterale, anteriore e posteriore)",
-													next: [{ mode: FormTableFieldType.Text }]
+													next: [
+														{ type: 'text' } as FormTableTextFieldTemplate
+													]
 												}
 											]
-										}]
+										} as FormTableMultistageFieldTemplate]
 									}
 								]
-							}
+							} as FormTableMultistageFieldTemplate
 						]
 					}
 				]

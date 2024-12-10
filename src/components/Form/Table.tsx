@@ -2,7 +2,7 @@ import './Table.css'
 
 import { useContext, useState, MouseEvent } from "react";
 import { Updater } from "use-immer";
-import { FormTableFieldImageRef, FormTableTemplate, FormTableFieldTemplate, FormTableData, FormTableRowSpecial, FormTableRowData, calculateRowCellCount } from "../../models/Form";
+import { FormTableTemplate, FormTableFieldTemplate, FormTableData, FormTableRowSpecial, FormTableRowData, calculateRowCellCount, FormTableImageFieldData } from "../../models/Form";
 import { DeleteImageCircleFunc, EditModeContext, HighlightImageCircleFunc } from "./Form";
 import { Field, UpdateFieldFunc } from "./Field";
 
@@ -150,8 +150,9 @@ export function Table({ table, data, update, active, setActive, deleteCircle, hi
 										for (let i = 0; i < nRows; i++) {
 											if (!tableData[i])
 												tableData[i] = {}
+
 											// @ts-ignore
-											tableData[i][fieldIdx] = field.defaultValue
+											tableData[i][fieldIdx] = field.defaultValue ? { ...field.defaultValue} : undefined
 										}
 									})
 								}
@@ -182,13 +183,13 @@ export function Table({ table, data, update, active, setActive, deleteCircle, hi
 								return prev || curr
 							}, false)
 
-							const circle = row?.[FormTableRowSpecial.CircleInfo] as FormTableFieldImageRef | undefined
+							const circle = row?.[FormTableRowSpecial.CircleInfo] as FormTableImageFieldData | undefined
 
 							const deleteRow = (ev: MouseEvent): void => {
 								ev.preventDefault()
 
-								if (circle != undefined)
-									deleteCircle(circle?.imageIdx, rowIdx)
+								if (circle != undefined && circle.value != undefined)
+									deleteCircle(circle.value.imageIdx, rowIdx)
 
 								update(tableData => {
 									if (tableData == undefined)
@@ -202,9 +203,7 @@ export function Table({ table, data, update, active, setActive, deleteCircle, hi
 							}
 
 							const onRowHover = () => {
-								if (circle != undefined)
-									highlightCircle(circle.imageIdx, rowIdx)
-
+								highlightCircle(rowIdx, circle?.value?.imageIdx)
 								setActiveRow(rowIdx)
 							}
 							const className = active && activeRow === rowIdx ? 'active' : undefined

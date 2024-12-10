@@ -2,7 +2,7 @@ import './Field.css'
 
 import { ChangeEvent, useContext } from "react";
 import { Updater } from "use-immer";
-import { FormTableFieldData, FormTableMultistageFieldData, FormTableFieldTemplate, FormTableBlankFieldTemplate, formFieldIsBlank, formFieldIsText } from "../../models/Form";
+import { FormTableFieldData, FormTableMultistageFieldData, FormTableFieldTemplate, formFieldIsBlank, formFieldIsText, formFieldDataIsText, formFieldIsNumber, formFieldDataIsNumber, formFieldIsDropdown, formFieldDataIsDropdown, formFieldIsMultistage, formFieldDataIsMultistage, FormTableMultistageFieldTemplate, FormTableMultistageFieldValue } from "../../models/Form";
 import { Dropdown } from "../UI/Dropdown";
 import { EditModeContext } from "./Form";
 
@@ -34,37 +34,39 @@ export function Field({ field, rowIdx, data, update }: {
 			return <td></td>
 		case formFieldIsText(field):
 			const handleTextInput = (ev: ChangeEvent<HTMLInputElement>): void => {
-				update(data => {
-					data.value = ev.target.value;
+				update({
+					type: 'text',
+					value: ev.target.value
 				})
 			}
 
-			if (data != undefined && typeof data !== 'string')
+			if (data != undefined && !formFieldDataIsText(data))
 				data = undefined
 
 			return <td>
 				{header}
 				<input type="text"
-					value={data ?? ''}
+					value={data?.value ?? ''}
 					onChange={handleTextInput} disabled={!editMode}
 				/>
 			</td>
-		case 'number':
+		case formFieldIsNumber(field):
 			const handleNumberInput = (ev: ChangeEvent<HTMLInputElement>): void => {
 				const n = Number(ev.target.value)
-				update(data => {
-					data.value = Number.isNaN(n) ? 0 : n
+				update({
+					type: 'number',
+					value: Number.isNaN(n) ? 0 : n
 				})
 			}
 
-			if (data != undefined && typeof data !== 'number')
+			if (data != undefined && !formFieldDataIsNumber(data))
 				data = undefined
 
 			let className: string | undefined
 
-			if (data != undefined && (
-				(field.min != undefined && data < field.min) ||
-				(field.max != undefined && data > field.max)
+			if (data != undefined && data.value != undefined && (
+				(field.min != undefined && data.value < field.min) ||
+				(field.max != undefined && data.value > field.max)
 			)) {
 				className = 'invalid'
 			}
@@ -72,27 +74,30 @@ export function Field({ field, rowIdx, data, update }: {
 			return <td>
 				{header}
 				<input type="number" className={className}
-					value={(data ?? 0).toString()}
+					value={(data?.value ?? 0).toString()}
 					onChange={handleNumberInput} disabled={!editMode}
 				/>
 			</td>
-		case FormTableFieldType.Dropdown:
+		case formFieldIsDropdown(field):
 			const setSelected = (selected?: string): void => {
-				update(selected)
+				update({
+					type: 'dropdown',
+					value: selected
+				})
 			}
 
-			if (data != undefined && typeof data !== 'string')
+			if (data != undefined && !formFieldDataIsDropdown(data))
 				data = undefined
 
 			return <td>
 				{header}
 				<Dropdown
 					options={field.dropdownArgs ?? []}
-					selectedField={data}
+					selectedField={data?.value}
 					setSelectedField={setSelected} disabled={!editMode}
 				/>
 			</td>
-		case FormTableFieldType.Multistage:
+		case formFieldIsMultistage(field):
 			const updateMultistage: UpdateMultistageFieldFunc = (updater) => {
 				if (typeof updater !== 'function') {
 					update(updater)
@@ -104,7 +109,7 @@ export function Field({ field, rowIdx, data, update }: {
 				})
 			}
 
-			if (data != undefined && !isFormTableMultistageFieldData(data))
+			if (data != undefined && !formFieldDataIsMultistage(data))
 				data = undefined
 
 			return <MultistageField
@@ -116,33 +121,41 @@ export function Field({ field, rowIdx, data, update }: {
 }
 
 function MultistageField({ field, rowIdx, data, update, disabled, header }: {
-	field: FormTableFieldTemplate, rowIdx: number, data?: FormTableMultistageFieldData,
+	field: FormTableMultistageFieldTemplate, rowIdx: number, data?: FormTableMultistageFieldData,
 	update: UpdateMultistageFieldFunc, disabled: boolean, header?: JSX.Element
 }) {
 	const options: string[] | undefined = field.multistageArgs?.map(arg => arg.value)
 
 	const setSelected = (selected?: string): void => {
-		update(selected ? { value: selected } : undefined)
+		update({
+			type: 'multistage',
+			value: selected ? {
+				selection: selected
+			} : undefined
+		})
 	}
 
 	const firstStage = <td>
 		{header}
 		<Dropdown
 			options={options ?? []}
-			selectedField={data?.value ?? undefined}
+			selectedField={data?.value?.selection ?? undefined}
 			setSelectedField={setSelected}
 			disabled={disabled}
 		/>
 	</td>
 
-	if (!data)
+	if (data == undefined || data.value == undefined)
 		return firstStage
 
-	const nextFields = field.multistageArgs?.filter(arg => arg.value === data.value)[0]?.next
+	const nextFields = field.multistageArgs?.filter(arg => {
+		// @ts-ignore
+		return arg.value === data.value.selection
+	})[0]?.next
 	if (!nextFields)
 		return <>
 			{firstStage}
-			<td>Errore, nessun campo trovato per {data.value}</td>
+			<td>Errore, nessun campo trovato per {data.value.selection}</td>
 		</>
 
 	return <>
@@ -150,24 +163,24 @@ function MultistageField({ field, rowIdx, data, update, disabled, header }: {
 		{nextFields.map((next, nextIdx) => {
 			const nextUpdate: Updater<FormTableFieldData> = (updater) => {
 				update(multistageData => {
-					if (!multistageData)
+					if (multistageData == undefined || multistageData.value == undefined)
 						throw new Error('multistage is undefined after the first stage')
 
-					if (!multistageData.next)
-						multistageData.next = []
+					if (multistageData.value.next == undefined)
+						multistageData.value.next = []
 
 					if (typeof updater !== 'function') {
-						multistageData.next[nextIdx] = updater
+						multistageData.value.next[nextIdx] = updater
 						return
 					}
 
-					updater(multistageData.next[nextIdx])
+					updater(multistageData.value.next[nextIdx])
 				})
 			}
 
 			return <Field key={nextIdx}
 				field={next} rowIdx={rowIdx}
-				data={data.next?.[nextIdx]} update={nextUpdate}
+				data={(data.value as FormTableMultistageFieldValue).next?.[nextIdx]} update={nextUpdate}
 			/>
 		})}
 

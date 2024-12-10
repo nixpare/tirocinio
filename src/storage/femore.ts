@@ -1,5 +1,5 @@
 import { AnatomStructType } from "../models/AnatomStruct";
-import { FormTableFieldType } from "../models/Form";
+import { FormTableDropdownFieldTemplate, FormTableMultistageFieldTemplate, FormTableNumberFieldTemplate, FormTableTextFieldTemplate } from "../models/Form";
 import { Bone } from "../models/Skeleton";
 
 export const femore: Bone = {
@@ -15,70 +15,75 @@ export const femore: Bone = {
 						headers: ['Nuclei di ossificazione', 'Stato'],
 						fields: [
 							{
-								type: FormTableFieldType.Text,
+								type: 'text',
 								fixedArgs: ['A', 'B', 'C', 'D', 'E']
-							},
+							} as FormTableTextFieldTemplate,
 							{
-								type: FormTableFieldType.Multistage,
-								defaultValue: { value: 'Presente fuso' },
+								type: 'multistage',
+								defaultValue: {
+									type: 'multistage',
+									value: {
+										selection: 'Presente fuso'
+									}
+								},
 								multistageArgs: [
 									{
 										value: 'Assente per immaturità',
 										next: [{
-											mode: FormTableFieldType.Text,
+											type: 'text',
 											header: 'Commenti'
-										}]
+										} as FormTableTextFieldTemplate]
 									},
 									{
 										value: 'Assente per tafonomia',
 										next: [{
-											mode: FormTableFieldType.Text,
+											type: 'text',
 											header: 'Commenti'
-										}]
+										} as FormTableTextFieldTemplate]
 									},
 									{
 										value: 'Assente non valutabile',
 										next: [{
-											mode: FormTableFieldType.Text,
+											type: 'text',
 											header: 'Commenti'
-										}]
+										} as FormTableTextFieldTemplate]
 									},
 									{
 										value: 'Presente ma fusione non valutabile',
 										next: [{
-											mode: FormTableFieldType.Text,
+											type: 'text',
 											header: 'Commenti'
-										}]
+										} as FormTableTextFieldTemplate]
 									},
 									{
 										value: 'Presente non fuso',
 										next: [
 											{
-												mode: FormTableFieldType.Number,
+												type: 'number',
 												header: 'dimensione massima (mm)'
-											},
+											} as FormTableNumberFieldTemplate,
 											{
-												mode: FormTableFieldType.Text,
+												type: 'text',
 												header: 'Commenti'
-											}
+											} as FormTableTextFieldTemplate
 										]
 									},
 									{
 										value: 'Presente in fusione',
 										next: [{
-											mode: FormTableFieldType.Text,
+											type: 'text',
 											header: 'Commenti'
-										}]
+										} as FormTableTextFieldTemplate]
 									},
 									{
 										value: 'Presente fuso',
 										next: [{
-											mode: FormTableFieldType.Text,
+											type: 'text',
 											header: 'Commenti'
-										}]
+										} as FormTableTextFieldTemplate]
 									}
 								]
-							}
+							} as FormTableMultistageFieldTemplate
 						]
 					}
 				]
@@ -90,12 +95,17 @@ export const femore: Bone = {
 						headers: ['Nuclei di ossificazione', 'Stato', 'Commenti'],
 						fields: [
 							{
-								type: FormTableFieldType.Text,
+								type: 'text',
 								fixedArgs: ['A', 'B', 'C', 'D', 'E']
-							},
+							} as FormTableTextFieldTemplate,
 							{
-								type: FormTableFieldType.Multistage,
-								defaultValue: { value: 'Presente fuso' },
+								type: 'multistage',
+								defaultValue: {
+									type: 'multistage',
+									value: {
+										selection: 'Presente fuso'
+									}
+								},
 								multistageArgs: [
 									{
 										value: 'Assente per immaturità',
@@ -104,70 +114,75 @@ export const femore: Bone = {
 									{
 										value: 'Assente per tafonomia',
 										next: [{
-											mode: FormTableFieldType.Text,
-										}]
+											type: 'text',
+										} as FormTableTextFieldTemplate]
 									},
 									{
 										value: 'Assente non valutabile',
 										next: [{
-											mode: FormTableFieldType.Text,
-										}]
+											type: 'text',
+										} as FormTableTextFieldTemplate]
 									},
 									{
 										value: 'Presente ma fusione non valutabile',
 										next: [{
-											mode: FormTableFieldType.Text,
-										}]
+											type: 'text',
+										} as FormTableTextFieldTemplate]
 									},
 									{
 										value: 'Presente non fuso',
 										next: [{
-											mode: FormTableFieldType.Text,
-										}]
+											type: 'text',
+										} as FormTableTextFieldTemplate]
 									},
 									{
 										value: 'Presente in fusione',
 										next: [{
-											mode: FormTableFieldType.Text,
-										}]
+											type: 'text',
+										} as FormTableTextFieldTemplate]
 									},
 									{
 										value: 'Presente fuso',
 										next: [{
-											mode: FormTableFieldType.Text,
-										}]
+											type: 'text',
+										} as FormTableTextFieldTemplate]
 									}
 								]
-							}
+							} as FormTableMultistageFieldTemplate
 						]
 					},
 					{
 						headers: ['Nuclei di ossificazione', 'Presenza / Assenza', 'Quantità', 'Qualità', 'Colore', 'Commenti'],
 						fields: [
 							{
-								type: FormTableFieldType.Text,
+								type: 'text',
 								fixedArgs: ['A', 'B', 'C', 'D', 'E']
-							},
+							} as FormTableTextFieldTemplate,
 							{
-								type: FormTableFieldType.Dropdown,
-								defaultValue: 'Presente',
+								type: 'dropdown',
+								defaultValue: {
+									type: 'dropdown',
+									value: {
+										selection: 'Presente'
+									}
+								},
 								dropdownArgs: ['Assente', 'Presente']
-							},
+							} as FormTableDropdownFieldTemplate,
 							{
-								type: FormTableFieldType.Dropdown,
+								type: 'dropdown',
 								dropdownArgs: ['1 (1%-25%)', '2 (26% - 50%)']
-							},
+							} as FormTableDropdownFieldTemplate,
 							{
-								type: FormTableFieldType.Dropdown,
+								type: 'dropdown',
 								dropdownArgs: ['0% of sound cortical surface', '1-24% of sound cortical surface']
-							},
+							} as FormTableDropdownFieldTemplate,
 							{
-								type: FormTableFieldType.Dropdown,
+								type: 'dropdown',
 								dropdownArgs: ['da marrone a marrone scuro', 'grigio']
-							},
+							} as FormTableDropdownFieldTemplate,
 							{
-								type: FormTableFieldType.Text
-							}
+								type: 'text'
+							} as FormTableTextFieldTemplate
 						]
 					}
 				]
@@ -179,11 +194,15 @@ export const femore: Bone = {
 						headers: ['', 'Numero', 'Numero < di 2cm'],
 						fields: [
 							{
-								type: FormTableFieldType.Text,
+								type: 'text',
 								fixedArgs: ['Frammenti']
-							},
-							{ type: FormTableFieldType.Number },
-							{ type: FormTableFieldType.Number }
+							} as FormTableTextFieldTemplate,
+							{
+								type: 'number'
+							} as FormTableTextFieldTemplate,
+							{
+								type: 'number'
+							} as FormTableTextFieldTemplate
 						]
 					},
 					{
@@ -191,9 +210,9 @@ export const femore: Bone = {
 						isVariadic: true,
 						fields: [
 							{
-								type: FormTableFieldType.Dropdown,
+								type: 'dropdown',
 								dropdownArgs: ['1', '2', '3', '...', '11', 'ND']
-							}
+							} as FormTableDropdownFieldTemplate
 						]
 					}
 				]
@@ -206,18 +225,18 @@ export const femore: Bone = {
 						isVariadic: true,
 						fields: [
 							{
-								type: FormTableFieldType.Number,
+								type: 'number',
 								fixedArgs: ['75', '76', '...', '85']
-							},
+							} as FormTableNumberFieldTemplate,
 							{
-								type: FormTableFieldType.Text,
+								type: 'text',
 								fixedArgs: ['Lunghezza massima', 'Lunghezza bicondilare', '...', 'Lunghezza antero-posteriore massima del condilomediale']
-							},
+							} as FormTableTextFieldTemplate,
 							{
-								type: FormTableFieldType.Number,
+								type: 'number',
 								max: 100,
 								min: 0
-							}
+							} as FormTableNumberFieldTemplate
 						]
 					}
 				]
@@ -230,13 +249,13 @@ export const femore: Bone = {
 						isVariadic: true,
 						fields: [
 							{
-								type: FormTableFieldType.Text,
+								type: 'text',
 								fixedArgs: ['Fossa di Allen', 'Faccetta di Poirier', 'Placca III trocantere', 'Fossa subtrocanterica']
-							},
+							} as FormTableTextFieldTemplate,
 							{
-								type: FormTableFieldType.Dropdown,
+								type: 'dropdown',
 								dropdownArgs: ['Assente', 'Non valutabile', 'Presente']
-							}
+							} as FormTableDropdownFieldTemplate
 						]
 					}
 				]

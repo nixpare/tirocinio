@@ -84,23 +84,28 @@ export type FormTableFieldType =
 	'multistage'
 
 export type FormTableBlankFieldTemplate = FormTableFieldTemplate & {
-	mode: 'blank'
+	type: 'blank'
+	defaultValue: undefined
 }
 export type FormTableTextFieldTemplate = FormTableFieldTemplate & {
-	mode: 'text'
+	type: 'text'
+	defaultValue?: FormTableTextFieldData
 }
 export type FormTableNumberFieldTemplate = FormTableFieldTemplate & {
-	mode: 'number'
+	type: 'number'
+	defaultValue?: FormTableNumberFieldData
 	min?: number
 	max?: number
 }
 export type FormTableDropdownFieldTemplate = FormTableFieldTemplate & {
-	mode: 'dropdown'
+	type: 'dropdown'
+	defaultValue?: FormTableDropdownFieldData
 	/** contiene la lista di valori possibili */
 	dropdownArgs?: string[]
 }
 export type FormTableMultistageFieldTemplate = FormTableFieldTemplate & {
-	mode: 'multistage'
+	type: 'multistage'
+	defaultValue?: FormTableMultistageFieldData
 	/** contiene la lista di valori possibili */
 	multistageArgs?: FormTableFieldMultistageArg[]
 }
@@ -276,7 +281,7 @@ export enum FormTableRowSpecial {
 /** FormTableMultistageFieldValue contiene lo stato di una proprietà `Multistage` */
 export type FormTableMultistageFieldValue = {
 	/** il valore selezionato dal menu a tendina */
-	value: string
+	selection: string
 	/** le `AnatomStructProperty` innestate, opzionale, indica i valori della proprietà derivate dalla selezione corrente */
 	next?: FormTableFieldData[]
 }

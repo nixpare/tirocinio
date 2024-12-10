@@ -1,17 +1,16 @@
 import "./TableTemplate.css"
 
 import { ChangeEvent, FormEvent, MouseEvent, useState } from "react"
-import { produce } from "immer"
-import { useImmer } from 'use-immer'
-import { FormTableFieldType, formTableFieldTypes, FormSectionTemplate, FormSectionData, FormTableTemplate, FormTableFieldTemplate, getFormTableFieldTypeID } from "../../models/Form"
-import { FieldTemplate, UpdateFieldTemplateFunc } from "./FieldTemplate"
+import { Updater, useImmer } from 'use-immer'
+import { FormSectionTemplate, FormSectionData, FormTableTemplate, FormTableFieldTemplate } from "../../models/Form"
+import { FieldTemplate, fieldTypeValues, getFieldTypeFromSelection, UpdateFieldTemplateFunc } from "./FieldTemplate"
 import { EditModeContext, FormSection, VerticalSplitContext } from "./Form"
 import { Dropdown } from "../UI/Dropdown"
 
-type UpdateTableTemplateFunc = (fn: (table: FormTableTemplate) => FormTableTemplate) => void
+type UpdateTableTemplateFunc = Updater<FormTableTemplate>
 
 export function TableTemplate() {
-	const [table, setTable] = useState({
+	const [table, updateTable] = useImmer({
 		headers: [],
 		fields: []
 	} as FormTableTemplate)
@@ -19,9 +18,6 @@ export function TableTemplate() {
 	const saveTable = (ev: FormEvent): void => {
 		ev.preventDefault()
 		console.log(table)
-	}
-	const updateTable: UpdateTableTemplateFunc = (fn) => {
-		setTable(produce(fn))
 	}
 
 	const toggleVariadicTable = () => {
@@ -101,7 +97,6 @@ function TableTemplateHeaders({ table, updateTable, header, addHeader, onNewHead
 				const onHeaderChange = (ev: ChangeEvent<HTMLInputElement>): void => {
 					updateTable(table => {
 						table.headers[headerIdx] = ev.target.value
-						return table
 					})
 				}
 
@@ -115,7 +110,6 @@ function TableTemplateHeaders({ table, updateTable, header, addHeader, onNewHead
 
 					updateTable(table => {
 						table.headers = table.headers.filter((_, idx) => idx !== headerIdx)
-						return table
 					})
 				}
 
@@ -133,19 +127,11 @@ function TableTemplateHeaders({ table, updateTable, header, addHeader, onNewHead
 }
 
 function TableTemplateFields({ table, updateTable }: { table: FormTableTemplate, updateTable: UpdateTableTemplateFunc }) {
-	const [field, setField] = useState({} as FormTableFieldTemplate)
-	const updateField = (fn: (field: FormTableFieldTemplate) => FormTableFieldTemplate): void => {
-		setField(produce(field => {
-			return fn(field)
-		}))
-	}
+	const [field, updateField] = useImmer({} as FormTableFieldTemplate)
 
-	const fieldType = getFormTableFieldTypeID(field.type)
 	const setFieldType = (fieldType?: string) => {
-		updateField(() => {
-			return {
-				type: formTableFieldTypes[fieldType ?? ''] ?? FormTableFieldType.Text
-			}
+		updateField({
+			type: getFieldTypeFromSelection(fieldType)
 		})
 	}
 
@@ -154,7 +140,6 @@ function TableTemplateFields({ table, updateTable }: { table: FormTableTemplate,
 
 		updateTable(table => {
 			table.fields.push(field)
-			return table
 		})
 		setFieldType(undefined)
 	}
@@ -162,17 +147,20 @@ function TableTemplateFields({ table, updateTable }: { table: FormTableTemplate,
 	return <div className="container container-start section">
 		<h4>Campi Tabella</h4>
 		{table.fields.map((field, fieldIdx) => {
-			const updateField: UpdateFieldTemplateFunc = (fn) => {
+			const updateField: UpdateFieldTemplateFunc = (updater) => {
 				updateTable(table => {
-					table.fields[fieldIdx] = fn(table.fields[fieldIdx])
-					return table
+					if (typeof updater !== 'function') {
+						table.fields[fieldIdx] = updater
+						return
+					}
+
+					updater(table.fields[fieldIdx])
 				})
 			}
 
 			const deleteField = () => {
 				updateTable(table => {
 					table.fields = table.fields.filter((_, idx) => idx !== fieldIdx)
-					return table
 				})
 			}
 
@@ -182,8 +170,8 @@ function TableTemplateFields({ table, updateTable }: { table: FormTableTemplate,
 			<label htmlFor="table-fields">Aggiungi campo:</label>
 			<div>
 				<Dropdown name="table-fields"
-					options={Object.keys(formTableFieldTypes)}
-					selectedField={fieldType} setSelectedField={setFieldType}
+					options={fieldTypeValues}
+					selectedField={field.type} setSelectedField={setFieldType}
 				/>
 				<button className="add-field" onClick={addField}>
 					<i className="fa-solid fa-circle-plus"></i>

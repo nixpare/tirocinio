@@ -2,7 +2,7 @@ import './Form.css'
 
 import { createContext, FormEvent, MouseEvent, useContext, useState } from 'react'
 import { Updater } from 'use-immer'
-import { FormSectionTemplate, FormData, FormSectionData, FormTableFieldImageRef, FormTableRowSpecial } from '../../models/Form'
+import { FormSectionTemplate, FormData, FormSectionData, FormTableRowSpecial, FormTableImageFieldData } from '../../models/Form'
 import { Table, UpdateTableFunc } from './Table'
 import { Carousel } from '../UI/Carousel'
 
@@ -11,10 +11,10 @@ export type UpdateSectionFunc = Updater<FormSectionData>
 
 type CreateImageCircleGenericFunc = (tableIdx: number, imageIdx: number, circleIdx: number, x: number, y: number) => void
 type DeleteImageCircleGenericFunc = (tableIdx: number, imageIdx: number, circleIdx: number) => void
-type HighlightImageCircleGenericFunc = (tableIdx: number, imageIdx: number, circleIdx: number) => void
+type HighlightImageCircleGenericFunc = (tableIdx: number, circleIdx: number, imageIdx?: number) => void
 
 export type DeleteImageCircleFunc = (imageIdx: number, circleIdx: number) => void
-export type HighlightImageCircleFunc = (imageIdx: number, circleIdx: number) => void
+export type HighlightImageCircleFunc = (circleIdx: number, imageIdx?: number) => void
 
 export const EditModeContext = createContext(false)
 export const VerticalSplitContext = createContext(false)
@@ -126,14 +126,14 @@ export function FormSection({ section, data, update }: {
 
 		return section.image?.map((_, imageIdx) => {
 			return table?.map(row => {
-				const circle = row?.[FormTableRowSpecial.CircleInfo] as FormTableFieldImageRef | undefined
-				if (circle == undefined)
+				const circle = row?.[FormTableRowSpecial.CircleInfo] as FormTableImageFieldData | undefined
+				if (circle == undefined || circle.value == undefined)
 					return undefined
 
-				if (circle.imageIdx !== imageIdx)
+				if (circle.value.imageIdx !== imageIdx)
 					return undefined
 
-				return { x: circle.x, y: circle.y }
+				return { x: circle.value.x, y: circle.value.y }
 			})
 		})
 	})
@@ -148,9 +148,12 @@ export function FormSection({ section, data, update }: {
 
 			sectionData[tableIdx][circleIdx] = {
 				[FormTableRowSpecial.CircleInfo]: {
-					imageIdx: imageIdx,
-					x: x,
-					y: y
+					type: 'image',
+					value: {
+						imageIdx: imageIdx,
+						x: x,
+						y: y
+					}
 				}
 			}
 		})
@@ -168,8 +171,8 @@ export function FormSection({ section, data, update }: {
 		})
 	}
 
-	const highlightCircleGeneric: HighlightImageCircleGenericFunc = (tableIdx, imageIdx, circleIdx) => {
-		if (!circles || !circles[tableIdx] || !circles[tableIdx][imageIdx] || !circles[tableIdx][imageIdx][circleIdx]) {
+	const highlightCircleGeneric: HighlightImageCircleGenericFunc = (tableIdx, circleIdx, imageIdx) => {
+		if (!circles || imageIdx == undefined || !circles[tableIdx] || !circles[tableIdx][imageIdx] || !circles[tableIdx][imageIdx][circleIdx]) {
 			setActiveCircles([])
 			return
 		}
@@ -180,6 +183,7 @@ export function FormSection({ section, data, update }: {
 		newActiveCircles[tableIdx][imageIdx][circleIdx] = true
 
 		setActiveCircles(newActiveCircles)
+		setActiveImage(imageIdx)
 	}
 
 	const tables = section.tables.map((table, tableIdx) => {
@@ -210,8 +214,8 @@ export function FormSection({ section, data, update }: {
 			deleteCircleGeneric(tableIdx, imageIdx, circleIdx)
 		}
 
-		const highlightCircle: HighlightImageCircleFunc = (imageIdx, circleIdx) => {
-			highlightCircleGeneric(tableIdx, imageIdx, circleIdx)
+		const highlightCircle: HighlightImageCircleFunc = (circleIdx, imageIdx) => {
+			highlightCircleGeneric(tableIdx, circleIdx, imageIdx)
 		}
 
 		return <Table key={`${section.title}-${tableIdx}`}
