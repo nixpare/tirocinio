@@ -2,7 +2,6 @@ package main
 
 import (
 	"backend"
-	"encoding/json"
 	"log"
 	"net/http"
 	"os"
@@ -12,29 +11,14 @@ import (
 	"github.com/nixpare/server/v3"
 )
 
-type config struct {
-	HTTPPort    int    `json:"http_port"`
-	StaticDir   string `json:"static_dir"`
-	ReactPort   int    `json:"react_port"`
-	RedirectToReact bool `json:"redirect_to_react"`
-	MongoURL    string `json:"mongo_url"`
-	MongoDBName string `json:"mongo_db_name"`
-}
-
 func main() {
 	if len(os.Args) < 2 {
 		log.Fatalln("Config file path needed as argument")
 	}
 
-	data, err := os.ReadFile(os.Args[1])
+	conf, err := backend.LoadConfig(os.Args[1])
 	if err != nil {
-		log.Fatalf("Failed reading config file: %v\n", err)
-	}
-
-	var conf config
-	err = json.Unmarshal(data, &conf)
-	if err != nil {
-		log.Fatalf("Failed parsing config file: %v\n", err)
+		log.Fatalf("Failed loading config file: %v\n", err)
 	}
 
 	db, err := backend.NewMongoDB(conf.MongoURL, conf.MongoDBName)
