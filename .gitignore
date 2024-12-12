@@ -24,4 +24,6 @@ dist-ssr
 *.sln
 *.sw?
 
-config.go
+# config files
+
+backend_config.json

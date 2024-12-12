@@ -7,21 +7,34 @@ import (
 	"net/url"
 )
 
-func (b *Backend) Routes(reactPort int) http.Handler {
+func Routes(db *Database, staticHandler http.Handler, reactPort int, redirectToReact *bool) http.Handler {
 	mux := new(http.ServeMux)
+
 	proxy := httputil.NewSingleHostReverseProxy(&url.URL{
 		Scheme: "http",
 		Host: fmt.Sprintf("localhost:%d", reactPort),
 	})
+
+	proxy.ErrorHandler = func(w http.ResponseWriter, r *http.Request, err error) {
+		w.WriteHeader(http.StatusBadGateway)
+		w.Write([]byte(err.Error()))
+	}
 
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusMethodNotAllowed)
 		w.Write([]byte("method not allowed"))
 	})
 	
-	mux.Handle("GET /", proxy)
+	mux.HandleFunc("GET /", func(w http.ResponseWriter, r *http.Request) {
+		if !*redirectToReact && staticHandler != nil {
+			staticHandler.ServeHTTP(w, r)
+			return
+		}
 
-	mux.HandleFunc("GET /bones", b.db.getAllBones)
+		proxy.ServeHTTP(w, r)
+	})
+
+	mux.HandleFunc("GET /bones", db.getAllBones)
 
 	mux.HandleFunc("POST /", func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusBadRequest)
