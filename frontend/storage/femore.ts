@@ -1,9 +1,8 @@
-import { AnatomStructType } from "../models/AnatomStruct";
 import { FormTableDropdownFieldTemplate, FormTableMultistageFieldTemplate, FormTableNumberFieldTemplate, FormTableTextFieldTemplate } from "../models/Form";
 import { Bone } from "../models/Skeleton";
 
 export const femore: Bone = {
-	type: AnatomStructType.Bone,
+	type: 'bone',
 	name: 'Femore',
 	template: {
 		name: "Femore",

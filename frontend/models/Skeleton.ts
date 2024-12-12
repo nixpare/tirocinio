@@ -1,8 +1,8 @@
-import { AnatomStruct, AnatomStructType } from "./AnatomStruct";
+import { AnatomStruct } from "./AnatomStruct";
 import { FormData } from "./Form"
 
 export type Bone = AnatomStruct & {
-	type: AnatomStructType.Bone;
+	type: 'bone';
 };
 
 export type BoneData = FormData

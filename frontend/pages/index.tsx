@@ -4,10 +4,9 @@ import { StrictMode, useState } from 'react'
 import { createRoot } from 'react-dom/client'
 import { useImmer } from 'use-immer'
 import { Skeleton } from '../components/Skeleton/Skeleton'
-import { femore } from '../storage/femore'
-import { ossoInnominato } from '../storage/ossoInnominato'
-import { SkeletonData } from '../models/Skeleton'
+import { Bone, SkeletonData } from '../models/Skeleton'
 import { FullScreenOverlay, FullscreenOverlayProps } from '../components/UI/FullscreenOverlay'
+import { QueryClient, QueryClientProvider, useQuery } from '@tanstack/react-query'
 
 export type SetOverlayFunc = (overlay: React.ReactNode, overlayProps?: FullscreenOverlayProps) => void
 type OverlayContent = {
@@ -15,24 +14,26 @@ type OverlayContent = {
     props?: FullscreenOverlayProps
 }
 
+const queryClient = new QueryClient()
+
 createRoot(document.getElementById('root')!).render(
     <StrictMode>
-        <App />
+        <QueryClientProvider client={queryClient}>
+            <App />
+        </QueryClientProvider>
     </StrictMode>,
 )
 
-const bones = [
-    femore,
-    ossoInnominato
-]
-
 function App() {
-    const [skeletonData, updateSkeletonData] = useImmer<SkeletonData>({
-        [ossoInnominato.name]: {
-            name: ossoInnominato.name,
-            template: ossoInnominato.template
+    const { data } = useQuery({
+        queryKey: ['/bones'],
+        queryFn: async () => {
+            const res = await fetch('/bones')
+            const bones: Bone[] = await res.json()
+            return bones
         }
     })
+    const [skeletonData, updateSkeletonData] = useImmer<SkeletonData>({})
 
     const [overlayContent, setOverlayContent] = useState<OverlayContent>({ content: null })
     const setOverlay: SetOverlayFunc = (overlay, overlayProps) => {
@@ -47,7 +48,7 @@ function App() {
             <Skeleton
                 data={skeletonData}
                 updateData={updateSkeletonData}
-                bones={bones}
+                bones={data ?? []}
                 setOverlay={setOverlay}/>
             {overlayContent.content && <FullScreenOverlay {...overlayContent.props}>
                 {overlayContent.content}

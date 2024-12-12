@@ -5,16 +5,16 @@ import { resolve } from 'path'
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [react()],
-  root: 'src',
+  root: 'frontend',
   build: {
     target: 'esnext',
     outDir: '../dist',
     emptyOutDir: true,
     rollupOptions: {
       input: [
-        resolve(__dirname, 'src/index.html'),
-        resolve(__dirname, 'src/femore.html'),
-        resolve(__dirname, 'src/template.html')
+        resolve(__dirname, 'frontend/index.html'),
+        resolve(__dirname, 'frontend/femore.html'),
+        resolve(__dirname, 'frontend/template.html')
       ]
     }
   },
