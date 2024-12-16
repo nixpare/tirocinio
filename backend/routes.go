@@ -35,11 +35,14 @@ func Routes(db *Database, staticHandler http.Handler, reactPort int, redirectToR
 	})
 
 	mux.HandleFunc("GET /bones", db.getAllBones)
+	mux.HandleFunc("GET /body/{bodyName}", db.getBody)
 
-	mux.HandleFunc("POST /", func(w http.ResponseWriter, r *http.Request) {
+	mux.HandleFunc("PUT /", func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusBadRequest)
 		w.Write([]byte("bad request"))
 	})
+
+	mux.HandleFunc("PUT /body/{bodyName}/skeleton", db.updateBodySkeleton)
 
 	return mux
 }

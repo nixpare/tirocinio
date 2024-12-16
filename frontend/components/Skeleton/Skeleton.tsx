@@ -7,37 +7,112 @@ import { ConfirmPopup } from '../UI/ConfirmPopup'
 import { EditModeContext, Form } from '../Form/Form'
 import { FullScreenOverlay } from '../UI/FullscreenOverlay'
 import { SetOverlayFunc } from '../../pages'
+import { useQuery } from '@tanstack/react-query'
+import { BodyData } from '../../models/Body'
 
 type SkeletonProps = {
-	data: SkeletonData
-	updateData: Updater<SkeletonData>
+	bodyName: string
+	setOverlay: SetOverlayFunc
+}
+
+export function Skeleton({ bodyName, setOverlay }: SkeletonProps) {
+	const bones_url = '/bones'
+	const { data: bones, isLoading: bonesLoading, error: bonesError } = useQuery({
+		queryKey: [bones_url],
+		queryFn: async () => {
+			const res = await fetch(bones_url)
+			if (!res.ok)
+				throw new Error(await res.text())
+
+			const bones: Bone[] = await res.json()
+			return bones
+		},
+		retry: false
+	})
+
+	const body_url = `/body/${bodyName}`
+	const { data: body, isLoading: bodyLoading, error: bodyError } = useQuery({
+		queryKey: [body_url],
+		queryFn: async () => {
+			const res = await fetch(body_url)
+			if (!res.ok)
+				throw new Error(await res.text())
+
+			const body: BodyData = await res.json()
+			return body
+		},
+		retry: false
+	})
+
+	if (bonesLoading || bodyLoading)
+		return (
+			<div>
+				<h3>Caricamento</h3>
+			</div>
+		)
+
+	if (bonesError || bodyError || !bones || !body)
+		return (
+			<div>
+				<h3>Errore</h3>
+				{bonesError && (
+					<p>{bonesError.message}</p>
+				)}
+				{bodyError && (
+					<p>{bodyError.message}</p>
+				)}
+			</div>
+		)
+
+	return (
+		<SkeletonView bodyName={bodyName}
+			skeleton={body.skeleton} bones={bones}
+			setOverlay={setOverlay} />
+	)
+}
+
+type SkeletonViewProps = {
+	bodyName: string
+	skeleton: SkeletonData
 	bones: Bone[]
 	setOverlay: SetOverlayFunc
 }
 
-export function Skeleton({ data, updateData, bones, setOverlay }: SkeletonProps) {
-	const availableBones = Object.values<BoneData>(data)
-	
-	const initialBones = bones.map(bone => {
-		return availableBones.findIndex(availBone => {
-			return availBone.name == bone.name
-		}) != -1 ? bone : undefined
-	})
+export function SkeletonView({ bodyName, skeleton, bones, setOverlay }: SkeletonViewProps) {
+	const [data, updateData] = useImmer<SkeletonData>(skeleton)
 
+	const saveChanges = async () => {
+		const resp = await fetch(`/body/${bodyName}/skeleton`, {
+			method: 'PUT',
+			body: JSON.stringify(data),
+			headers: {
+				'Content-Type': 'application/json'
+			}
+		})
+		if (!resp.ok)
+			showMessage(await resp.text(), setOverlay)
+	}
+
+	const initialBones = bones.filter(bone => {
+		return data[bone.name] != undefined
+	})
 	const [selectedBones, updateSelectedBones] = useImmer<(Bone | undefined)[]>(initialBones)
 
 	const newBones = selectedBones.filter(bone => {
 		return bone && data[bone.name] == undefined
 	}) as Bone[]
 
+	const availableBones = Object.values(data)
+
 	return (
 		<div className="container skeleton">
 			<h1>Scheletro</h1>
 			<SelectBonesSection bones={bones} skeletonData={data}
 				selectedBones={selectedBones} updateSelectedBones={updateSelectedBones}
-				setOverlay={setOverlay}/>
+				setOverlay={setOverlay} />
 			<AddBonesSection bones={newBones} updateSkeleton={updateData} />
 			<EditBonesSection bones={availableBones} updateSkeleton={updateData} setOverlay={setOverlay} />
+			<button onClick={saveChanges}>Save Changes</button>
 		</div>
 	)
 }

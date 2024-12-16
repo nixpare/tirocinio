@@ -44,7 +44,6 @@ func main() {
 			routes.ServeHTTP(ctx, ctx.R())
 		},
 		nix.EnableLoggingOption(), nix.EnableRecoveryOption(),
-		nix.EnableErrorCaptureOption(), nix.ErrorTemplateOption(nix.DefaultErrTemplate()),
 	)
 
 	err = srv.Start()

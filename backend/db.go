@@ -3,6 +3,7 @@ package backend
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"log"
 	"net/http"
 
@@ -48,8 +49,8 @@ func (db *Database) getAllBones(w http.ResponseWriter, r *http.Request) {
 	coll := db.Mongo().Collection("anatom-struct")
 	ctx := r.Context()
 
-	cursor, err := coll.Find(ctx, bson.D{
-		{Key: "type", Value: "bone"},
+	cursor, err := coll.Find(ctx, bson.M{
+		"type": "bone",
 	})
 	if err != nil {
 		handleDatabaseError(w, r, err)
@@ -66,4 +67,79 @@ func (db *Database) getAllBones(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(all)
+}
+
+func (db *Database) getBody(w http.ResponseWriter, r *http.Request) {
+	bodyName := r.PathValue("bodyName")
+	if bodyName == "" {
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte("body name can't be empty"))
+		return
+	}
+
+	coll := db.Mongo().Collection("body")
+	ctx := r.Context()
+
+	result := coll.FindOne(ctx, bson.M{
+		"generals.name": bodyName,
+	})
+	if err := result.Err(); err != nil {
+		handleDatabaseError(w, r, err)
+		return
+	}
+
+	var body bson.M
+	err := result.Decode(&body)
+	if err != nil {
+		handleDatabaseError(w, r, err)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(body)
+}
+
+func (db *Database) updateBodySkeleton(w http.ResponseWriter, r *http.Request) {
+	bodyName := r.PathValue("bodyName")
+	if bodyName == "" {
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte("body name can't be empty"))
+		return
+	}
+
+	if r.Header.Get("Content-Type") != "application/json" {
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte("you must provide a JSON document"))
+		return
+	}
+
+	var skeleton bson.M
+	err := json.NewDecoder(r.Body).Decode(&skeleton)
+	if err != nil {
+		handleDatabaseError(w, r, err)
+		return
+	}
+
+	coll := db.Mongo().Collection("body")
+	ctx := r.Context()
+
+	result, err := coll.UpdateOne(ctx,
+		bson.M{
+			"generals.name": bodyName,
+		},
+		bson.M{
+			"$set": bson.M{
+				"skeleton": skeleton,
+			},
+		},
+	)
+	if err != nil {
+		handleDatabaseError(w, r, err)
+		return
+	}
+
+	if result.ModifiedCount != 1 {
+		handleDatabaseError(w, r, errors.New("no data was modified"))
+		return
+	}
 }
