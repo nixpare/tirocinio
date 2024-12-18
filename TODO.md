@@ -1,12 +1,15 @@
 # Todo list
 
-+ [x] Creare una scheda scheletro con:
-  + [x] selezione delle ossa presenti, di cui si vuole raccogliere informazioni
-  + [x] scelta dell'osso da aggiungere
-  + [x] scelta dell'osso da visualizzare / modificare
-  + [x] eliminare osso già inserito
-+ [ ] Rivedere come le farie stringhe possano essere sanitificare per essere inserite nel db (struttura { value, display })
-+ [ ] Rivedere la documentazione dopo un redesign pesante
++ [ ] Modificare la pagina scheletro in modo che:
+  + [ ] Non ci sia ridondanza di click per l'aggiunta
+  + [ ] Ad ogni azione/modifica venga aggiornato il db
+  + [ ] Eliminare la funzionalità di popup e separare in pagine specifiche
++ [ ] Aggiungere ai vari campi di scelta multipla una label separata dal value effettivo
++ [ ] Aggiungere template degli ossi
++ [ ] Implementare una tabella di deduzione (quella più grossa in femore)
++ [ ] Vedere se eliminare la differenza tra dropdown e multistage -> dropdown = multistage senza next
++ [ ] Migliorare l'usabilità e lo stile dell'interfaccia in generale
++ [ ] Rifare la documentazione
 
 # Extras
 
