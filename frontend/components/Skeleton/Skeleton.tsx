@@ -92,6 +92,9 @@ export function SkeletonView({ bodyName, skeleton, bones, setOverlay }: Skeleton
 		if (!resp.ok)
 			showMessage(await resp.text(), setOverlay)
 	}
+	useEffect(() => {
+		saveChanges()
+	}, [data])
 
 	return (
 		<div className="container skeleton">
@@ -100,7 +103,6 @@ export function SkeletonView({ bodyName, skeleton, bones, setOverlay }: Skeleton
 				skeletonData={data} updateSkeletonData={updateData}
 				setOverlay={setOverlay} />
 			<EditBonesSection skeletonData={data} updateSkeletonData={updateData} setOverlay={setOverlay} />
-			<button onClick={saveChanges}>Save Changes</button>
 		</div>
 	)
 }

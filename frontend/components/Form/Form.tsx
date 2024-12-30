@@ -1,6 +1,6 @@
 import './Form.css'
 
-import { createContext, FormEvent, MouseEvent, useContext, useState } from 'react'
+import { createContext, MouseEvent, useContext, useState } from 'react'
 import { Updater } from 'use-immer'
 import { FormSectionTemplate, FormData, FormSectionData, FormTableRowSpecial, FormTableImageFieldData } from '../../models/Form'
 import { Table, UpdateTableFunc } from './Table'
@@ -43,12 +43,6 @@ export function Form({ data, updateData, initialSection }: {
 }) {
 	const editMode = useContext(EditModeContext)
 
-	function handleSubmit(ev: FormEvent) {
-		ev.preventDefault()
-
-		console.log(data)
-	}
-
 	const sections = data.template.sections.map((section, sectionIdx) => {
 		// updatePage è la funzione di produzione sullo stato per la pagina specifica
 		const updateSection: UpdateSectionFunc = (updater) => {
@@ -89,11 +83,10 @@ export function Form({ data, updateData, initialSection }: {
 	return (
 		<div className="container form">
 			<h4 className="name">{data.name}</h4>
-			<form className="form-sections" onSubmit={handleSubmit}>
+			<form className="form-sections">
 				<Carousel visibleState={{ visible: visiblePage, setVisible: setVisiblePage }}>
 					{sections}
 				</Carousel>
-				<button type="submit">Invia</button>
 			</form>
 		</div>
 	);
