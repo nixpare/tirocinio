@@ -1,7 +1,7 @@
 # Todo list
 
 + [ ] Modificare la pagina scheletro in modo che:
-  + [ ] Non ci sia ridondanza di click per l'aggiunta
+  + [x] Non ci sia ridondanza di click per l'aggiunta
   + [ ] Ad ogni azione/modifica venga aggiornato il db
   + [ ] Eliminare la funzionalità di popup e separare in pagine specifiche
 + [ ] Aggiungere ai vari campi di scelta multipla una label separata dal value effettivo
