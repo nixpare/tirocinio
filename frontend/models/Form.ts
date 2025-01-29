@@ -5,8 +5,8 @@
  * tabelle e per interpretare i dati associati a una struttura anatomica
  */
 export type FormTemplate = {
-	/** il nome della struttura anatomica */
-	name: string
+	/** il titolo della struttura anatomica */
+	title: string
 	/** le pagine di proprietà della struttura anatomica */
 	sections: FormSectionTemplate[]
 }
@@ -71,17 +71,15 @@ export type FormTableFieldType =
 	'text' |
 	/** un semplice <input type="number" /> */
 	'number' |
-	/** un componente che simula un elemento <select> con varie <option> */
-	'dropdown' |
 	/**
-	 * un componente simile a Dropdown, dove ad ogni valore selezionabile dal
-	 * menu a tendina corrisponde un successivo campo della tabella.
+	 * un componente simile a un elemento <select> con varie <option>, dove ad ogni valore selezionabile dal
+	 * menu a tendina può corrispondere uno o più campi successivi della tabella.
 	 * Questo permette di espandere la tabella in base agli input selezionati in
 	 * precedenza. Un esempio è la creazione di due menu a tendina con varie opzioni,
 	 * in cui i valori selezionabili dal secondo menu dipendono da quale valore si
 	 * abbia selezionato nel primo
 	*/
-	'multistage'
+	'dropdown'
 
 export type FormTableBlankFieldTemplate = FormTableFieldTemplate & {
 	type: 'blank'
@@ -101,13 +99,7 @@ export type FormTableDropdownFieldTemplate = FormTableFieldTemplate & {
 	type: 'dropdown'
 	defaultValue?: FormTableDropdownFieldData
 	/** contiene la lista di valori possibili */
-	dropdownArgs?: string[]
-}
-export type FormTableMultistageFieldTemplate = FormTableFieldTemplate & {
-	type: 'multistage'
-	defaultValue?: FormTableMultistageFieldData
-	/** contiene la lista di valori possibili */
-	multistageArgs?: FormTableFieldMultistageArg[]
+	dropdownArgs: FormTableFieldDropdownArg[]
 }
 
 export function formFieldIsBlank(f: FormTableFieldTemplate): f is FormTableBlankFieldTemplate {
@@ -122,16 +114,15 @@ export function formFieldIsNumber(f: FormTableFieldTemplate): f is FormTableNumb
 export function formFieldIsDropdown(f: FormTableFieldTemplate): f is FormTableDropdownFieldTemplate {
 	return f.type == 'dropdown';
 }
-export function formFieldIsMultistage(f: FormTableFieldTemplate): f is FormTableMultistageFieldTemplate {
-	return f.type == 'multistage';
-}
 
-/** AnatomStructMultistageArg rappresenta un'opzione di un campo Multistage */
-export type FormTableFieldMultistageArg = {
+/** FormTableFieldDropdownArg rappresenta un'opzione di un campo Multistage */
+export type FormTableFieldDropdownArg = {
 	/** il valore selezionabile nel menu a tendina */
 	value: string
+	/** il valore mostrato in grafica */
+	display: string
 	/** i template dei campi della tabella generati alla selezione del valore sopra */
-	next: FormTableFieldTemplate[]
+	next?: FormTableFieldTemplate[]
 }
 
 /**
@@ -169,7 +160,7 @@ export type FormTableRowData = Record<number, FormTableFieldData> | undefined
  */
 export type FormTableFieldData = {
 	type: FormTableFieldType | 'image'
-	value: string | number | FormTableMultistageFieldValue | FormTableFieldImageRef | undefined
+	value: string | number | FormTableDropdownFieldValue | FormTableFieldImageRef | undefined
 }
 
 export type FormTableBlankFieldData = FormTableFieldData & {
@@ -185,11 +176,7 @@ export type FormTableNumberFieldData = FormTableFieldData & {
 }
 export type FormTableDropdownFieldData = FormTableFieldData & {
 	type: 'dropdown'
-	value?: string
-}
-export type FormTableMultistageFieldData = FormTableFieldData & {
-	type: 'multistage'
-	value?: FormTableMultistageFieldValue
+	value?: FormTableDropdownFieldValue
 }
 
 // special data types
@@ -211,9 +198,6 @@ export function formFieldDataIsNumber(f: FormTableFieldData): f is FormTableNumb
 export function formFieldDataIsDropdown(f: FormTableFieldData): f is FormTableDropdownFieldData {
 	return f.type == 'dropdown';
 }
-export function formFieldDataIsMultistage(f: FormTableFieldData): f is FormTableMultistageFieldData {
-	return f.type == 'multistage';
-}
 
 // special cases
 
@@ -221,38 +205,44 @@ export function formFieldDataIsImage(f: FormTableFieldData): f is FormTableImage
 	return f.type == 'image';
 }
 
-function calculateFieldCellCount(field: FormTableFieldTemplate, data?: FormTableFieldData): number {
+function calculateAdditionalCells(field: FormTableFieldTemplate, data?: FormTableFieldData): number {
 	// La cella è disponibile all'utente ma non è stato ancora impostato un suo valore
 	if (data == undefined)
-		return 1
+		return 0
 
-	// prop non è del tipo Multistage, quindi ha per forza dimensione 1 cella,
+	// prop non è del tipo Dropdown, quindi ha per forza dimensione 1 cella,
 	// oppure prop è Multistage, ma il suo valore non è stato ancora impostato,
-	if (!formFieldIsMultistage(field))
-		return 1
-	if (!formFieldDataIsMultistage(data))
-		return 1
+	if (!formFieldIsDropdown(field))
+		return 0
+	if (!formFieldDataIsDropdown(data))
+		return 0
 
-	// il Multistage in realtà funziona come un Dropdown senza opzioni
-	if (field.multistageArgs == undefined || data.value == undefined)
-		return 1
+	// il Dropdown non ha un valore selezionato, quindi non ci sono caselle successive
+	if (data.value == undefined)
+		return 0
 
-	const selectedIndex = field.multistageArgs.reduce((prev, arg, argIdx) => {
-		if (arg.value != data.value)
-			return prev
-		return argIdx
-	}, 0)
+	const selectedIndex = field.dropdownArgs.reduce((prev, arg, argIdx) => {
+		if (arg.value == data.value?.selection)
+			return argIdx
+
+		return prev
+	}, -1)
+
+	if (selectedIndex == -1)
+		return 0
 
 	// Multistage non ha next e quindi nessun valore delle proprietà successive è stato impostato
-	if (data.value.next == undefined)
-		return 1 + field.multistageArgs[selectedIndex].next.length
+	if (data.value.next == undefined) {
+		const nextLength = field.dropdownArgs[selectedIndex].next?.length ?? 0
+		return nextLength
+	}
 
 	return 1 + data.value.next.reduce<number>((prev, nextProp, nextPropIdx) => {
-		return prev + calculateFieldCellCount(
-			// @ts-ignore
-			field.multistageArgs[selectedIndex].next[nextPropIdx],
-			nextProp
-		)
+		const nextField = field.dropdownArgs[selectedIndex].next?.[nextPropIdx]
+		if (!nextField)
+			return prev
+
+		return prev + calculateAdditionalCells(nextField, nextProp)
 	}, 0)
 }
 
@@ -260,16 +250,16 @@ export function calculateRowCellCount(rowData: FormTableRowData, fields: FormTab
 	if (rowData == undefined)
 		return fields.length
 
-	return Object.entries(rowData).reduce((prev, [key, value]) => {
+	let additionalCells = Object.entries(rowData).reduce((prev, [key, value]) => {
 		const idx = Number(key)
 		if (idx < 0)
 			return prev
 
-		return Math.max(
-			prev,
-			idx + calculateFieldCellCount(fields[idx], value)
-		)
+		const calc = calculateAdditionalCells(fields[idx], value);
+		return prev + calc
 	}, 0)
+
+	return fields.length + additionalCells
 }
 
 /** AnatomStructRowSpecial contiene gli indici speciali per salvare determinate informazioni su una riga */
@@ -278,8 +268,8 @@ export enum FormTableRowSpecial {
 	CircleInfo = -1,
 }
 
-/** FormTableMultistageFieldValue contiene lo stato di una proprietà `Multistage` */
-export type FormTableMultistageFieldValue = {
+/** FormTableDropdownFieldValue contiene lo stato di una proprietà `Multistage` */
+export type FormTableDropdownFieldValue = {
 	/** il valore selezionato dal menu a tendina */
 	selection: string
 	/** le `AnatomStructProperty` innestate, opzionale, indica i valori della proprietà derivate dalla selezione corrente */

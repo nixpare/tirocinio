@@ -1,11 +1,11 @@
-import { FormTableDropdownFieldTemplate, FormTableMultistageFieldTemplate, FormTableNumberFieldTemplate, FormTableTextFieldTemplate } from "../models/Form";
+import { FormTableDropdownFieldTemplate, FormTableNumberFieldTemplate, FormTableTextFieldTemplate } from "../models/Form";
 import { Bone } from "../models/Skeleton";
 
 export const femore: Bone = {
 	type: 'bone',
 	name: 'Femore',
 	template: {
-		name: "Femore",
+		title: "Femore",
 		sections: [
 			{
 				title: 'Centri di ossificazione: presenza/assenza, fusione lunghezza diafisi',
@@ -18,44 +18,49 @@ export const femore: Bone = {
 								fixedArgs: ['A', 'B', 'C', 'D', 'E']
 							} as FormTableTextFieldTemplate,
 							{
-								type: 'multistage',
+								type: 'dropdown',
 								defaultValue: {
-									type: 'multistage',
+									type: 'dropdown',
 									value: {
-										selection: 'Presente fuso'
+										selection: 'presente_fuso'
 									}
 								},
-								multistageArgs: [
+								dropdownArgs: [
 									{
-										value: 'Assente per immaturità',
+										value: 'assente_per_immaturità',
+										display: 'Assente per immaturità',
 										next: [{
 											type: 'text',
 											header: 'Commenti'
 										} as FormTableTextFieldTemplate]
 									},
 									{
-										value: 'Assente per tafonomia',
+										value: 'assente_per_tafonomia',
+										display: 'Assente per tafonomia',
 										next: [{
 											type: 'text',
 											header: 'Commenti'
 										} as FormTableTextFieldTemplate]
 									},
 									{
-										value: 'Assente non valutabile',
+										value: 'assente_non_valutabile',
+										display: 'Assente non valutabile',
 										next: [{
 											type: 'text',
 											header: 'Commenti'
 										} as FormTableTextFieldTemplate]
 									},
 									{
-										value: 'Presente ma fusione non valutabile',
+										value: 'presente_ma_fusione_non_valutabile',
+										display: 'Presente ma fusione non valutabile',
 										next: [{
 											type: 'text',
 											header: 'Commenti'
 										} as FormTableTextFieldTemplate]
 									},
 									{
-										value: 'Presente non fuso',
+										value: 'presente_non_fuso',
+										display: 'Presente non fuso',
 										next: [
 											{
 												type: 'number',
@@ -68,21 +73,23 @@ export const femore: Bone = {
 										]
 									},
 									{
-										value: 'Presente in fusione',
+										value: 'presente_in_fusione',
+										display: 'Presente in fusione',
 										next: [{
 											type: 'text',
 											header: 'Commenti'
 										} as FormTableTextFieldTemplate]
 									},
 									{
-										value: 'Presente fuso',
+										value: 'presente_fuso',
+										display: 'Presente fuso',
 										next: [{
 											type: 'text',
 											header: 'Commenti'
 										} as FormTableTextFieldTemplate]
 									}
 								]
-							} as FormTableMultistageFieldTemplate
+							} as FormTableDropdownFieldTemplate
 						]
 					}
 				]
@@ -98,56 +105,63 @@ export const femore: Bone = {
 								fixedArgs: ['A', 'B', 'C', 'D', 'E']
 							} as FormTableTextFieldTemplate,
 							{
-								type: 'multistage',
+								type: 'dropdown',
 								defaultValue: {
-									type: 'multistage',
+									type: 'dropdown',
 									value: {
 										selection: 'Presente fuso'
 									}
 								},
-								multistageArgs: [
+								dropdownArgs: [
 									{
 										value: 'Assente per immaturità',
+										display: 'Assente per immaturità',
 										next: []
 									},
 									{
 										value: 'Assente per tafonomia',
+										display: 'Assente per tafonomia',
 										next: [{
 											type: 'text',
 										} as FormTableTextFieldTemplate]
 									},
 									{
 										value: 'Assente non valutabile',
+										display: 'Assente non valutabile',
 										next: [{
 											type: 'text',
 										} as FormTableTextFieldTemplate]
 									},
 									{
 										value: 'Presente ma fusione non valutabile',
+										display: 'Presente ma fusione non valutabile',
 										next: [{
 											type: 'text',
 										} as FormTableTextFieldTemplate]
 									},
 									{
 										value: 'Presente non fuso',
+										display: 'Presente non fuso',
 										next: [{
 											type: 'text',
 										} as FormTableTextFieldTemplate]
 									},
 									{
 										value: 'Presente in fusione',
+										display: 'Presente in fusione',
 										next: [{
 											type: 'text',
 										} as FormTableTextFieldTemplate]
 									},
 									{
 										value: 'Presente fuso',
+										display: 'Presente fuso',
 										next: [{
 											type: 'text',
 										} as FormTableTextFieldTemplate]
 									}
 								]
-							} as FormTableMultistageFieldTemplate
+							} as FormTableDropdownFieldTemplate
 						]
 					},
 					{
@@ -165,19 +179,31 @@ export const femore: Bone = {
 										selection: 'Presente'
 									}
 								},
-								dropdownArgs: ['Assente', 'Presente']
+								dropdownArgs: [
+									{ value: 'Assente', display: 'Assente' },
+									{ value: 'Presente', display: 'Presente' }
+								]
 							} as FormTableDropdownFieldTemplate,
 							{
 								type: 'dropdown',
-								dropdownArgs: ['1 (1%-25%)', '2 (26% - 50%)']
+								dropdownArgs: [
+									{ value: '1 (1%-25%)', display: '1 (1%-25%)' },
+									{ value: '2 (26% - 50%)', display: '2 (26% - 50%)' }
+								]
 							} as FormTableDropdownFieldTemplate,
 							{
 								type: 'dropdown',
-								dropdownArgs: ['0% of sound cortical surface', '1-24% of sound cortical surface']
+								dropdownArgs: [
+									{ value: '0% of sound cortical surface', display: '0% of sound cortical surface' },
+									{ value: '1-24% of sound cortical surface', display: '1-24% of sound cortical surface' }
+								]
 							} as FormTableDropdownFieldTemplate,
 							{
 								type: 'dropdown',
-								dropdownArgs: ['da marrone a marrone scuro', 'grigio']
+								dropdownArgs: [
+									{ value: 'da marrone a marrone scuro', display: 'da marrone a marrone scuro' },
+									{ value: 'grigio', display: 'grigio' }
+								]
 							} as FormTableDropdownFieldTemplate,
 							{
 								type: 'text'
@@ -198,10 +224,10 @@ export const femore: Bone = {
 							} as FormTableTextFieldTemplate,
 							{
 								type: 'number'
-							} as FormTableTextFieldTemplate,
+							} as FormTableNumberFieldTemplate,
 							{
 								type: 'number'
-							} as FormTableTextFieldTemplate
+							} as FormTableNumberFieldTemplate
 						]
 					},
 					{
@@ -210,7 +236,14 @@ export const femore: Bone = {
 						fields: [
 							{
 								type: 'dropdown',
-								dropdownArgs: ['1', '2', '3', '...', '11', 'ND']
+								dropdownArgs: [
+									{ value: '1', display: '1' },
+									{ value: '2', display: '2' },
+									{ value: '3', display: '3' },
+									{ value: '...', display: '...' },
+									{ value: '11', display: '11' },
+									{ value: 'ND', display: 'ND' }
+								]
 							} as FormTableDropdownFieldTemplate
 						]
 					}
@@ -253,7 +286,11 @@ export const femore: Bone = {
 							} as FormTableTextFieldTemplate,
 							{
 								type: 'dropdown',
-								dropdownArgs: ['Assente', 'Non valutabile', 'Presente']
+								dropdownArgs: [
+									{ value: 'Assente', display: 'Assente' },
+									{ value: 'Non valutabile', display: 'Non valutabile' },
+									{ value: 'Presente', display: 'Presente' }
+								]
 							} as FormTableDropdownFieldTemplate
 						]
 					}

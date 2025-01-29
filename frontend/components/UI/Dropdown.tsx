@@ -2,6 +2,13 @@ import './Dropdown.css'
 
 import { MouseEvent, useState } from 'react'
 
+export type DropdownOption = {
+	/** il valore selezionabile nel menu a tendina */
+	value: string
+	/** il valore mostrato in grafica */
+	display: string
+}
+
 /**
  * Dropdown simula il comportamento dell'elemento <select>. Normalmente il chiamante dovrebbe passare al componente uno stato e la sua funzione per cambiarlo
  * come argomenti, in modo che quando viene selezionata una nuova opzione, il componente chiami `setSelectField`, il quale modificherà
@@ -12,7 +19,7 @@ import { MouseEvent, useState } from 'react'
  * @returns ReactNode
  */
 export function Dropdown({ options, selectedField = 'Non selezionato', setSelectedField, name, disabled }: {
-	options: string[], selectedField?: string, setSelectedField: (selected?: string) => void,
+	options: DropdownOption[], selectedField?: string, setSelectedField: (selected?: DropdownOption) => void,
 	name?: string, disabled?: boolean
 }) {
 	const [active, setActive] = useState(false)
@@ -33,7 +40,7 @@ export function Dropdown({ options, selectedField = 'Non selezionato', setSelect
 					setSelectedField(option)
 				}
 
-				return <li key={option} onClick={handleSelect}>{option}</li>
+				return <li key={option.value} onClick={handleSelect}>{option.display}</li>
 			})}
 			<hr />
 			<li className="no-selection" onClick={() => { setSelectedField(undefined) }}>

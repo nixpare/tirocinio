@@ -92,6 +92,7 @@ export function SkeletonView({ bodyName, skeleton, bones, setOverlay }: Skeleton
 		if (!resp.ok)
 			showMessage(await resp.text(), setOverlay)
 	}
+	
 	useEffect(() => {
 		saveChanges()
 	}, [data])

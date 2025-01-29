@@ -168,7 +168,6 @@ export function Table({ table, data, update, active, setActive, deleteCircle, hi
 								for (let i = table.fields.length; i < nCols; i++) {
 									emptyCells.push(<th key={i}></th>)
 								}
-
 								return emptyCells
 							})()}
 						</tr> : undefined}
@@ -219,7 +218,9 @@ export function Table({ table, data, update, active, setActive, deleteCircle, hi
 								}
 								{(() => {
 									const emptyCells: React.ReactNode[] = []
-									for (let i = calculateRowCellCount(row, table.fields); i < nCols - (table.isVariadic ? 1 : 0); i++) {
+
+									const cols = calculateRowCellCount(row, table.fields)
+									for (let i = cols; i < nCols - (table.isVariadic ? 1 : 0); i++) {
 										emptyCells.push(<td key={i}></td>)
 									}
 

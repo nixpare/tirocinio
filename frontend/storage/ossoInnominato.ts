@@ -1,11 +1,11 @@
-import { FormTableDropdownFieldTemplate, FormTableMultistageFieldTemplate, FormTableNumberFieldTemplate, FormTableTextFieldTemplate } from "../models/Form";
+import { FormTableDropdownFieldTemplate, FormTableNumberFieldTemplate, FormTableTextFieldTemplate } from "../models/Form";
 import { Bone } from "../models/Skeleton";
 
 export const ossoInnominato: Bone = {
 	type: 'bone',
 	name: 'Osso Innominato',
 	template: {
-		name: "OSSO INNOMINATO",
+		title: "OSSO INNOMINATO",
 		sections: [
 			// Page Test
 			{
@@ -17,7 +17,13 @@ export const ossoInnominato: Bone = {
 						fields: [
 							{
 								type: 'dropdown',
-								dropdownArgs: ["assente", "presente non valutabile PND", "presente non fuso PN", "presente in fusione PIF", "presente fuso PF"]
+								dropdownArgs: [
+									{ value: "assente", display: "assente" },
+									{ value: "presente non valutabile PND", display: "presente non valutabile PND" },
+									{ value: "presente non fuso PN", display: "presente non fuso PN" },
+									{ value: "presente in fusione PIF", display: "presente in fusione PIF" },
+									{ value: "presente fuso PF", display: "presente fuso PF" }
+								]
 							} as FormTableDropdownFieldTemplate,
 							{
 								type: 'text'
@@ -31,7 +37,13 @@ export const ossoInnominato: Bone = {
 						fields: [
 							{
 								type: 'dropdown',
-								dropdownArgs: ["assente", "presente non valutabile PND", "presente non fuso PN", "presente in fusione PIF", "presente fuso PF"]
+								dropdownArgs: [
+									{ value: "assente", display: "assente" },
+									{ value: "presente non valutabile PND", display: "presente non valutabile PND" },
+									{ value: "presente non fuso PN", display: "presente non fuso PN" },
+									{ value: "presente in fusione PIF", display: "presente in fusione PIF" },
+									{ value: "presente fuso PF", display: "presente fuso PF" }
+								]
 							} as FormTableDropdownFieldTemplate,
 							{
 								type: 'text'
@@ -56,7 +68,13 @@ export const ossoInnominato: Bone = {
 							} as FormTableTextFieldTemplate,
 							{
 								type: 'dropdown',
-								dropdownArgs: ["assente", "presente non valutabile PND", "presente non fuso PN", "presente in fusione PIF", "presente fuso PF"]
+								dropdownArgs: [
+									{ value: "assente", display: "assente" },
+									{ value: "presente non valutabile PND", display: "presente non valutabile PND" },
+									{ value: "presente non fuso PN", display: "presente non fuso PN" },
+									{ value: "presente in fusione PIF", display: "presente in fusione PIF" },
+									{ value: "presente fuso PF", display: "presente fuso PF" }
+								]
 							} as FormTableDropdownFieldTemplate,
 							{
 								type: 'number'
@@ -79,7 +97,10 @@ export const ossoInnominato: Bone = {
 							} as FormTableNumberFieldTemplate,
 							{
 								type: 'dropdown',
-								dropdownArgs: ["Assente", "Presente"]
+								dropdownArgs: [
+									{ value: "Assente", display: "Assente" },
+									{ value: "Presente", display: "Presente" }
+								]
 							} as FormTableDropdownFieldTemplate,
 							{
 								type: 'text'
@@ -98,7 +119,13 @@ export const ossoInnominato: Bone = {
 							} as FormTableTextFieldTemplate,
 							{
 								type: 'dropdown',
-								dropdownArgs: ["da marrone a marrone scuro", "grigio", "naturale", "da arancione a marrone", "da giallo ad arancione"]
+								dropdownArgs: [
+									{ value: "da marrone a marrone scuro", display: "da marrone a marrone scuro" },
+									{ value: "grigio", display: "grigio" },
+									{ value: "naturale", display: "naturale" },
+									{ value: "da arancione a marrone", display: "da arancione a marrone" },
+									{ value: "da giallo ad arancione", display: "da giallo ad arancione" }
+								]
 							} as FormTableDropdownFieldTemplate
 						]
 					}
@@ -157,7 +184,11 @@ export const ossoInnominato: Bone = {
 							} as FormTableTextFieldTemplate,
 							{
 								type: 'dropdown',
-								dropdownArgs: ["Assente", "Non valutabile", "Presente"]
+								dropdownArgs: [
+									{ value: "Assente", display: "Assente" },
+									{ value: "Non valutabile", display: "Non valutabile" },
+									{ value: "Presente", display: "Presente" }
+								]
 							} as FormTableDropdownFieldTemplate
 						],
 						isVariadic: true,
@@ -179,50 +210,73 @@ export const ossoInnominato: Bone = {
 								fixedArgs: ["1", "2", "3"]
 							} as FormTableTextFieldTemplate,
 							{
-								type: 'multistage',
-								multistageArgs: [
+								type: 'dropdown',
+								dropdownArgs: [
 									{
 										value: "Soluzione di continuo",
+										display: "Non valutabile",
 										next: [{
 											type: 'dropdown',
 											dropdownArgs: [
-												"A tutto spessore e tutta circonferenza",
-												"A tutto spessore e parziale circonferenza",
-												"Soluzione di continuo interessante lo strato corticale a tutta circonferenza",
-												"Soluzione di continuo interessante lo strato corticale a parziale circonferenza",
-												"Soluzione di continuo interessante lo strato di osso trabecolare (visibili in RX e TC)",
-												"Multiple soluzioni di continuo (comminuzione)"
+												{
+													value: "A tutto spessore e tutta circonferenza",
+													display: "A tutto spessore e tutta circonferenza"
+												},
+												{
+													value: "A tutto spessore e parziale circonferenza",
+													display: "A tutto spessore e parziale circonferenza"
+												},
+												{
+													value: "Soluzione di continuo interessante lo strato corticale a tutta circonferenza",
+													display: "Soluzione di continuo interessante lo strato corticale a tutta circonferenza"
+												},
+												{
+													value: "Soluzione di continuo interessante lo strato corticale a parziale circonferenza",
+													display: "Soluzione di continuo interessante lo strato corticale a parziale circonferenza"
+												},
+												{
+													value: "Soluzione di continuo interessante lo strato di osso trabecolare (visibili in RX e TC)",
+													display: "Soluzione di continuo interessante lo strato di osso trabecolare (visibili in RX e TC)"
+												},
+												{
+													value: "Multiple soluzioni di continuo (comminuzione)",
+													display: "Multiple soluzioni di continuo (comminuzione)"
+												}
 											]
 										} as FormTableDropdownFieldTemplate]
 									},
 									{
 										value: "Perdita di sostanza",
+										display: "Perdita di sostanza",
 										next: [
 											{ type: 'text' } as FormTableTextFieldTemplate
 										]
 									},
 									{
-										value: "Aspetto margine (esempio nested multistage)",
+										value: "Aspetto margine (esempio nested dropdown)",
+										display: "Aspetto margine (esempio nested dropdown)",
 										next: [{
-											type: 'multistage',
-											multistageArgs: [
+											type: 'dropdown',
+											dropdownArgs: [
 												{
 													value: "Aspetto della superficie di frattura (indicare la localizzazione - mediale, laterale, anteriore e posteriore)",
+													display: "Aspetto della superficie di frattura (indicare la localizzazione - mediale, laterale, anteriore e posteriore)",
 													next: [
 														{ type: 'text' } as FormTableTextFieldTemplate
 													]
 												},
 												{
 													value: "Aspetto superficie di taglio (indicare la localizzazione - mediale, laterale, anteriore e posteriore)",
+													display: "Aspetto superficie di taglio (indicare la localizzazione - mediale, laterale, anteriore e posteriore)",
 													next: [
 														{ type: 'text' } as FormTableTextFieldTemplate
 													]
 												}
 											]
-										} as FormTableMultistageFieldTemplate]
+										} as FormTableDropdownFieldTemplate]
 									}
 								]
-							} as FormTableMultistageFieldTemplate
+							} as FormTableDropdownFieldTemplate
 						]
 					}
 				]

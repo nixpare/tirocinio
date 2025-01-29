@@ -3,7 +3,6 @@ package backend
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"log"
 	"net/http"
 
@@ -139,7 +138,7 @@ func (db *Database) updateBodySkeleton(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if result.ModifiedCount != 1 {
-		handleDatabaseError(w, r, errors.New("no data was modified"))
+		log.Printf("update body skeleton: %s: no data was modified\n", bodyName)
 		return
 	}
 }

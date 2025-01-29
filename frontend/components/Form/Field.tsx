@@ -2,12 +2,12 @@ import './Field.css'
 
 import { ChangeEvent, useContext } from "react";
 import { Updater } from "use-immer";
-import { FormTableFieldData, FormTableMultistageFieldData, FormTableFieldTemplate, formFieldIsBlank, formFieldIsText, formFieldDataIsText, formFieldIsNumber, formFieldDataIsNumber, formFieldIsDropdown, formFieldDataIsDropdown, formFieldIsMultistage, formFieldDataIsMultistage, FormTableMultistageFieldTemplate, FormTableMultistageFieldValue } from "../../models/Form";
-import { Dropdown } from "../UI/Dropdown";
+import { FormTableFieldData, FormTableFieldTemplate, formFieldIsBlank, formFieldIsText, formFieldDataIsText, formFieldIsNumber, formFieldDataIsNumber, formFieldIsDropdown, formFieldDataIsDropdown, FormTableDropdownFieldTemplate, FormTableDropdownFieldValue, FormTableDropdownFieldData } from "../../models/Form";
+import { Dropdown, DropdownOption } from "../UI/Dropdown";
 import { EditModeContext } from "./Form";
 
 export type UpdateFieldFunc = Updater<FormTableFieldData>
-type UpdateMultistageFieldFunc = Updater<FormTableMultistageFieldData>
+type UpdateDropdownFieldFunc = Updater<FormTableDropdownFieldData>
 
 /**
  * Property rappresenta un'opzione della tabella. In base al valore `mode` in `template` il componente genera l'input sottostante
@@ -79,67 +79,59 @@ export function Field({ field, rowIdx, data, update }: {
 				/>
 			</td>
 		case formFieldIsDropdown(field):
-			const setSelected = (selected?: string): void => {
-				update({
-					type: 'dropdown',
-					value: selected
-				})
-			}
-
-			if (data != undefined && !formFieldDataIsDropdown(data))
-				data = undefined
-
-			return <td>
-				{header}
-				<Dropdown
-					options={field.dropdownArgs ?? []}
-					selectedField={data?.value}
-					setSelectedField={setSelected} disabled={!editMode}
-				/>
-			</td>
-		case formFieldIsMultistage(field):
-			const updateMultistage: UpdateMultistageFieldFunc = (updater) => {
+			const updateDropdown: UpdateDropdownFieldFunc = (updater) => {
 				if (typeof updater !== 'function') {
 					update(updater)
 					return
 				}
 
 				update(fieldData => {
-					updater(fieldData as FormTableMultistageFieldData)
+					updater(fieldData as FormTableDropdownFieldData)
 				})
 			}
 
-			if (data != undefined && !formFieldDataIsMultistage(data))
+			if (data != undefined && !formFieldDataIsDropdown(data))
 				data = undefined
 
-			return <MultistageField
+			return <DropdownField
 				field={field} rowIdx={rowIdx}
-				data={data} update={updateMultistage}
+				data={data} update={updateDropdown}
 				disabled={!editMode} header={header}
 			/>
 	}
 }
 
-function MultistageField({ field, rowIdx, data, update, disabled, header }: {
-	field: FormTableMultistageFieldTemplate, rowIdx: number, data?: FormTableMultistageFieldData,
-	update: UpdateMultistageFieldFunc, disabled: boolean, header?: JSX.Element
+function DropdownField({ field, rowIdx, data, update, disabled, header }: {
+	field: FormTableDropdownFieldTemplate, rowIdx: number, data?: FormTableDropdownFieldData,
+	update: UpdateDropdownFieldFunc, disabled: boolean, header?: JSX.Element
 }) {
-	const options: string[] | undefined = field.multistageArgs?.map(arg => arg.value)
+	const options: DropdownOption[] | undefined = field.dropdownArgs?.map(arg => ({
+		value: arg.value,
+		display: arg.display
+	}))
 
-	const setSelected = (selected?: string): void => {
+	const setSelected = (selected?: DropdownOption): void => {
 		update({
-			type: 'multistage',
+			type: 'dropdown',
 			value: selected ? {
-				selection: selected
+				selection: selected.value
 			} : undefined
 		})
 	}
+
+	const selectedValue = data?.value?.selection
+	const selectedDisplay = selectedValue != undefined ? field.dropdownArgs.reduce<string | undefined>((prev, curr) => {
+		if (prev)
+			return prev
+
+		return curr.value == selectedValue ? curr.display : undefined
+	}, undefined) : undefined
 
 	const firstStage = <td>
 		{header}
 		<Dropdown
 			options={options ?? []}
-			selectedField={data?.value?.selection ?? undefined}
+			selectedField={selectedDisplay}
 			setSelectedField={setSelected}
 			disabled={disabled}
 		/>
@@ -148,39 +140,43 @@ function MultistageField({ field, rowIdx, data, update, disabled, header }: {
 	if (data == undefined || data.value == undefined)
 		return firstStage
 
-	const nextFields = field.multistageArgs?.filter(arg => {
+	const matchedArg = field.dropdownArgs?.filter(arg => {
 		// @ts-ignore
 		return arg.value === data.value.selection
-	})[0]?.next
-	if (!nextFields)
+	})[0]
+	if (!matchedArg)
 		return <>
 			{firstStage}
 			<td>Errore, nessun campo trovato per {data.value.selection}</td>
 		</>
 
+	const nextFields = matchedArg.next
+	if (!nextFields)
+		return firstStage
+
 	return <>
 		{firstStage}
 		{nextFields.map((next, nextIdx) => {
 			const nextUpdate: Updater<FormTableFieldData> = (updater) => {
-				update(multistageData => {
-					if (multistageData == undefined || multistageData.value == undefined)
-						throw new Error('multistage is undefined after the first stage')
+				update(dropdownData => {
+					if (dropdownData == undefined || dropdownData.value == undefined)
+						throw new Error('dropdown is undefined after the first stage')
 
-					if (multistageData.value.next == undefined)
-						multistageData.value.next = []
+					if (dropdownData.value.next == undefined)
+						dropdownData.value.next = []
 
 					if (typeof updater !== 'function') {
-						multistageData.value.next[nextIdx] = updater
+						dropdownData.value.next[nextIdx] = updater
 						return
 					}
 
-					updater(multistageData.value.next[nextIdx])
+					updater(dropdownData.value.next[nextIdx])
 				})
 			}
 
 			return <Field key={nextIdx}
 				field={next} rowIdx={rowIdx}
-				data={(data.value as FormTableMultistageFieldValue).next?.[nextIdx]} update={nextUpdate}
+				data={(data.value as FormTableDropdownFieldValue).next?.[nextIdx]} update={nextUpdate}
 			/>
 		})}
 
