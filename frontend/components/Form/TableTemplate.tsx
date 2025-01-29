@@ -2,10 +2,10 @@ import "./TableTemplate.css"
 
 import { ChangeEvent, FormEvent, MouseEvent, useState } from "react"
 import { Updater, useImmer } from 'use-immer'
-import { FormSectionTemplate, FormSectionData, FormTableTemplate, FormTableFieldTemplate } from "../../models/Form"
-import { FieldTemplate, fieldTypeValues, getFieldTypeFromSelection, UpdateFieldTemplateFunc } from "./FieldTemplate"
+import { FormSectionTemplate, FormSectionData, FormTableTemplate, FormTableFieldTemplate, FormTableFieldType } from "../../models/Form"
+import { FieldTemplate, fieldTypeValues, UpdateFieldTemplateFunc } from "./FieldTemplate"
 import { EditModeContext, FormSection, VerticalSplitContext } from "./Form"
-import { Dropdown } from "../UI/Dropdown"
+import { Dropdown, DropdownOption } from "../UI/Dropdown"
 
 type UpdateTableTemplateFunc = Updater<FormTableTemplate>
 
@@ -129,9 +129,12 @@ function TableTemplateHeaders({ table, updateTable, header, addHeader, onNewHead
 function TableTemplateFields({ table, updateTable }: { table: FormTableTemplate, updateTable: UpdateTableTemplateFunc }) {
 	const [field, updateField] = useImmer({} as FormTableFieldTemplate)
 
-	const setFieldType = (fieldType?: string) => {
+	const setFieldType = (fieldType?: DropdownOption) => {
+		if (!fieldType)
+			return
+
 		updateField({
-			type: getFieldTypeFromSelection(fieldType)
+			type: fieldType.value as FormTableFieldType
 		})
 	}
 

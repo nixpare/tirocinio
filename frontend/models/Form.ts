@@ -115,7 +115,7 @@ export function formFieldIsDropdown(f: FormTableFieldTemplate): f is FormTableDr
 	return f.type == 'dropdown';
 }
 
-/** FormTableFieldDropdownArg rappresenta un'opzione di un campo Multistage */
+/** FormTableFieldDropdownArg rappresenta un'opzione di un campo Dropdown */
 export type FormTableFieldDropdownArg = {
 	/** il valore selezionabile nel menu a tendina */
 	value: string
@@ -210,14 +210,13 @@ function calculateAdditionalCells(field: FormTableFieldTemplate, data?: FormTabl
 	if (data == undefined)
 		return 0
 
-	// prop non è del tipo Dropdown, quindi ha per forza dimensione 1 cella,
-	// oppure prop è Multistage, ma il suo valore non è stato ancora impostato,
+	// field non è del tipo Dropdown, quindi ha per forza dimensione 1 cella,
 	if (!formFieldIsDropdown(field))
 		return 0
+	// oppure field è Dropdown, ma il suo valore non è stato ancora impostato,
 	if (!formFieldDataIsDropdown(data))
 		return 0
-
-	// il Dropdown non ha un valore selezionato, quindi non ci sono caselle successive
+	// controllo di sicurezza sul contenuto di data
 	if (data.value == undefined)
 		return 0
 
@@ -231,12 +230,14 @@ function calculateAdditionalCells(field: FormTableFieldTemplate, data?: FormTabl
 	if (selectedIndex == -1)
 		return 0
 
-	// Multistage non ha next e quindi nessun valore delle proprietà successive è stato impostato
+	// Dropdown non ha campi next con valore impostato, ma data.value c'è, quindi il numero delle celle
+	// in eccesso è pari al numero di campi next presenti in field
 	if (data.value.next == undefined) {
 		const nextLength = field.dropdownArgs[selectedIndex].next?.length ?? 0
 		return nextLength
 	}
 
+	// TODO: indagare su questo valore "1 + ..."
 	return 1 + data.value.next.reduce<number>((prev, nextProp, nextPropIdx) => {
 		const nextField = field.dropdownArgs[selectedIndex].next?.[nextPropIdx]
 		if (!nextField)
@@ -268,7 +269,7 @@ export enum FormTableRowSpecial {
 	CircleInfo = -1,
 }
 
-/** FormTableDropdownFieldValue contiene lo stato di una proprietà `Multistage` */
+/** FormTableDropdownFieldValue contiene lo stato di una proprietà `Dropdown` */
 export type FormTableDropdownFieldValue = {
 	/** il valore selezionato dal menu a tendina */
 	selection: string

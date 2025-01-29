@@ -2,18 +2,17 @@ import "./FieldTemplate.css"
 
 import { ChangeEvent, MouseEvent, useState } from 'react'
 import { Updater, useImmer } from "use-immer"
-import { formFieldIsBlank, formFieldIsDropdown, formFieldIsMultistage, formFieldIsNumber, formFieldIsText, FormTableDropdownFieldTemplate, FormTableFieldMultistageArg, FormTableFieldTemplate, FormTableFieldType, FormTableMultistageFieldTemplate } from "../../models/Form"
-import { Dropdown } from "../UI/Dropdown"
+import { formFieldIsBlank, formFieldIsDropdown, formFieldIsNumber, formFieldIsText, FormTableDropdownFieldTemplate, FormTableFieldDropdownArg, FormTableFieldTemplate, FormTableFieldType } from "../../models/Form"
+import { Dropdown, DropdownOption } from "../UI/Dropdown"
 
 export type UpdateFieldTemplateFunc = Updater<FormTableFieldTemplate>
 export type UpdateDropdownFieldTemplateFunc = Updater<FormTableDropdownFieldTemplate>
-export type UpdateMultistageFieldTemplateFunc = Updater<FormTableMultistageFieldTemplate>
-type UpdateMultistageArgTemplateFunc = Updater<FormTableFieldMultistageArg>
+type UpdateDropdownArgTemplateFunc = Updater<FormTableFieldDropdownArg>
 
 export function FieldTemplate({ field, updateField, deleteField }: { field: FormTableFieldTemplate, updateField: UpdateFieldTemplateFunc, deleteField: () => void }) {
-	const setSelectedField = (selected?: string) => {
+	const setSelectedField = (selected?: DropdownOption) => {
 		updateField(field => {
-			field.type = getFieldTypeFromSelection(selected)
+			field.type = selected?.value as FormTableFieldType
 		})
 	}
 
@@ -46,16 +45,8 @@ function FieldTemplateArgs({ field, updateField }: { field: FormTableFieldTempla
 			// @ts-ignore
 			const updateDropdownField: Updater<FormTableDropdownFieldTemplate> = updateField
 
-			return <>
-				<DropdownFieldTemplate field={field} updateField={updateDropdownField} />
-				<FixedFieldTemplate field={field} updateField={updateField} />
-			</>
-		case formFieldIsMultistage(field):
-			// @ts-ignore
-			const updateMultistageField: Updater<FormTableMultistageFieldTemplate> = updateField
-
 			return <div>
-				<MultistageFieldTemplate field={field} updateField={updateMultistageField} />
+				<DropdownFieldTemplate field={field} updateField={updateDropdownField} />
 				<FixedFieldTemplate field={field} updateField={updateField} />
 			</div>
 	}
@@ -129,75 +120,7 @@ function FixedFieldTemplate({ field, updateField }: { field: FormTableFieldTempl
 }
 
 function DropdownFieldTemplate({ field, updateField }: { field: FormTableDropdownFieldTemplate, updateField: UpdateDropdownFieldTemplateFunc }) {
-	const [arg, setArg] = useState('')
-	const addArg = (ev: MouseEvent) => {
-		ev.preventDefault()
-
-		updateField(field => {
-			if (!field.dropdownArgs)
-				field.dropdownArgs = []
-
-			field.dropdownArgs.push(arg)
-		})
-		setArg('')
-	}
-
-	const handleInputChange = (ev: ChangeEvent<HTMLInputElement>) => {
-		setArg(ev.target.value ?? '')
-	}
-
-	return <div className="container w-100 dropdown-field m-0">
-		<div className="container container-horiz container-start w-100">
-			<label htmlFor="dropdown-arg">Aggiungi opzione:</label>
-			<div>
-				<input type="text" name="dropdown-arg" value={arg} onChange={handleInputChange} />
-				<button className="add-arg" onClick={addArg}>
-					<i className="fa-solid fa-circle-plus"></i>
-				</button>
-			</div>
-		</div>
-		{field.dropdownArgs && field.dropdownArgs.length > 0 ? <div className="container container-horiz container-start w-100">
-			{field.dropdownArgs?.map((arg, argIdx) => {
-				const onArgChange = (ev: ChangeEvent<HTMLInputElement>): void => {
-					updateField(field => {
-						if (!field.dropdownArgs)
-							return
-
-						field.dropdownArgs[argIdx] = ev.target.value
-					})
-				}
-
-				const inputStyle: React.CSSProperties = {
-					width: `${arg.length + 3}ch`,
-					boxSizing: 'content-box'
-				}
-
-				const deleteHeader = (ev: MouseEvent) => {
-					ev.preventDefault()
-
-					updateField(field => {
-						if (!field.dropdownArgs)
-							return
-
-						field.dropdownArgs = field.dropdownArgs.filter((_, idx) => idx !== argIdx)
-					})
-				}
-
-				return <div key={argIdx} className="arg-input">
-					<input type="text" style={inputStyle} value={arg} onChange={onArgChange} />
-					<div>
-						<button onClick={deleteHeader}>
-							<i className="fa-solid fa-circle-minus"></i>
-						</button>
-					</div>
-				</div>
-			})}
-		</div> : undefined}
-	</div>
-}
-
-function MultistageFieldTemplate({ field, updateField }: { field: FormTableMultistageFieldTemplate, updateField: UpdateMultistageFieldTemplateFunc }) {
-	const [stage, updateStage] = useImmer({} as Partial<FormTableFieldMultistageArg>)
+	const [stage, updateStage] = useImmer({} as Partial<FormTableFieldDropdownArg>)
 	
 	const addStage = (ev: MouseEvent) => {
 		ev.preventDefault()
@@ -208,10 +131,10 @@ function MultistageFieldTemplate({ field, updateField }: { field: FormTableMulti
 			return //TODO: error
 
 		updateField(field => {
-			if (!field.multistageArgs)
-				field.multistageArgs = []
+			if (!field.dropdownArgs)
+				field.dropdownArgs = []
 
-			field.multistageArgs.push(stage as FormTableFieldMultistageArg)
+			field.dropdownArgs.push(stage as FormTableFieldDropdownArg)
 		})
 
 		updateStage({})
@@ -225,45 +148,50 @@ function MultistageFieldTemplate({ field, updateField }: { field: FormTableMulti
 	}
 
 	const nextFieldType = stage.next?.[0].type // TODO: fix for stage.next being a slice
-	const setNextFieldType = (nextFieldType?: string): void => {
+	const setNextFieldType = (nextFieldType?: DropdownOption): void => {
 		updateStage(stage => {
+			if (!nextFieldType) {
+				stage.next = undefined
+				return
+			}
+				
 			stage.next = [{ // TODO: fix for stage.next being a slice
-				type: getFieldTypeFromSelection(nextFieldType)
+				type: nextFieldType.value as FormTableFieldType
 			}]
 		})
 	}
 
 	return <div className="container w-100 m-0">
-		{field.multistageArgs && field.multistageArgs.length > 0 ? <div className="w-100 container section">
-			{field.multistageArgs?.map((arg, argIdx) => {
-				const updateArg: UpdateMultistageArgTemplateFunc = (updater) => {
+		{field.dropdownArgs && field.dropdownArgs.length > 0 ? <div className="w-100 container section">
+			{field.dropdownArgs?.map((arg, argIdx) => {
+				const updateArg: UpdateDropdownArgTemplateFunc = (updater) => {
 					updateField(field => {
-						if (!field.multistageArgs)
+						if (!field.dropdownArgs)
 							return field
 
 						if (typeof updater !== 'function') {
-							field.multistageArgs[argIdx] = updater
+							field.dropdownArgs[argIdx] = updater
 							return
 						}
 
-						updater(field.multistageArgs[argIdx])
+						updater(field.dropdownArgs[argIdx])
 					})
 				}
 
 				const deleteArg = () => {
 					updateField(field => {
-						field.multistageArgs = field.multistageArgs?.filter((_, idx) => idx !== argIdx)
+						field.dropdownArgs = field.dropdownArgs?.filter((_, idx) => idx !== argIdx)
 					})
 				}
 
-				return <MultistageNextArgTemplate key={argIdx}
+				return <DropdownNextArgTemplate key={argIdx}
 					arg={arg} updateArg={updateArg} deleteArg={deleteArg}
 				/>
 			})}
 		</div> : undefined}
 		<div className="container container-horiz container-start w-100">
-			<label htmlFor="multistage-arg">Aggiungi opzione:</label>
-			<input type="text" name="multistage-arg" value={stage.value ?? ''} onChange={handleStageValueChange} />
+			<label htmlFor="dropdown-arg">Aggiungi opzione:</label>
+			<input type="text" name="dropdown-arg" value={stage.value ?? ''} onChange={handleStageValueChange} />
 			<Dropdown name="table-fields"
 				options={fieldTypeValues}
 				selectedField={nextFieldType} setSelectedField={setNextFieldType}
@@ -275,7 +203,7 @@ function MultistageFieldTemplate({ field, updateField }: { field: FormTableMulti
 	</div>
 }
 
-function MultistageNextArgTemplate({ arg, updateArg, deleteArg }: { arg: FormTableFieldMultistageArg, updateArg: UpdateMultistageArgTemplateFunc, deleteArg: () => void }) {
+function DropdownNextArgTemplate({ arg, updateArg, deleteArg }: { arg: FormTableFieldDropdownArg, updateArg: UpdateDropdownArgTemplateFunc, deleteArg: () => void }) {
 	const onArgChange = (ev: ChangeEvent<HTMLInputElement>): void => {
 		updateArg(arg => {
 			arg.value = ev.target.value
@@ -287,22 +215,30 @@ function MultistageNextArgTemplate({ arg, updateArg, deleteArg }: { arg: FormTab
 		boxSizing: 'content-box'
 	}
 
-	const deleteMultistageArg = (ev: MouseEvent) => {
+	const deleteDropdownArg = (ev: MouseEvent) => {
 		ev.preventDefault()
 		deleteArg()
 	}
 
-	const fieldType = arg.next[0].type // TODO: fix for stage.next being a slice
-	const setFieldType = (fieldType?: string): void => {
+	const fieldType = arg.next?.[0].type // TODO: fix for stage.next being a slice
+	const setFieldType = (fieldType?: DropdownOption): void => {
 		updateArg(arg => {
+			if (!fieldType) {
+				arg.next = undefined
+				return
+			}
+
 			arg.next = [{
-				type: getFieldTypeFromSelection(fieldType)
+				type: fieldType.value as FormTableFieldType
 			}] // TODO: fix for stage.next being a slice
 		})
 	}
 
 	const updateNextField: UpdateFieldTemplateFunc = (updater) => {
 		updateArg(arg => {
+			if (!arg.next)
+				return
+
 			if (typeof updater !== 'function') {
 				arg.next[0] = updater // TODO: fix for stage.next being a slice
 				return
@@ -312,9 +248,9 @@ function MultistageNextArgTemplate({ arg, updateArg, deleteArg }: { arg: FormTab
 		})
 	}
 
-	return <div className="container container-start w-100 m-0 multistage-arg">
+	return <div className="container container-start w-100 m-0 dropdown-arg">
 		<div className="w-100 arg-input">
-			<button className="delete-field" onClick={deleteMultistageArg}>
+			<button className="delete-field" onClick={deleteDropdownArg}>
 				<i className="fa-solid fa-trash"></i>
 			</button>
 			<label htmlFor="arg-value">Valore:</label>
@@ -325,25 +261,13 @@ function MultistageNextArgTemplate({ arg, updateArg, deleteArg }: { arg: FormTab
 				selectedField={fieldType} setSelectedField={setFieldType}
 			/>
 		</div>
-		<FieldTemplateArgs field={arg.next[0]} updateField={updateNextField} /> {/* TODO: fix for stage.next being a slice */}
+		{arg.next && <FieldTemplateArgs field={arg.next[0]} updateField={updateNextField} />} {/* TODO: fix for stage.next being a slice */}
 	</div>
 }
 
-export const fieldTypeValues = ['Vuoto', 'Testo', 'Numbero', 'Scelta multipla', 'Espansione']
-
-export function getFieldTypeFromSelection(selected?: string): FormTableFieldType {
-	switch (selected) {
-		case 'Vuoto':
-			return 'blank'
-		case 'Testo':
-			return 'text'
-		case 'Numbero':
-			return 'number'
-		case 'Scelta multipla':
-			return 'dropdown'
-		case 'Espansione':
-			return 'multistage'
-		default:
-			return 'blank'
-	}
-}
+export const fieldTypeValues: DropdownOption[] = [
+	{ value: 'blank', display: 'Vuoto' },
+	{ value: 'text', display: 'Testo' },
+	{ value: 'number', display: 'Numbero' },
+	{ value: 'dropdown', display: 'Scelta multipla' }
+]

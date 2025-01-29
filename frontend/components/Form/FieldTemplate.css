@@ -49,8 +49,7 @@
 
 .field-template .fixed-field,
 .field-template .dropdown-field,
-.field-template .multistage-field,
-.field-template .multistage-arg {
+.field-template .dropdown-arg {
 	gap: 0;
 }
 
