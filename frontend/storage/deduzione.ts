@@ -5,7 +5,7 @@ import { Bone } from "../models/Skeleton";
 import { DeductionElement } from "../models/Deduction";
 
 export const farekasAtlante: DeductionElement = {
-	key: 'farekas_atlante',
+	id: 'farekas_atlante',
 	fn: FarekasAtlante
 }
 
@@ -72,7 +72,7 @@ const metodoEtaPrenatale = {
 				{
 					type: 'deduction',
 					header: 'Età prenatale',
-					deductionID: 'farekas_atlante'
+					deductionID: farekasAtlante.id
 				} as FormTableDeductionFieldTemplate
 			]
 		},
