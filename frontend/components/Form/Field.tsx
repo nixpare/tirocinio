@@ -2,9 +2,10 @@ import './Field.css'
 
 import { ChangeEvent, useContext } from "react";
 import { Updater } from "use-immer";
-import { FormTableFieldData, FormTableFieldTemplate, formFieldIsBlank, formFieldIsText, formFieldDataIsText, formFieldIsNumber, formFieldDataIsNumber, formFieldIsDropdown, formFieldDataIsDropdown, FormTableDropdownFieldTemplate, FormTableDropdownFieldValue, FormTableDropdownFieldData } from "../../models/Form";
+import { FormTableFieldData, FormTableFieldTemplate, formFieldIsBlank, formFieldIsText, formFieldDataIsText, formFieldIsNumber, formFieldDataIsNumber, formFieldIsDropdown, formFieldDataIsDropdown, FormTableDropdownFieldTemplate, FormTableDropdownFieldValue, FormTableDropdownFieldData, formFieldIsDeduction } from "../../models/Form";
 import { Dropdown, DropdownOption } from "../UI/Dropdown";
-import { EditModeContext } from "./Form";
+import { EditModeContext, FormDataContext } from "./Form";
+import { deductionMap } from '../../models/Deduction';
 
 export type UpdateFieldFunc = Updater<FormTableFieldData>
 type UpdateDropdownFieldFunc = Updater<FormTableDropdownFieldData>
@@ -23,15 +24,21 @@ export function Field({ field, rowIdx, data, update }: {
 }) {
 	const editMode = useContext(EditModeContext)
 
+	const header = field.header ? <p className="field-header">{field.header}</p> : undefined
+
 	const fixedArg = field.fixedArgs?.[rowIdx]
 	if (fixedArg != undefined)
-		return <td>{fixedArg}</td>
-
-	const header = field.header ? <p className="field-header">{field.header}</p> : undefined
+		return <td>
+			{header}
+			{fixedArg}
+		</td>
 
 	switch (true) {
 		case formFieldIsBlank(field):
-			return <td></td>
+			console.log('ciao')
+			return <td>
+				{header}
+			</td>
 		case formFieldIsText(field):
 			const handleTextInput = (ev: ChangeEvent<HTMLInputElement>): void => {
 				update({
@@ -98,6 +105,23 @@ export function Field({ field, rowIdx, data, update }: {
 				data={data} update={updateDropdown}
 				disabled={!editMode} header={header}
 			/>
+		case formFieldIsDeduction(field):
+			let deductionResult: string
+			try {
+				const formData = useContext(FormDataContext)
+				if (!formData)
+					throw new Error('informazioni sul form corrente non trovate')
+
+				deductionResult = deductionMap[field.deductionID](formData, rowIdx)
+			} catch (e) {
+				console.error(e)
+				deductionResult = 'Errore nel calcolo'
+			}
+
+			return <td>
+				{header}
+				{deductionResult}
+			</td>
 	}
 }
 

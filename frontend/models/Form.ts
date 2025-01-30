@@ -1,3 +1,4 @@
+
 /**
  * AnatomStructTemplate contiene la rappresentazione delle informazioni
  * di una struttura anatomica, intese come "forma dei dati" senza contenere
@@ -60,26 +61,26 @@ export type FormTableFieldTemplate = {
 	/** presente quando l'input è del tipo `Fixed`, contiene la lista dei campi fissi indicizzata sulle righe */
 	fixedArgs?: string[]
 	/** se presente crea un pulsante che imposta a tutte le celle sottostanti il valore di default */
-	defaultValue?: FormTableFieldData
+	defaultValue?: FormTableFieldData & { display?: string }
 }
 
-/** AnatomStructInputMode contiene le varie tipologie di input supportate dalle proprietà */
-export type FormTableFieldType =
-	/** una cella vuota */
-	'blank' |
-	/** un semplice <input type="text" /> */
-	'text' |
-	/** un semplice <input type="number" /> */
-	'number' |
-	/**
-	 * un componente simile a un elemento <select> con varie <option>, dove ad ogni valore selezionabile dal
-	 * menu a tendina può corrispondere uno o più campi successivi della tabella.
-	 * Questo permette di espandere la tabella in base agli input selezionati in
-	 * precedenza. Un esempio è la creazione di due menu a tendina con varie opzioni,
-	 * in cui i valori selezionabili dal secondo menu dipendono da quale valore si
-	 * abbia selezionato nel primo
-	*/
-	'dropdown'
+/**
+ * AnatomStructInputMode contiene le varie tipologie di input supportate dalle proprietà:
+ * + `blank`: una cella vuota
+ * + `text`: un semplice <input type="text" />
+ * + `number`: un semplice <input type="number" />
+ * + `dropdown`: un componente simile a un elemento <select> con varie <option>, dove ad ogni valore selezionabile dal
+ *     menu a tendina può corrispondere uno o più campi successivi della tabella.
+ *     Questo permette di espandere la tabella in base agli input selezionati in
+ *     precedenza. Un esempio è la creazione di due menu a tendina con varie opzioni,
+ *     in cui i valori selezionabili dal secondo menu dipendono da quale valore si
+ *     abbia selezionato nel primo
+ * + `deduction`: un componente usato per la generazione di dati a partire da altri la cui unica proprietà fondamentale
+ *     è chiave (`string`) che mappa, attraverso `deductionMap`, a una funzione (`FormTableDeductionFunction`) che riceve come argomenti:
+ *     + `form`: i dati inseriti (`FormData`) presi dalla tabella
+ *     + `rowIdx`: l'indice della riga nella tabella, per poter fare calcoli diversi in base alla riga
+ */
+export type FormTableFieldType = 'blank' | 'text' | 'number' | 'dropdown' | 'deduction'
 
 export type FormTableBlankFieldTemplate = FormTableFieldTemplate & {
 	type: 'blank'
@@ -87,19 +88,23 @@ export type FormTableBlankFieldTemplate = FormTableFieldTemplate & {
 }
 export type FormTableTextFieldTemplate = FormTableFieldTemplate & {
 	type: 'text'
-	defaultValue?: FormTableTextFieldData
+	defaultValue?: FormTableTextFieldData & { display?: string }
 }
 export type FormTableNumberFieldTemplate = FormTableFieldTemplate & {
 	type: 'number'
-	defaultValue?: FormTableNumberFieldData
+	defaultValue?: FormTableNumberFieldData & { display?: string }
 	min?: number
 	max?: number
 }
 export type FormTableDropdownFieldTemplate = FormTableFieldTemplate & {
 	type: 'dropdown'
-	defaultValue?: FormTableDropdownFieldData
-	/** contiene la lista di valori possibili */
+	defaultValue?: FormTableDropdownFieldData & { display?: string }
 	dropdownArgs: FormTableFieldDropdownArg[]
+}
+export type FormTableDeductionFieldTemplate = FormTableFieldTemplate & {
+	type: 'deduction'
+	defaultValue: undefined
+	deductionID: string
 }
 
 export function formFieldIsBlank(f: FormTableFieldTemplate): f is FormTableBlankFieldTemplate {
@@ -113,6 +118,9 @@ export function formFieldIsNumber(f: FormTableFieldTemplate): f is FormTableNumb
 }
 export function formFieldIsDropdown(f: FormTableFieldTemplate): f is FormTableDropdownFieldTemplate {
 	return f.type == 'dropdown';
+}
+export function formFieldIsDeduction(f: FormTableFieldTemplate): f is FormTableDeductionFieldTemplate {
+	return f.type == 'deduction';
 }
 
 /** FormTableFieldDropdownArg rappresenta un'opzione di un campo Dropdown */
@@ -230,15 +238,14 @@ function calculateAdditionalCells(field: FormTableFieldTemplate, data?: FormTabl
 	if (selectedIndex == -1)
 		return 0
 
+	const nextLength = field.dropdownArgs[selectedIndex].next?.length ?? 0
+
 	// Dropdown non ha campi next con valore impostato, ma data.value c'è, quindi il numero delle celle
 	// in eccesso è pari al numero di campi next presenti in field
-	if (data.value.next == undefined) {
-		const nextLength = field.dropdownArgs[selectedIndex].next?.length ?? 0
+	if (data.value.next == undefined)
 		return nextLength
-	}
 
-	// TODO: indagare su questo valore "1 + ..."
-	return 1 + data.value.next.reduce<number>((prev, nextProp, nextPropIdx) => {
+	return nextLength + data.value.next.reduce<number>((prev, nextProp, nextPropIdx) => {
 		const nextField = field.dropdownArgs[selectedIndex].next?.[nextPropIdx]
 		if (!nextField)
 			return prev

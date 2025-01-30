@@ -7,6 +7,7 @@
 + [x] Aggiungere ai vari campi di scelta multipla una label separata dal value effettivo
 + [ ] Aggiungere template degli ossi
 + [ ] Implementare una tabella di deduzione (quella più grossa in femore)
+  + [x] Implementare una tabella di deduzione
 + [x] Vedere se eliminare la differenza tra dropdown e multistage -> dropdown = multistage senza next
 + [ ] Migliorare l'usabilità e lo stile dell'interfaccia in generale
 + [ ] Rifare la documentazione

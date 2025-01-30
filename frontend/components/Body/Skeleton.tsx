@@ -9,6 +9,7 @@ import { FullScreenOverlay } from '../UI/FullscreenOverlay'
 import { SetOverlayFunc } from '../../pages'
 import { useQuery } from '@tanstack/react-query'
 import { BodyData } from '../../models/Body'
+import { BodyDataContext } from './Body'
 
 type SkeletonProps = {
 	bodyName: string
@@ -65,9 +66,11 @@ export function Skeleton({ bodyName, setOverlay }: SkeletonProps) {
 		)
 
 	return (
-		<SkeletonView bodyName={bodyName}
-			skeleton={body.skeleton} bones={bones}
-			setOverlay={setOverlay} />
+		<BodyDataContext.Provider value={body}>
+			<SkeletonView bodyName={bodyName}
+				skeleton={body.skeleton} bones={bones}
+				setOverlay={setOverlay} />
+		</BodyDataContext.Provider>
 	)
 }
 

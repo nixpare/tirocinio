@@ -134,7 +134,7 @@ export function Table({ table, data, update, active, setActive, deleteCircle, hi
 								return emptyCells
 							})()}
 						</tr>
-						{nHasDefault >= 0 ? <tr>
+						{editTable && nHasDefault >= 0 ? <tr>
 							<th></th>
 							{table.fields.map((field, fieldIdx) => {
 								if (field.defaultValue == undefined)
@@ -159,7 +159,7 @@ export function Table({ table, data, update, active, setActive, deleteCircle, hi
 
 								return <th key={fieldIdx}>
 									<button onClick={setDefaultValue}>
-										Default value
+										{field.defaultValue.display ?? 'Valore di default'}
 									</button>
 								</th>
 							})}

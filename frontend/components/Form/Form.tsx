@@ -16,6 +16,7 @@ type HighlightImageCircleGenericFunc = (tableIdx: number, circleIdx: number, ima
 export type DeleteImageCircleFunc = (imageIdx: number, circleIdx: number) => void
 export type HighlightImageCircleFunc = (circleIdx: number, imageIdx?: number) => void
 
+export const FormDataContext = createContext<FormData | undefined>(undefined)
 export const EditModeContext = createContext(false)
 export const VerticalSplitContext = createContext(false)
 
@@ -63,7 +64,9 @@ export function Form({ data, updateData, initialSection }: {
 		}
 
 		return <VerticalSplitContext.Provider value={false} key={section.title}>
-			<FormSection section={section} data={data.sections?.[sectionIdx]} update={updateSection} />
+			<FormDataContext.Provider value={data}>
+				<FormSection section={section} data={data.sections?.[sectionIdx]} update={updateSection} />
+			</FormDataContext.Provider>
 		</VerticalSplitContext.Provider>
 	})
 

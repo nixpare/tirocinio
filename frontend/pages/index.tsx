@@ -2,9 +2,10 @@ import './index.css'
 
 import { StrictMode, useState } from 'react'
 import { createRoot } from 'react-dom/client'
-import { Skeleton } from '../components/Skeleton/Skeleton'
+import { Skeleton } from '../components/Body/Skeleton'
 import { FullScreenOverlay, FullscreenOverlayProps } from '../components/UI/FullscreenOverlay'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { loadDeductionFunctions } from '../models/Deduction'
 
 export type SetOverlayFunc = (overlay: React.ReactNode, overlayProps?: FullscreenOverlayProps) => void
 type OverlayContent = {
@@ -13,6 +14,7 @@ type OverlayContent = {
 }
 
 const queryClient = new QueryClient()
+loadDeductionFunctions()
 
 createRoot(document.getElementById('root')!).render(
     <StrictMode>

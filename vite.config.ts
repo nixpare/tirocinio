@@ -14,6 +14,7 @@ export default defineConfig({
       input: [
         resolve(__dirname, 'frontend/index.html'),
         resolve(__dirname, 'frontend/femore.html'),
+        resolve(__dirname, 'frontend/deduzione.html'),
         resolve(__dirname, 'frontend/template.html')
       ]
     }
