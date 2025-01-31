@@ -2,7 +2,7 @@ import "./TableTemplate.css"
 
 import { ChangeEvent, FormEvent, MouseEvent, useState } from "react"
 import { Updater, useImmer } from 'use-immer'
-import { FormSectionTemplate, FormSectionData, FormTableTemplate, FormTableFieldTemplate, FormTableFieldType } from "../../models/Form"
+import { FormSectionTemplate, FormSectionData, FormTableTemplate, FormTableFieldType } from "../../models/Form"
 import { FieldTemplate, fieldTypeValues, UpdateFieldTemplateFunc } from "./FieldTemplate"
 import { EditModeContext, FormSection, VerticalSplitContext } from "./Form"
 import { Dropdown, DropdownOption } from "../UI/Dropdown"
@@ -47,32 +47,30 @@ export function TableTemplate() {
 		})
 	}
 
-	return <div className="container table-template">
-		<div className="split">
-			<form onSubmit={saveTable}>
-				<div className="w-100 container container-horiz container-start section">
-					<h4>Opzioni Tabella:</h4>
-					<div className="container container-horiz">
-						<label htmlFor="isVariadic">Variabile:</label>
-						<input type="checkbox" name="isVariadic" checked={table.isVariadic ?? false} onChange={toggleVariadicTable} />
-					</div>
-					<div className="container container-horiz">
-						<label htmlFor="isVariadic">Interattiva:</label>
-						<input type="checkbox" name="interactsWithImage" checked={table.interactsWithImage ?? false} onChange={toggleImageIteractiveTable} />
-					</div>
+	return <div className="container container-horiz table-template">
+		<form onSubmit={saveTable}>
+			<div className="w-100 container container-horiz container-start section">
+				<h4>Opzioni Tabella:</h4>
+				<div className="container container-horiz">
+					<label htmlFor="isVariadic">Variabile:</label>
+					<input type="checkbox" name="isVariadic" checked={table.isVariadic ?? false} onChange={toggleVariadicTable} />
 				</div>
-				<TableTemplateHeaders
-					table={table} updateTable={updateTable}
-					header={header} addHeader={addHeader} onNewHeaderChange={onHeaderChange}
-				/>
-				<TableTemplateFields table={table} updateTable={updateTable} />
-				<button type="submit">Salva Tabella</button>
-			</form>
-			<div className="fake-table">
-				<VerticalSplitContext.Provider value={true}>
-					<FakePage table={table} />
-				</VerticalSplitContext.Provider>
+				<div className="container container-horiz">
+					<label htmlFor="isVariadic">Interattiva:</label>
+					<input type="checkbox" name="interactsWithImage" checked={table.interactsWithImage ?? false} onChange={toggleImageIteractiveTable} />
+				</div>
 			</div>
+			<TableTemplateHeaders
+				table={table} updateTable={updateTable}
+				header={header} addHeader={addHeader} onNewHeaderChange={onHeaderChange}
+			/>
+			<TableTemplateFields table={table} updateTable={updateTable} />
+			<button type="submit">Salva Tabella</button>
+		</form>
+		<div className="fake-table">
+			<VerticalSplitContext.Provider value={true}>
+				<FakePage table={table} />
+			</VerticalSplitContext.Provider>
 		</div>
 	</div>
 }
@@ -127,24 +125,15 @@ function TableTemplateHeaders({ table, updateTable, header, addHeader, onNewHead
 }
 
 function TableTemplateFields({ table, updateTable }: { table: FormTableTemplate, updateTable: UpdateTableTemplateFunc }) {
-	const [field, updateField] = useImmer({} as FormTableFieldTemplate)
-
-	const setFieldType = (fieldType?: DropdownOption) => {
+	const addField = (fieldType?: DropdownOption) => {
 		if (!fieldType)
 			return
 
-		updateField({
-			type: fieldType.value as FormTableFieldType
-		})
-	}
-
-	const addField = (ev: MouseEvent) => {
-		ev.preventDefault()
-
 		updateTable(table => {
-			table.fields.push(field)
+			table.fields.push({
+				type: fieldType.value as FormTableFieldType
+			})
 		})
-		setFieldType(undefined)
 	}
 
 	return <div className="container container-start section">
@@ -174,11 +163,8 @@ function TableTemplateFields({ table, updateTable }: { table: FormTableTemplate,
 			<div>
 				<Dropdown name="table-fields"
 					options={fieldTypeValues}
-					selectedField={field.type} setSelectedField={setFieldType}
+					selectedField={'Campo'} setSelectedField={addField}
 				/>
-				<button className="add-field" onClick={addField}>
-					<i className="fa-solid fa-circle-plus"></i>
-				</button>
 			</div>
 		</div>
 	</div>

@@ -1,7 +1,7 @@
 import "./FieldTemplate.css"
 
 import { ChangeEvent, MouseEvent, useState } from 'react'
-import { Updater, useImmer } from "use-immer"
+import { Updater } from "use-immer"
 import { formFieldIsBlank, formFieldIsDropdown, formFieldIsNumber, formFieldIsText, FormTableDropdownFieldTemplate, FormTableFieldDropdownArg, FormTableFieldTemplate, FormTableFieldType } from "../../models/Form"
 import { Dropdown, DropdownOption } from "../UI/Dropdown"
 
@@ -10,10 +10,16 @@ export type UpdateDropdownFieldTemplateFunc = Updater<FormTableDropdownFieldTemp
 type UpdateDropdownArgTemplateFunc = Updater<FormTableFieldDropdownArg>
 
 export function FieldTemplate({ field, updateField, deleteField }: { field: FormTableFieldTemplate, updateField: UpdateFieldTemplateFunc, deleteField: () => void }) {
+	const [fieldDisplay, setFieldDisplay] = useState(fieldDisplayFromType(field.type))
+	
 	const setSelectedField = (selected?: DropdownOption) => {
+		if (!selected)
+			return
+
 		updateField(field => {
-			field.type = selected?.value as FormTableFieldType
+			field.type = selected.value as FormTableFieldType
 		})
+		setFieldDisplay(selected.display)
 	}
 
 	const handleDeleteField = (ev: MouseEvent): void => {
@@ -27,7 +33,7 @@ export function FieldTemplate({ field, updateField, deleteField }: { field: Form
 		</button>
 		<Dropdown name="table-fields"
 			options={fieldTypeValues}
-			selectedField={field.type} setSelectedField={setSelectedField}
+			selectedField={fieldDisplay} setSelectedField={setSelectedField}
 		/>
 		<FieldTemplateArgs field={field} updateField={updateField} />
 	</div>
@@ -80,7 +86,7 @@ function FixedFieldTemplate({ field, updateField }: { field: FormTableFieldTempl
 				</button>
 			</div>
 		</div>
-		{field.fixedArgs && field.fixedArgs.length > 0 ? <div className="container container-horiz container-start w-100 m-0">
+		{field.fixedArgs && field.fixedArgs.length > 0 ? <div className="container container-horiz container-start w-100 pt-0">
 			{field.fixedArgs?.map((arg, argIdx) => {
 				const onArgChange = (ev: ChangeEvent<HTMLInputElement>): void => {
 					updateField(field => {
@@ -120,49 +126,35 @@ function FixedFieldTemplate({ field, updateField }: { field: FormTableFieldTempl
 }
 
 function DropdownFieldTemplate({ field, updateField }: { field: FormTableDropdownFieldTemplate, updateField: UpdateDropdownFieldTemplateFunc }) {
-	const [stage, updateStage] = useImmer({} as Partial<FormTableFieldDropdownArg>)
+	const [option, setOption] = useState({} as Partial<FormTableFieldDropdownArg>)
 	
-	const addStage = (ev: MouseEvent) => {
+	const addOption = (ev: MouseEvent) => {
 		ev.preventDefault()
 
-		if (stage.next == undefined)
-			return //TODO: error
-		if (stage.value == undefined)
-			return //TODO: error
+		if (option.value == undefined)
+			return
+		if (option.display == undefined)
+			return
 
 		updateField(field => {
 			if (!field.dropdownArgs)
 				field.dropdownArgs = []
 
-			field.dropdownArgs.push(stage as FormTableFieldDropdownArg)
+			field.dropdownArgs.push(option as FormTableFieldDropdownArg)
 		})
 
-		updateStage({})
-		setNextFieldType(undefined)
+		setOption({})
 	}
 
-	const handleStageValueChange = (ev: ChangeEvent<HTMLInputElement>) => {
-		updateStage(stage => {
-			stage.value = ev.target.value
-		})
-	}
-
-	const nextFieldType = stage.next?.[0].type // TODO: fix for stage.next being a slice
-	const setNextFieldType = (nextFieldType?: DropdownOption): void => {
-		updateStage(stage => {
-			if (!nextFieldType) {
-				stage.next = undefined
-				return
-			}
-				
-			stage.next = [{ // TODO: fix for stage.next being a slice
-				type: nextFieldType.value as FormTableFieldType
-			}]
+	const handleOptionValueChange = (ev: ChangeEvent<HTMLInputElement>) => {
+		setOption({
+			value: ev.target.value,
+			display: ev.target.value
 		})
 	}
 
-	return <div className="container w-100 m-0">
-		{field.dropdownArgs && field.dropdownArgs.length > 0 ? <div className="w-100 container section">
+	return <div className="container w-100 m-0 pw-0 gap-0">
+		{field.dropdownArgs && field.dropdownArgs.length > 0 ? <div className="w-100 container mb-0 section">
 			{field.dropdownArgs?.map((arg, argIdx) => {
 				const updateArg: UpdateDropdownArgTemplateFunc = (updater) => {
 					updateField(field => {
@@ -184,29 +176,30 @@ function DropdownFieldTemplate({ field, updateField }: { field: FormTableDropdow
 					})
 				}
 
-				return <DropdownNextArgTemplate key={argIdx}
+				return <DropdownArgTemplate key={argIdx}
 					arg={arg} updateArg={updateArg} deleteArg={deleteArg}
 				/>
 			})}
 		</div> : undefined}
 		<div className="container container-horiz container-start w-100">
 			<label htmlFor="dropdown-arg">Aggiungi opzione:</label>
-			<input type="text" name="dropdown-arg" value={stage.value ?? ''} onChange={handleStageValueChange} />
-			<Dropdown name="table-fields"
-				options={fieldTypeValues}
-				selectedField={nextFieldType} setSelectedField={setNextFieldType}
-			/>
-			<button className="add-arg" onClick={addStage}>
+			<input type="text" name="dropdown-arg" value={option.value ?? ''} onChange={handleOptionValueChange} />
+			<button className="add-arg" onClick={addOption}>
 				<i className="fa-solid fa-circle-plus"></i>
 			</button>
 		</div>
 	</div>
 }
 
-function DropdownNextArgTemplate({ arg, updateArg, deleteArg }: { arg: FormTableFieldDropdownArg, updateArg: UpdateDropdownArgTemplateFunc, deleteArg: () => void }) {
-	const onArgChange = (ev: ChangeEvent<HTMLInputElement>): void => {
+function DropdownArgTemplate({ arg, updateArg, deleteArg }: { arg: FormTableFieldDropdownArg, updateArg: UpdateDropdownArgTemplateFunc, deleteArg: () => void }) {
+	const onArgValueChange = (ev: ChangeEvent<HTMLInputElement>): void => {
 		updateArg(arg => {
 			arg.value = ev.target.value
+		})
+	}
+	const onArgDisplayChange = (ev: ChangeEvent<HTMLInputElement>): void => {
+		updateArg(arg => {
+			arg.display = ev.target.value
 		})
 	}
 
@@ -220,31 +213,17 @@ function DropdownNextArgTemplate({ arg, updateArg, deleteArg }: { arg: FormTable
 		deleteArg()
 	}
 
-	const fieldType = arg.next?.[0].type // TODO: fix for stage.next being a slice
-	const setFieldType = (fieldType?: DropdownOption): void => {
-		updateArg(arg => {
-			if (!fieldType) {
-				arg.next = undefined
-				return
-			}
+	const addNextField = (fieldType?: DropdownOption) => {
+		if (!fieldType)
+			return
 
-			arg.next = [{
+		updateArg(arg => {
+			if (arg.next == undefined)
+				arg.next = []
+
+			arg.next.push({
 				type: fieldType.value as FormTableFieldType
-			}] // TODO: fix for stage.next being a slice
-		})
-	}
-
-	const updateNextField: UpdateFieldTemplateFunc = (updater) => {
-		updateArg(arg => {
-			if (!arg.next)
-				return
-
-			if (typeof updater !== 'function') {
-				arg.next[0] = updater // TODO: fix for stage.next being a slice
-				return
-			}
-
-			updater(arg.next[0]) // TODO: fix for stage.next being a slice
+			})
 		})
 	}
 
@@ -254,14 +233,45 @@ function DropdownNextArgTemplate({ arg, updateArg, deleteArg }: { arg: FormTable
 				<i className="fa-solid fa-trash"></i>
 			</button>
 			<label htmlFor="arg-value">Valore:</label>
-			<input type="text" name="arg-value" style={inputStyle} value={arg.value} onChange={onArgChange} />
-			<label htmlFor="arg-value">Campo:</label>
-			<Dropdown name="table-fields"
-				options={fieldTypeValues}
-				selectedField={fieldType} setSelectedField={setFieldType}
-			/>
+			<input type="text" name="arg-value" style={inputStyle} value={arg.value} onChange={onArgValueChange} />
+			<label htmlFor="arg-value">Etichetta:</label>
+			<input type="text" name="arg-value" style={inputStyle} value={arg.display} onChange={onArgDisplayChange} />
 		</div>
-		{arg.next && <FieldTemplateArgs field={arg.next[0]} updateField={updateNextField} />} {/* TODO: fix for stage.next being a slice */}
+		{arg.next?.map((field, fieldIdx) => {
+			const updateField: UpdateFieldTemplateFunc = (updater) => {
+				updateArg(arg => {
+					if (arg.next == undefined)
+						return
+
+					if (typeof updater !== 'function') {
+						arg.next[fieldIdx] = updater
+						return
+					}
+
+					updater(arg.next[fieldIdx])
+				})
+			}
+
+			const deleteField = () => {
+				updateArg(arg => {
+					if (arg.next == undefined)
+						return
+
+					arg.next = arg.next.filter((_, idx) => idx !== fieldIdx)
+				})
+			}
+
+			return <FieldTemplate key={fieldIdx} field={field} updateField={updateField} deleteField={deleteField} />
+		})}
+		<div className="container container-horiz container-start">
+			<label htmlFor="table-fields">Aggiungi campo:</label>
+			<div>
+				<Dropdown name="table-fields"
+					options={fieldTypeValues}
+					selectedField={'Prossimo'} setSelectedField={addNextField}
+				/>
+			</div>
+		</div>
 	</div>
 }
 
@@ -271,3 +281,12 @@ export const fieldTypeValues: DropdownOption[] = [
 	{ value: 'number', display: 'Numbero' },
 	{ value: 'dropdown', display: 'Scelta multipla' }
 ]
+
+function fieldDisplayFromType(typ: FormTableFieldType): string | undefined {
+	return fieldTypeValues.reduce<string | undefined>((prev, curr) => {
+		if (prev)
+			return prev
+
+		return curr.value == typ ? curr.display : undefined
+	}, undefined)
+}

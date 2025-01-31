@@ -48,9 +48,9 @@
 }
 
 .field-template .fixed-field,
-.field-template .dropdown-field,
 .field-template .dropdown-arg {
 	gap: 0;
+	padding: 0;
 }
 
 .field-template .arg-input>label {

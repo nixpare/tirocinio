@@ -4,6 +4,10 @@
 	border-radius: .4em;
 }
 
+.table-template>form {
+	min-width: min(800px, 90vw);
+}
+
 .table-template .header-input {
 	position: relative;
 }
@@ -24,8 +28,7 @@
 }
 
 .table-template .add-header,
-.table-template .header-input>div>button,
-.table-template .add-field {
+.table-template .header-input>div>button {
 	background-color: transparent;
 	padding: 1px;
 	border-width: 2px;
@@ -33,25 +36,22 @@
 }
 
 .table-template .add-header>i,
-.table-template .header-input>div>button>i,
-.table-template .add-field>i {
+.table-template .header-input>div>button>i {
 	display: block;
 }
 
-.table-template .add-header,
-.table-template .add-field {
+.table-template .add-header {
 	margin-left: .4em;
 }
 
-.table-template .add-header:not(:disabled):hover,
-.table-template .add-field:not(:disabled):hover {
+.table-template .add-header:not(:disabled):hover {
 	border-color: #e0e0e0;
 }
 
 .table-template .section {
 	background-color: rgba(var(--primary-color), .2);
 	padding: .8em;
-	margin: .5em;
+	margin: .5em 0;
 	gap : 0;
 	border-radius: .4em;
 	width: 100%;
