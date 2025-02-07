@@ -3,4 +3,33 @@
 	border-radius: .2em;
 	margin-bottom: .2em;
 	padding: 0 .4em;
+	text-align: center;
+}
+
+.multi-select {
+	padding: 1em;
+	background-color: rgba(var(--primary-color), .1);
+	border-radius: .2em;
+	margin-top: .6em;
+}
+.multi-select:not(:has(>*)) {
+	display: none;
+}
+
+.multi-select .multi-select-arg {
+	justify-content: start;
+	background-color: rgba(var(--primary-color), .1);
+	margin: .5em;
+}
+
+.multi-select .arg-display {
+	background-color: rgba(var(--primary-color), .4);
+	padding: .4em .5em;
+	border-radius: .2em;
+}
+
+.multi-select .multi-select-arg .next-fields {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 1em;
 }

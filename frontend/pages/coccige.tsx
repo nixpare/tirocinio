@@ -1,14 +1,14 @@
-import './deduzione.css'
+import './coccige.css'
 
 import { StrictMode } from 'react'
 import { useImmer } from 'use-immer'
 import { createRoot } from 'react-dom/client'
 import { Form, EditModeContext } from '../components/Form/Form'
 import { FormData } from '../models/Form'
-import { deduzioneBone } from '../storage/deduzione'
+import { coccige } from '../storage/coccige'
+import { loadDeductionFunctions } from '../models/Deduction'
 import { BodyDataContext } from '../components/Body/Body'
 import { testBody } from '../storage/body'
-import { loadDeductionFunctions } from '../models/Deduction'
 
 loadDeductionFunctions()
 
@@ -19,8 +19,8 @@ createRoot(document.getElementById('root')!).render(
 )
 
 const boneState: FormData = {
-    name: deduzioneBone.name,
-    template: deduzioneBone.template
+    name: coccige.name,
+    template: coccige.template
 }
 
 function App() {

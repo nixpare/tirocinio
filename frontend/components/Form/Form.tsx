@@ -1,20 +1,13 @@
 import './Form.css'
 
-import { createContext, MouseEvent, useContext, useState } from 'react'
+import { createContext, useContext, useState } from 'react'
 import { Updater } from 'use-immer'
-import { FormSectionTemplate, FormData, FormSectionData, FormTableRowSpecial, FormTableImageFieldData } from '../../models/Form'
-import { Table, UpdateTableFunc } from './Table'
+import { FormSectionTemplate, FormData, FormSectionData, FormSectionStarterData } from '../../models/Form'
+import { Field, UpdateFieldFunc } from './Field'
 import { Carousel } from '../UI/Carousel'
 
 export type UpdateFormFunc = Updater<FormData>
 export type UpdateSectionFunc = Updater<FormSectionData>
-
-type CreateImageCircleGenericFunc = (tableIdx: number, imageIdx: number, circleIdx: number, x: number, y: number) => void
-type DeleteImageCircleGenericFunc = (tableIdx: number, imageIdx: number, circleIdx: number) => void
-type HighlightImageCircleGenericFunc = (tableIdx: number, circleIdx: number, imageIdx?: number) => void
-
-export type DeleteImageCircleFunc = (imageIdx: number, circleIdx: number) => void
-export type HighlightImageCircleFunc = (circleIdx: number, imageIdx?: number) => void
 
 export const FormDataContext = createContext<FormData | undefined>(undefined)
 export const EditModeContext = createContext(false)
@@ -57,7 +50,7 @@ export function Form({ data, updateData, initialSection }: {
 				}
 
 				if (!formData.sections[sectionIdx])
-					formData.sections[sectionIdx] = []
+					formData.sections[sectionIdx] = {}
 
 				updater(formData.sections[sectionIdx])
 			})
@@ -95,9 +88,6 @@ export function Form({ data, updateData, initialSection }: {
 	);
 }
 
-type FormSectionImageCircle = (((({ x: number, y: number } | undefined)[]) | undefined)[] | undefined)[] | undefined
-type FormSectionActiveImageCircle = boolean[][][]
-
 /**
  * PropertyPage rappresenta una pagina di opzioni per la struttura anatomica, la quale contiene, eventualmente, una o più immagini
  * relative alle opzioni della pagina e una o più sezioni (ogni sezione coincide con una tabella di opzioni).
@@ -111,120 +101,40 @@ export function FormSection({ section, data, update }: {
 	section: FormSectionTemplate, data: FormSectionData,
 	update: UpdateSectionFunc
 }) {
-	const [activeTable, setActiveTable] = useState(0)
-	const [activeImage, setActiveImage] = useState(0)
-	const [activeCircles, setActiveCircles] = useState([] as FormSectionActiveImageCircle)
 	const verticalSplit = useContext(VerticalSplitContext)
 
-	const circles: FormSectionImageCircle = data?.map((table, tableIdx) => {
-		if (!section.tables[tableIdx].interactsWithImage)
-			return undefined
-
-		return section.image?.map((_, imageIdx) => {
-			return table?.map(row => {
-				const circle = row?.[FormTableRowSpecial.CircleInfo] as FormTableImageFieldData | undefined
-				if (circle == undefined || circle.value == undefined)
-					return undefined
-
-				if (circle.value.imageIdx !== imageIdx)
-					return undefined
-
-				return { x: circle.value.x, y: circle.value.y }
-			})
-		})
-	})
-
-	const createCircleGeneric: CreateImageCircleGenericFunc = (tableIdx, imageIdx, circleIdx, x, y) => {
-		update(sectionData => {
-			if (!sectionData)
-				throw new Error('updating state of non-existing form section data')
-
-			if (!sectionData[tableIdx])
-				sectionData[tableIdx] = []
-
-			sectionData[tableIdx][circleIdx] = {
-				[FormTableRowSpecial.CircleInfo]: {
-					type: 'image',
-					value: {
-						imageIdx: imageIdx,
-						x: x,
-						y: y
-					}
-				}
-			}
-		})
-	}
-
-	const deleteCircleGeneric: DeleteImageCircleGenericFunc = (tableIdx, imageIdx, circleIdx) => {
-		update(sectionData => {
-			if (!sectionData)
-				throw new Error('updating state of non-existing form section data')
-
-			if (!sectionData[tableIdx] || !sectionData[tableIdx][imageIdx] || !sectionData[tableIdx][imageIdx][circleIdx])
-				return
-
-			delete sectionData[tableIdx][imageIdx][circleIdx]
-		})
-	}
-
-	const highlightCircleGeneric: HighlightImageCircleGenericFunc = (tableIdx, circleIdx, imageIdx) => {
-		if (!circles || imageIdx == undefined || !circles[tableIdx] || !circles[tableIdx][imageIdx] || !circles[tableIdx][imageIdx][circleIdx]) {
-			setActiveCircles([])
-			return
-		}
-
-		let newActiveCircles: FormSectionActiveImageCircle = []
-		newActiveCircles[tableIdx] = []
-		newActiveCircles[tableIdx][imageIdx] = []
-		newActiveCircles[tableIdx][imageIdx][circleIdx] = true
-
-		setActiveCircles(newActiveCircles)
-		setActiveImage(imageIdx)
-	}
-
-	const tables = section.tables.map((table, tableIdx) => {
+	const starters = section.starters.map((starter) => {
 		// updateSection è la funzione di produzione sullo stato per la sezione specifica della pagina
-		const updateTable: UpdateTableFunc = (updater) => {
+		const updateStarter: UpdateFieldFunc = (updater) => {
 			update(sectionData => {
 				if (!sectionData)
 					throw new Error('updating state of non-existing form section data')
 
 				if (typeof updater !== 'function') {
-					sectionData[tableIdx] = updater
+					sectionData[starter.starterID] = updater as FormSectionStarterData
 					return
 				}
 
-				if (!sectionData[tableIdx]) {
-					sectionData[tableIdx] = []
+				if (!sectionData[starter.starterID]) {
+					sectionData[starter.starterID] = {
+						type: starter.type
+					} as FormSectionStarterData
 				}
 
-				updater(sectionData[tableIdx])
+				updater(sectionData[starter.starterID])
 			})
 		}
 
-		const setActive = () => {
-			setActiveTable(tableIdx)
-		}
-
-		const deleteCircle: DeleteImageCircleFunc = (imageIdx, circleIdx) => {
-			deleteCircleGeneric(tableIdx, imageIdx, circleIdx)
-		}
-
-		const highlightCircle: HighlightImageCircleFunc = (circleIdx, imageIdx) => {
-			highlightCircleGeneric(tableIdx, circleIdx, imageIdx)
-		}
-
-		return <Table key={`${section.title}-${tableIdx}`}
-			table={table} data={data?.[tableIdx]} update={updateTable}
-			active={activeTable === tableIdx} setActive={setActive}
-			deleteCircle={deleteCircle} highlightCircle={highlightCircle}
+		return <Field key={`${section.title}-${starter.starterID}`}
+			field={starter}
+			data={data?.[starter.starterID]} update={updateStarter}
 		/>
 	})
 
 	if (!section.image) {
 		return <div className="container form-section">
 			<h3>{section.title}</h3>
-			{tables}
+			{starters}
 		</div>
 	}
 
@@ -234,69 +144,19 @@ export function FormSection({ section, data, update }: {
 		<h3>{section.title}</h3>
 		<div className={splitClassName}>
 			<div className="container">
-				{tables}
+				{starters}
 			</div>
 			<div className="container">
 				<div className="images">
-					<Carousel visibleState={{ visible: activeImage, setVisible: setActiveImage }} >
-						{section.image?.map((image, imageIdx) => {
-							return <FormSectionImage key={`${section.title}-${imageIdx}`}
-								image={image} idx={imageIdx}
-								section={section} sectionData={data} activeTable={activeTable}
-								circles={circles} activeCircles={activeCircles} createCircleGeneric={createCircleGeneric}
-							/>
+					<Carousel>
+						{section.image?.map((image) => {
+							return <div className="image">
+								<img src={image} alt={section.title} />
+							</div>
 						})}
 					</Carousel>
 				</div>
 			</div>
 		</div>
-	</div>
-}
-
-function FormSectionImage({ image, idx, section, sectionData, activeTable, circles, activeCircles, createCircleGeneric }: {
-	image: string, idx: number
-	section: FormSectionTemplate, sectionData: FormSectionData, activeTable: number,
-	circles: FormSectionImageCircle, activeCircles: boolean[][][], createCircleGeneric: CreateImageCircleGenericFunc
-}) {
-	const editMode = useContext(EditModeContext)
-
-	const handleImageClick = (ev: MouseEvent<HTMLImageElement, PointerEvent>): void => {
-		ev.preventDefault();
-
-		if (!editMode)
-			return
-
-		if (!section.tables[activeTable].interactsWithImage)
-			return
-
-		const img = ev.nativeEvent.target as HTMLImageElement
-		const imageLeft = Math.round(ev.nativeEvent.offsetX / img.offsetWidth * 100)
-		const imageTop = Math.round(ev.nativeEvent.offsetY / img.offsetHeight * 100)
-
-		const rowIdx = sectionData?.[activeTable]?.length || 0
-
-		createCircleGeneric(activeTable, idx, rowIdx, imageLeft, imageTop)
-	}
-
-	return <div className="image">
-		<img
-			src={image}
-			alt={section.title}
-			onClick={handleImageClick}
-		/>
-		{circles?.map((imageCircles, tableIdx) => {
-			return imageCircles?.[idx]?.map((circle, circleIdx) => {
-				if (!circle)
-					return undefined
-
-				const activeClassName = activeCircles[tableIdx]?.[idx]?.[circleIdx] ? ' active' : ''
-				const className = 'image-circle' + activeClassName
-
-				return <div key={`${tableIdx}-${idx}-${circleIdx}`} className={className} style={{
-					left: `${circle.x}%`,
-					top: `${circle.y}%`,
-				}}></div>
-			})
-		})}
 	</div>
 }

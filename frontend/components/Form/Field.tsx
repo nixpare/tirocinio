@@ -1,45 +1,32 @@
 import './Field.css'
 
-import { ChangeEvent, useContext } from "react";
+import { ChangeEvent, useContext, useState } from "react";
 import { Updater } from "use-immer";
-import { FormTableFieldData, FormTableFieldTemplate, formFieldIsBlank, formFieldIsText, formFieldDataIsText, formFieldIsNumber, formFieldDataIsNumber, formFieldIsDropdown, formFieldDataIsDropdown, FormTableDropdownFieldTemplate, FormTableDropdownFieldValue, FormTableDropdownFieldData, formFieldIsDeduction } from "../../models/Form";
+import Select, { ActionMeta, MultiValue, StylesConfig } from 'react-select'
+import { FormFieldData, FormFieldTemplate, formFieldIsBlank, formFieldIsText, formFieldDataIsText, formFieldIsNumber, formFieldDataIsNumber, formFieldIsSelect, formFieldDataIsSelect, FormSelectFieldTemplate, FormSelectFieldValue, FormSelectFieldData, formFieldIsDeduction, formFieldIsMultiSelect, FormMultiSelectFieldData, FormMultiSelectFieldTemplate, formFieldDataIsMultiSelect, FormFieldSelectArg } from "../../models/Form";
 import { Dropdown, DropdownOption } from "../UI/Dropdown";
 import { EditModeContext, FormDataContext } from "./Form";
 import { deductionMap } from '../../models/Deduction';
 
-export type UpdateFieldFunc = Updater<FormTableFieldData>
-type UpdateDropdownFieldFunc = Updater<FormTableDropdownFieldData>
+export type UpdateFieldFunc = Updater<FormFieldData>
+type UpdateSelectFieldFunc = Updater<FormSelectFieldData>
+type UpdateMultiSelectFieldFunc = Updater<FormMultiSelectFieldData>
 
-/**
- * Property rappresenta un'opzione della tabella. In base al valore `mode` in `template` il componente genera l'input sottostante
- * corretto.
- * @param template attributo derivato dallo stato globale
- * @param state (opzionale) attributo derivato dallo stato globale
- * @param update funzione di produzione per informare lo stato globale dei cambiamenti
- * @return ReactNode
- */
-export function Field({ field, rowIdx, data, update }: {
-	field: FormTableFieldTemplate, rowIdx: number,
-	data?: FormTableFieldData, update: UpdateFieldFunc
+export function Field({ field, data, update }: {
+	field: FormFieldTemplate,
+	data?: FormFieldData, update: UpdateFieldFunc
 }) {
 	const editMode = useContext(EditModeContext)
 
-	const header = field.header ? <p className="field-header">{field.header}</p> : undefined
-
-	const fixedArg = field.fixedArgs?.[rowIdx]
-	if (fixedArg != undefined)
-		return <td>
-			{header}
-			{fixedArg}
-		</td>
-
 	switch (true) {
 		case formFieldIsBlank(field):
-			console.log('ciao')
-			return <td>
-				{header}
-			</td>
+			return <div>
+				<p className="field-header">{field.header}</p>
+			</div>
 		case formFieldIsText(field):
+			if (data != undefined && !formFieldDataIsText(data))
+				data = undefined
+
 			const handleTextInput = (ev: ChangeEvent<HTMLInputElement>): void => {
 				update({
 					type: 'text',
@@ -47,25 +34,14 @@ export function Field({ field, rowIdx, data, update }: {
 				})
 			}
 
-			if (data != undefined && !formFieldDataIsText(data))
-				data = undefined
-
-			return <td>
-				{header}
+			return <div>
+				<p className="field-header">{field.header}</p>
 				<input type="text"
 					value={data?.value ?? ''}
 					onChange={handleTextInput} disabled={!editMode}
 				/>
-			</td>
+			</div>
 		case formFieldIsNumber(field):
-			const handleNumberInput = (ev: ChangeEvent<HTMLInputElement>): void => {
-				const n = Number(ev.target.value)
-				update({
-					type: 'number',
-					value: Number.isNaN(n) ? 0 : n
-				})
-			}
-
 			if (data != undefined && !formFieldDataIsNumber(data))
 				data = undefined
 
@@ -78,32 +54,38 @@ export function Field({ field, rowIdx, data, update }: {
 				className = 'invalid'
 			}
 
-			return <td>
-				{header}
+			const handleNumberInput = (ev: ChangeEvent<HTMLInputElement>): void => {
+				const n = Number(ev.target.value)
+				update({
+					type: 'number',
+					value: Number.isNaN(n) ? 0 : n
+				})
+			}
+
+			return <div>
+				<p className="field-header">{field.header}</p>
 				<input type="number" className={className}
 					value={(data?.value ?? 0).toString()}
 					onChange={handleNumberInput} disabled={!editMode}
 				/>
-			</td>
-		case formFieldIsDropdown(field):
-			const updateDropdown: UpdateDropdownFieldFunc = (updater) => {
-				if (typeof updater !== 'function') {
-					update(updater)
-					return
-				}
-
-				update(fieldData => {
-					updater(fieldData as FormTableDropdownFieldData)
-				})
-			}
-
-			if (data != undefined && !formFieldDataIsDropdown(data))
+			</div>
+		case formFieldIsSelect(field):
+			if (data != undefined && !formFieldDataIsSelect(data))
 				data = undefined
 
-			return <DropdownField
-				field={field} rowIdx={rowIdx}
-				data={data} update={updateDropdown}
-				disabled={!editMode} header={header}
+			return <SelectField
+				field={field}
+				data={data} update={update as UpdateSelectFieldFunc}
+				disabled={!editMode}
+			/>
+		case formFieldIsMultiSelect(field):
+			if (data != undefined && !formFieldDataIsMultiSelect(data))
+				data = undefined
+
+			return <MultiSelectField
+				field={field}
+				data={data} update={update as UpdateMultiSelectFieldFunc}
+				disabled={!editMode}
 			/>
 		case formFieldIsDeduction(field):
 			let deductionResult: string
@@ -112,31 +94,32 @@ export function Field({ field, rowIdx, data, update }: {
 				if (!formData)
 					throw new Error('informazioni sul form corrente non trovate')
 
-				deductionResult = deductionMap[field.deductionID](formData, rowIdx)
+				deductionResult = deductionMap[field.deductionID](formData)
 			} catch (e) {
 				console.error(e)
 				deductionResult = 'Errore nel calcolo'
 			}
 
-			return <td>
-				{header}
+			return <div>
+				<p className="field-header">{field.header}</p>
 				{deductionResult}
-			</td>
+			</div>
 	}
 }
 
-function DropdownField({ field, rowIdx, data, update, disabled, header }: {
-	field: FormTableDropdownFieldTemplate, rowIdx: number, data?: FormTableDropdownFieldData,
-	update: UpdateDropdownFieldFunc, disabled: boolean, header?: JSX.Element
+function SelectField({ field, data, update, disabled }: {
+	field: FormSelectFieldTemplate,
+	data?: FormSelectFieldData, update: UpdateSelectFieldFunc,
+	disabled: boolean
 }) {
-	const options: DropdownOption[] | undefined = field.dropdownArgs?.map(arg => ({
-		value: arg.value,
+	const options = Object.entries(field.selectArgs).map<DropdownOption>(([value, arg]) => ({
+		value: value,
 		display: arg.display
 	}))
 
 	const setSelected = (selected?: DropdownOption): void => {
 		update({
-			type: 'dropdown',
+			type: 'select',
 			value: selected ? {
 				selection: selected.value
 			} : undefined
@@ -144,65 +127,161 @@ function DropdownField({ field, rowIdx, data, update, disabled, header }: {
 	}
 
 	const selectedValue = data?.value?.selection
-	const selectedDisplay = selectedValue != undefined ? field.dropdownArgs.reduce<string | undefined>((prev, curr) => {
+	const selectedDisplay = selectedValue != undefined ? Object.entries(field.selectArgs).reduce<string | undefined>((prev, [currValue, currArg]) => {
 		if (prev)
 			return prev
 
-		return curr.value == selectedValue ? curr.display : undefined
+		return currValue == selectedValue ? currArg.display : undefined
 	}, undefined) : undefined
 
-	const firstStage = <td>
-		{header}
+	const firstStage = <div>
+		<p className="field-header">{field.header}</p>
 		<Dropdown
 			options={options ?? []}
 			selectedField={selectedDisplay}
 			setSelectedField={setSelected}
 			disabled={disabled}
 		/>
-	</td>
+	</div>
 
 	if (data == undefined || data.value == undefined)
 		return firstStage
 
-	const matchedArg = field.dropdownArgs?.filter(arg => {
-		// @ts-ignore
-		return arg.value === data.value.selection
+	const [_, matchedArg] = Object.entries(field.selectArgs).filter(([value, _]) => {
+		return data.value != undefined && value === data.value.selection
 	})[0]
 	if (!matchedArg)
 		return <>
 			{firstStage}
-			<td>Errore, nessun campo trovato per {data.value.selection}</td>
+			<div>Errore, nessun campo trovato per {data.value.selection}</div>
 		</>
 
-	const nextFields = matchedArg.next
-	if (!nextFields)
+	if (!matchedArg.next)
 		return firstStage
 
 	return <>
 		{firstStage}
-		{nextFields.map((next, nextIdx) => {
-			const nextUpdate: Updater<FormTableFieldData> = (updater) => {
-				update(dropdownData => {
-					if (dropdownData == undefined || dropdownData.value == undefined)
-						throw new Error('dropdown is undefined after the first stage')
+		{matchedArg.next.map((next, nextIdx) => {
+			const updateNext: Updater<FormFieldData> = (updater) => {
+				update(selectData => {
+					if (selectData == undefined || selectData.value == undefined)
+						throw new Error('select is undefined after the first stage')
 
-					if (dropdownData.value.next == undefined)
-						dropdownData.value.next = []
+					if (selectData.value.next == undefined)
+						selectData.value.next = []
 
 					if (typeof updater !== 'function') {
-						dropdownData.value.next[nextIdx] = updater
+						selectData.value.next[nextIdx] = updater
 						return
 					}
 
-					updater(dropdownData.value.next[nextIdx])
+					updater(selectData.value.next[nextIdx])
 				})
 			}
 
 			return <Field key={nextIdx}
-				field={next} rowIdx={rowIdx}
-				data={(data.value as FormTableDropdownFieldValue).next?.[nextIdx]} update={nextUpdate}
+				field={next}
+				data={(data.value as FormSelectFieldValue).next?.[nextIdx]} update={updateNext}
 			/>
 		})}
 
 	</>
+}
+
+type MultiSelectOption = {
+	value: string
+	label: string
+}
+
+function MultiSelectField({ field, data, update, disabled }: {
+	field: FormMultiSelectFieldTemplate,
+	data?: FormMultiSelectFieldData, update: UpdateMultiSelectFieldFunc,
+	disabled: boolean
+}) {
+	const options: MultiSelectOption[] | undefined = Object.entries(field.selectArgs).map(([value, arg]) => ({
+		value: value,
+		label: arg.display
+	}))
+
+	const [selectedOptions, setSelectedOptions] = useState<MultiSelectOption[]>([])
+
+	const styles: StylesConfig<MultiSelectOption, true> = {
+		container: (base, _) => {
+			return disabled ? { ...base, display: 'none' } : base;
+		},
+		multiValueLabel: (base, _) => {
+			return { ...base, fontWeight: 'bold', paddingRight: 6 };
+		},
+		multiValueRemove: (base, _) => {
+			return { ...base, display: 'none' };
+		},
+	};
+
+	const onChange = (newValue: MultiValue<MultiSelectOption>, actionMeta: ActionMeta<MultiSelectOption>) => {
+		setSelectedOptions(newValue as MultiSelectOption[])
+		
+		update(selectData => {
+			if (actionMeta.option == undefined)
+				return
+
+			if (!selectData.value)
+				selectData.value = { selections: [] }
+
+			selectData.value.selections.push(actionMeta.option.value)
+		})
+	}
+
+	return <div>
+		<p className="field-header">{field.header}</p>
+		<Select options={options} isMulti isClearable={false}
+			placeholder={field.header}
+			styles={styles}
+			onChange={onChange} />
+		<div className='multi-select'>
+			{selectedOptions.map((sel) => {
+				const selectedArg = field.selectArgs[sel.value]
+
+				return <div className='container container-horiz multi-select-arg' key={sel.value}>
+					<div className='arg-display'>{selectedArg.display}</div>
+					<MultiSelectNextFields selected={sel.value} arg={selectedArg}
+						data={data} update={update} />
+				</div>
+			})}
+		</div>
+	</div>
+}
+
+function MultiSelectNextFields({ selected, arg, data, update } : {
+	selected: string, arg: FormFieldSelectArg,
+	data?: FormMultiSelectFieldData, update: UpdateMultiSelectFieldFunc,
+}) {
+	return <div className='next-fields'>
+		{arg.next?.map((next, nextIdx) => {
+			const updateNext: Updater<FormFieldData> = (updater) => {
+				update(selectData => {
+					if (selectData == undefined || selectData.value == undefined)
+						throw new Error('select is undefined after the first stage')
+
+					if (selectData.value.next == undefined)
+						selectData.value.next = {}
+
+					if (selectData.value.next[selected] == undefined)
+						selectData.value.next[selected] = []
+
+					if (typeof updater !== 'function') {
+						// @ts-ignore
+						selectData.value.next[selected][nextIdx] = updater
+						return
+					}
+
+					// @ts-ignore
+					updater(selectData.value.next[selected][nextIdx])
+				})
+			}
+
+			return <Field field={next} key={next.header}
+				data={data?.value?.next?.[selected]?.[nextIdx]}
+				update={updateNext} />
+		})}
+	</div>
 }

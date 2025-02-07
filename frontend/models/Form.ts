@@ -26,42 +26,25 @@ export type FormTemplate = {
 export type FormSectionTemplate = {
 	/** titolo della pagina */
 	title: string
-	/** le tabelle delle proprietà */
-	tables: FormTableTemplate[]
+	/** le proprietà iniziali */
+	starters: FormSectionStarterTemplate[]
 	/** immagini da affiancare alle tabelle delle proprietà */
 	image?: string[]
 }
 
-/**
- * AnatomStructTable contiene il template della tabella per la sua generazione
- * ed eventualmente anche delle informazioni già esistenti (es. i campi fissi di una tabella).
- * 
- * TODO: importare documentazione precedente
- */
-export type FormTableTemplate = {
-	/** le intestazioni della tabella */
-	headers: string[]
-	/** elenco dei vari campi di input presenti per ogni riga della tabella */
-	fields: FormTableFieldTemplate[]
-	/** se la tabella è espandibile */
-	isVariadic?: boolean,
-	/** se la tabella interagisce tramite cerchi con le immagini */
-	interactsWithImage?: boolean,
-}
+export type FormSectionStarterTemplate = {
+	starterID: string
+} & (FormMultiSelectFieldTemplate)
 
 /**
- * AnatomStructTableField contiene le caratteristiche di una proprietà.
+ * FormFieldTemplate contiene le caratteristiche di una proprietà.
  * Le varie proprietà opzionali sono dedicate alle varie modalità di input
  */
-export type FormTableFieldTemplate = {
+export type FormFieldTemplate = {
 	/** il tipo di input sottostante alla proprietà */
-	type: FormTableFieldType
+	type: FormFieldType
 	/** un simil table header per questo campo specifico */
-	header?: string
-	/** presente quando l'input è del tipo `Fixed`, contiene la lista dei campi fissi indicizzata sulle righe */
-	fixedArgs?: string[]
-	/** se presente crea un pulsante che imposta a tutte le celle sottostanti il valore di default */
-	defaultValue?: FormTableFieldData & { display?: string }
+	header: string
 }
 
 /**
@@ -69,68 +52,68 @@ export type FormTableFieldTemplate = {
  * + `blank`: una cella vuota
  * + `text`: un semplice <input type="text" />
  * + `number`: un semplice <input type="number" />
- * + `dropdown`: un componente simile a un elemento <select> con varie <option>, dove ad ogni valore selezionabile dal
+ * + `select`: un componente simile a un elemento <select> con varie <option>, dove ad ogni valore selezionabile dal
  *     menu a tendina può corrispondere uno o più campi successivi della tabella.
  *     Questo permette di espandere la tabella in base agli input selezionati in
  *     precedenza. Un esempio è la creazione di due menu a tendina con varie opzioni,
  *     in cui i valori selezionabili dal secondo menu dipendono da quale valore si
  *     abbia selezionato nel primo
  * + `deduction`: un componente usato per la generazione di dati a partire da altri la cui unica proprietà fondamentale
- *     è chiave (`string`) che mappa, attraverso `deductionMap`, a una funzione (`FormTableDeductionFunction`) che riceve come argomenti:
+ *     è chiave (`string`) che mappa, attraverso `deductionMap`, a una funzione (`FormDeductionFunction`) che riceve come argomenti:
  *     + `form`: i dati inseriti (`FormData`) presi dalla tabella
  *     + `rowIdx`: l'indice della riga nella tabella, per poter fare calcoli diversi in base alla riga
  */
-export type FormTableFieldType = 'blank' | 'text' | 'number' | 'dropdown' | 'deduction'
+export type FormFieldType = 'blank' | 'text' | 'number' | 'select' | 'multi-select' | 'deduction'
 
-export type FormTableBlankFieldTemplate = FormTableFieldTemplate & {
+export type FormBlankFieldTemplate = FormFieldTemplate & {
 	type: 'blank'
-	defaultValue: undefined
 }
-export type FormTableTextFieldTemplate = FormTableFieldTemplate & {
+export type FormTextFieldTemplate = FormFieldTemplate & {
 	type: 'text'
-	defaultValue?: FormTableTextFieldData & { display?: string }
 }
-export type FormTableNumberFieldTemplate = FormTableFieldTemplate & {
+export type FormNumberFieldTemplate = FormFieldTemplate & {
 	type: 'number'
-	defaultValue?: FormTableNumberFieldData & { display?: string }
 	min?: number
 	max?: number
 }
-export type FormTableDropdownFieldTemplate = FormTableFieldTemplate & {
-	type: 'dropdown'
-	defaultValue?: FormTableDropdownFieldData & { display?: string }
-	dropdownArgs: FormTableFieldDropdownArg[]
+export type FormSelectFieldTemplate = FormFieldTemplate & {
+	type: 'select'
+	selectArgs: Record<string, FormFieldSelectArg>
 }
-export type FormTableDeductionFieldTemplate = FormTableFieldTemplate & {
+export type FormMultiSelectFieldTemplate = FormFieldTemplate & {
+	type: 'multi-select'
+	selectArgs: Record<string, FormFieldSelectArg>
+}
+export type FormDeductionFieldTemplate = FormFieldTemplate & {
 	type: 'deduction'
-	defaultValue: undefined
 	deductionID: string
 }
 
-export function formFieldIsBlank(f: FormTableFieldTemplate): f is FormTableBlankFieldTemplate {
+export function formFieldIsBlank(f: FormFieldTemplate): f is FormBlankFieldTemplate {
 	return f.type == 'blank';
 }
-export function formFieldIsText(f: FormTableFieldTemplate): f is FormTableTextFieldTemplate {
+export function formFieldIsText(f: FormFieldTemplate): f is FormTextFieldTemplate {
 	return f.type == 'text';
 }
-export function formFieldIsNumber(f: FormTableFieldTemplate): f is FormTableNumberFieldTemplate {
+export function formFieldIsNumber(f: FormFieldTemplate): f is FormNumberFieldTemplate {
 	return f.type == 'number';
 }
-export function formFieldIsDropdown(f: FormTableFieldTemplate): f is FormTableDropdownFieldTemplate {
-	return f.type == 'dropdown';
+export function formFieldIsSelect(f: FormFieldTemplate): f is FormSelectFieldTemplate {
+	return f.type == 'select';
 }
-export function formFieldIsDeduction(f: FormTableFieldTemplate): f is FormTableDeductionFieldTemplate {
+export function formFieldIsMultiSelect(f: FormFieldTemplate): f is FormMultiSelectFieldTemplate {
+	return f.type == 'multi-select';
+}
+export function formFieldIsDeduction(f: FormFieldTemplate): f is FormDeductionFieldTemplate {
 	return f.type == 'deduction';
 }
 
-/** FormTableFieldDropdownArg rappresenta un'opzione di un campo Dropdown */
-export type FormTableFieldDropdownArg = {
-	/** il valore selezionabile nel menu a tendina */
-	value: string
+/** FormFieldSelectArg rappresenta un'opzione di un campo Select */
+export type FormFieldSelectArg = {
 	/** il valore mostrato in grafica */
 	display: string
 	/** i template dei campi della tabella generati alla selezione del valore sopra */
-	next?: FormTableFieldTemplate[]
+	next?: FormFieldTemplate[]
 }
 
 /**
@@ -145,151 +128,72 @@ export type FormData = {
 	name: string
 	/** una copia del template della struttura anatomica */
 	template: FormTemplate,
-	/**
-	 * quadrivettore: pagina x tabella x riga x colonna.
-	 * In realtà l'ultima dimensione del quadrivettore (ciò che indicizza i campi all'interno di
-	 * una riga) è un `Record<number, AnatomStructProperty>` (vedere `TableRowState` per dettagli)
-	 */
+	/** TODO: check if this is enough */
 	sections?: FormSectionData[]
 }
 
-export type FormSectionData = FormTableData[] | undefined
-export type FormTableData = FormTableRowData[] | undefined
-/**
- * TableRowState ha la stessa funzione di un array `AnatomStructProperty[]`, quindi
- * indicizza da 0 in poi a `AnatomStructProperty`, ma permette di aggiungere campi
- * speciali utilizzando indici speciali dedicati, negativi, elencati in `AnatomStructRowSpecial`
- */
-export type FormTableRowData = Record<number, FormTableFieldData> | undefined
+export type FormSectionData = Record<string, FormSectionStarterData> | undefined
+
+export type FormSectionStarterData = FormMultiSelectFieldData
 
 /**
  * AnatomStructProperty è il tipo che può avere una proprietà, ogni proprietà ha il suo tipo
  * e prima di utilizzare il dato deve fare i controlli necassari per garantire type-safety
  */
-export type FormTableFieldData = {
-	type: FormTableFieldType | 'image'
-	value: string | number | FormTableDropdownFieldValue | FormTableFieldImageRef | undefined
+export type FormFieldData = {
+	type: FormFieldType
+	value: string | number | FormSelectFieldValue | FormMultiSelectFieldValue | undefined
 }
 
-export type FormTableBlankFieldData = FormTableFieldData & {
+export type FormBlankFieldData = FormFieldData & {
 	type: 'blank'
 }
-export type FormTableTextFieldData = FormTableFieldData & {
+export type FormTextFieldData = FormFieldData & {
 	type: 'text'
 	value?: string
 }
-export type FormTableNumberFieldData = FormTableFieldData & {
+export type FormNumberFieldData = FormFieldData & {
 	type: 'number'
 	value?: number
 }
-export type FormTableDropdownFieldData = FormTableFieldData & {
-	type: 'dropdown'
-	value?: FormTableDropdownFieldValue
+export type FormSelectFieldData = FormFieldData & {
+	type: 'select'
+	value?: FormSelectFieldValue
+}
+export type FormMultiSelectFieldData = FormFieldData & {
+	type: 'multi-select'
+	value?: FormMultiSelectFieldValue
 }
 
-// special data types
-
-export type FormTableImageFieldData = FormTableFieldData & {
-	type: 'image'
-	value?: FormTableFieldImageRef
-}
-
-export function formFieldDataIsBlank(f: FormTableFieldData): f is FormTableBlankFieldData {
+export function formFieldDataIsBlank(f: FormFieldData): f is FormBlankFieldData {
 	return f.type == 'blank';
 }
-export function formFieldDataIsText(f: FormTableFieldData): f is FormTableTextFieldData {
+export function formFieldDataIsText(f: FormFieldData): f is FormTextFieldData {
 	return f.type == 'text';
 }
-export function formFieldDataIsNumber(f: FormTableFieldData): f is FormTableNumberFieldData {
+export function formFieldDataIsNumber(f: FormFieldData): f is FormNumberFieldData {
 	return f.type == 'number';
 }
-export function formFieldDataIsDropdown(f: FormTableFieldData): f is FormTableDropdownFieldData {
-	return f.type == 'dropdown';
+export function formFieldDataIsSelect(f: FormFieldData): f is FormSelectFieldData {
+	return f.type == 'select';
+}
+export function formFieldDataIsMultiSelect(f: FormFieldData): f is FormMultiSelectFieldData {
+	return f.type == 'multi-select';
 }
 
-// special cases
-
-export function formFieldDataIsImage(f: FormTableFieldData): f is FormTableImageFieldData {
-	return f.type == 'image';
-}
-
-function calculateAdditionalCells(field: FormTableFieldTemplate, data?: FormTableFieldData): number {
-	// La cella è disponibile all'utente ma non è stato ancora impostato un suo valore
-	if (data == undefined)
-		return 0
-
-	// field non è del tipo Dropdown, quindi ha per forza dimensione 1 cella,
-	if (!formFieldIsDropdown(field))
-		return 0
-	// oppure field è Dropdown, ma il suo valore non è stato ancora impostato,
-	if (!formFieldDataIsDropdown(data))
-		return 0
-	// controllo di sicurezza sul contenuto di data
-	if (data.value == undefined)
-		return 0
-
-	const selectedIndex = field.dropdownArgs.reduce((prev, arg, argIdx) => {
-		if (arg.value == data.value?.selection)
-			return argIdx
-
-		return prev
-	}, -1)
-
-	if (selectedIndex == -1)
-		return 0
-
-	const nextLength = field.dropdownArgs[selectedIndex].next?.length ?? 0
-
-	// Dropdown non ha campi next con valore impostato, ma data.value c'è, quindi il numero delle celle
-	// in eccesso è pari al numero di campi next presenti in field
-	if (data.value.next == undefined)
-		return nextLength
-
-	return nextLength + data.value.next.reduce<number>((prev, nextProp, nextPropIdx) => {
-		const nextField = field.dropdownArgs[selectedIndex].next?.[nextPropIdx]
-		if (!nextField)
-			return prev
-
-		return prev + calculateAdditionalCells(nextField, nextProp)
-	}, 0)
-}
-
-export function calculateRowCellCount(rowData: FormTableRowData, fields: FormTableFieldTemplate[]): number {
-	if (rowData == undefined)
-		return fields.length
-
-	let additionalCells = Object.entries(rowData).reduce((prev, [key, value]) => {
-		const idx = Number(key)
-		if (idx < 0)
-			return prev
-
-		const calc = calculateAdditionalCells(fields[idx], value);
-		return prev + calc
-	}, 0)
-
-	return fields.length + additionalCells
-}
-
-/** AnatomStructRowSpecial contiene gli indici speciali per salvare determinate informazioni su una riga */
-export enum FormTableRowSpecial {
-	/** Indice per contenere informazioni relative ai cerchi nella tabella `VariadicMouse` */
-	CircleInfo = -1,
-}
-
-/** FormTableDropdownFieldValue contiene lo stato di una proprietà `Dropdown` */
-export type FormTableDropdownFieldValue = {
+/** FormSelectFieldValue contiene lo stato di una proprietà `Select` */
+export type FormSelectFieldValue = {
 	/** il valore selezionato dal menu a tendina */
 	selection: string
 	/** le `AnatomStructProperty` innestate, opzionale, indica i valori della proprietà derivate dalla selezione corrente */
-	next?: FormTableFieldData[]
+	next?: FormFieldData[]
 }
 
-/** AnatomStructPropertyImageRef contiene le informazioni relative al cerchio selezionato per una riga */
-export type FormTableFieldImageRef = {
-	/** l'indice dell'immagine all'interno della pagina */
-	imageIdx: number
-	/** posizione percentuale (0 <= x <= 100) sulle x relative all'immagine */
-	x: number
-	/** posizione percentuale (0 <= x <= 100) sulle y relative all'immagine */
-	y: number
+/** FormMultiSelectFieldValue contiene lo stato di una proprietà `Multi-Select` */
+export type FormMultiSelectFieldValue = {
+	/** il valore selezionato dal menu a tendina */
+	selections: string[]
+	/** le `AnatomStructProperty` innestate, opzionale, indica i valori della proprietà derivate dalla selezione corrente */
+	// TODO: check
+	next?: Record<string, FormFieldData[] | undefined>
 }

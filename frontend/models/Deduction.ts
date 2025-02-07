@@ -1,7 +1,7 @@
 import { farekasAtlante } from '../storage/deduzione';
 import { FormData } from './Form';
 
-export type DeductionFunction = (form: FormData, rowIdx: number) => string
+export type DeductionFunction = (form: FormData) => string
 export type DeductionElement = {
 	id: string
 	fn: DeductionFunction
