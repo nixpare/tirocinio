@@ -33,6 +33,7 @@ function App() {
                     <Form data={state} updateData={updateState} />
                 </EditModeContext.Provider>
             </BodyDataContext.Provider>
+            <button onClick={() => { console.log(coccige, state) }}>LOG in Console</button>
         </div>
     )
 }

@@ -22,6 +22,10 @@
 	margin-bottom: 2em;
 }
 
+.form-sections > * {
+	width: 100%;
+}
+
 .form-sections>button {
 	width: fit-content;
 }
@@ -53,4 +57,15 @@
 .form-section .image img {
 	width: 100%;
 	height: fit-content;
+}
+
+.form-section .starter-field {
+	margin-bottom: 1em;
+	padding: 1em;
+	border-radius: .4em;
+	background-color: rgba(var(--primary-color), .1);
+}
+
+.form-section .starter-field > .field > .field-header {
+	text-align: left;
 }

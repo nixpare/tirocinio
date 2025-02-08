@@ -1,8 +1,10 @@
+import 'react-tabs/style/react-tabs.css';
 import './Form.css'
 
-import { createContext, useContext, useState } from 'react'
+import { createContext, useContext } from 'react'
 import { Updater } from 'use-immer'
-import { FormSectionTemplate, FormData, FormSectionData, FormSectionStarterData } from '../../models/Form'
+import { Tab, Tabs, TabList, TabPanel } from 'react-tabs'
+import { FormSectionTemplate, FormData, FormSectionData } from '../../models/Form'
 import { Field, UpdateFieldFunc } from './Field'
 import { Carousel } from '../UI/Carousel'
 
@@ -31,12 +33,7 @@ export const VerticalSplitContext = createContext(false)
  * @param state stato utilizzato per la creazione del componente
  * @return ReactNode
  */
-export function Form({ data, updateData, initialSection }: {
-	data: FormData, updateData: UpdateFormFunc,
-	initialSection?: number
-}) {
-	const editMode = useContext(EditModeContext)
-
+export function Form({ data, updateData }: { data: FormData, updateData: UpdateFormFunc }) {
 	const sections = data.template.sections.map((section, sectionIdx) => {
 		// updatePage è la funzione di produzione sullo stato per la pagina specifica
 		const updateSection: UpdateSectionFunc = (updater) => {
@@ -63,29 +60,26 @@ export function Form({ data, updateData, initialSection }: {
 		</VerticalSplitContext.Provider>
 	})
 
-	if (!editMode) {
-		return <div className="container form">
-			<h4 className="name">{data.name}</h4>
-			<div className="form-sections">
-				<Carousel>
-					{sections}
-				</Carousel>
-			</div>
-		</div>
-	}
+	return <div className="container form">
+		<h4 className="name">{data.name}</h4>
+		<div className="form-sections">
+			<Tabs>
+				<TabList>
+					{data.template.sections.map(section => {
+						return <Tab key={section.title}>
+							{section.title}
+						</Tab>
+					})}
+				</TabList>
 
-	const [visiblePage, setVisiblePage] = useState(initialSection && initialSection < data.template.sections.length ? initialSection : 0)
-
-	return (
-		<div className="container form">
-			<h4 className="name">{data.name}</h4>
-			<form className="form-sections">
-				<Carousel visibleState={{ visible: visiblePage, setVisible: setVisiblePage }}>
-					{sections}
-				</Carousel>
-			</form>
+				{sections.map((section, sectionIdx) => {
+					return <TabPanel key={sectionIdx}>
+						{section}
+					</TabPanel>
+				})}
+			</Tabs>
 		</div>
-	);
+	</div>
 }
 
 /**
@@ -111,24 +105,25 @@ export function FormSection({ section, data, update }: {
 					throw new Error('updating state of non-existing form section data')
 
 				if (typeof updater !== 'function') {
-					sectionData[starter.starterID] = updater as FormSectionStarterData
+					sectionData[starter.starterID] = updater
 					return
 				}
 
 				if (!sectionData[starter.starterID]) {
 					sectionData[starter.starterID] = {
 						type: starter.type
-					} as FormSectionStarterData
+					}
 				}
 
 				updater(sectionData[starter.starterID])
 			})
 		}
 
-		return <Field key={`${section.title}-${starter.starterID}`}
-			field={starter}
-			data={data?.[starter.starterID]} update={updateStarter}
-		/>
+		return <div className="starter-field" key={`${section.title}-${starter.starterID}`}>
+			<Field field={starter}
+				data={data?.[starter.starterID]} update={updateStarter}
+			/>
+		</div>
 	})
 
 	if (!section.image) {

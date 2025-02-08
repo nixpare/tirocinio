@@ -1,4 +1,4 @@
-import { farekasAtlante } from '../storage/deduzione';
+import { coccigeScheuerBlack2000 } from '../storage/coccige';
 import { FormData } from './Form';
 
 export type DeductionFunction = (form: FormData) => string
@@ -10,5 +10,17 @@ export type DeductionElement = {
 export const deductionMap: Record<string, DeductionFunction> = {}
 
 export function loadDeductionFunctions() {
-	deductionMap[farekasAtlante.id] = farekasAtlante.fn
+	deductionMap[coccigeScheuerBlack2000.id] = coccigeScheuerBlack2000.fn
+}
+
+export function walkObject<T = any>(obj: any, query: string): T | undefined {
+	const steps = query.split('.')
+	const value = steps.reduce<any>((prev, curr) => {
+		if (prev == undefined)
+			return prev
+
+		return prev[curr]
+	}, obj)
+
+	return value
 }

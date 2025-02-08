@@ -34,21 +34,24 @@ export type FormSectionTemplate = {
 
 export type FormSectionStarterTemplate = {
 	starterID: string
-} & (FormMultiSelectFieldTemplate)
+} & FormFieldTemplate
 
 /**
  * FormFieldTemplate contiene le caratteristiche di una proprietà.
  * Le varie proprietà opzionali sono dedicate alle varie modalità di input
  */
-export type FormFieldTemplate = {
+export type FormFieldTemplate = FormBlankFieldTemplate | FormTextFieldTemplate | FormNumberFieldTemplate |
+	FormSelectFieldTemplate | FormMultiSelectFieldTemplate | FormDeductionFieldTemplate | FormExpansionFieldTemplate
+
+type FormFieldBaseTemplate = {
 	/** il tipo di input sottostante alla proprietà */
 	type: FormFieldType
 	/** un simil table header per questo campo specifico */
-	header: string
+	header?: string
 }
 
 /**
- * AnatomStructInputMode contiene le varie tipologie di input supportate dalle proprietà:
+ * FormFieldType contiene le varie tipologie di input supportate dalle proprietà:
  * + `blank`: una cella vuota
  * + `text`: un semplice <input type="text" />
  * + `number`: un semplice <input type="number" />
@@ -63,28 +66,34 @@ export type FormFieldTemplate = {
  *     + `form`: i dati inseriti (`FormData`) presi dalla tabella
  *     + `rowIdx`: l'indice della riga nella tabella, per poter fare calcoli diversi in base alla riga
  */
-export type FormFieldType = 'blank' | 'text' | 'number' | 'select' | 'multi-select' | 'deduction'
+export type FormFieldType = 'blank' | 'text' | 'number' | 'select' | 'multi-select' | 'expansion' | 'deduction'
 
-export type FormBlankFieldTemplate = FormFieldTemplate & {
+export type FormBlankFieldTemplate = FormFieldBaseTemplate & {
 	type: 'blank'
 }
-export type FormTextFieldTemplate = FormFieldTemplate & {
+export type FormTextFieldTemplate = FormFieldBaseTemplate & {
 	type: 'text'
 }
-export type FormNumberFieldTemplate = FormFieldTemplate & {
+export type FormNumberFieldTemplate = FormFieldBaseTemplate & {
 	type: 'number'
 	min?: number
 	max?: number
 }
-export type FormSelectFieldTemplate = FormFieldTemplate & {
+export type FormSelectFieldTemplate = FormFieldBaseTemplate & {
 	type: 'select'
 	selectArgs: Record<string, FormFieldSelectArg>
 }
-export type FormMultiSelectFieldTemplate = FormFieldTemplate & {
+export type FormMultiSelectFieldTemplate = FormFieldBaseTemplate & {
 	type: 'multi-select'
 	selectArgs: Record<string, FormFieldSelectArg>
 }
-export type FormDeductionFieldTemplate = FormFieldTemplate & {
+export type FormExpansionFieldTemplate = FormFieldBaseTemplate & {
+	type: 'expansion'
+	fixed?: FormFieldTemplate[][]
+	expansionArgs: FormFieldTemplate[]
+	next?: FormFieldTemplate[]
+}
+export type FormDeductionFieldTemplate = FormFieldBaseTemplate & {
 	type: 'deduction'
 	deductionID: string
 }
@@ -103,6 +112,9 @@ export function formFieldIsSelect(f: FormFieldTemplate): f is FormSelectFieldTem
 }
 export function formFieldIsMultiSelect(f: FormFieldTemplate): f is FormMultiSelectFieldTemplate {
 	return f.type == 'multi-select';
+}
+export function formFieldIsExpansion(f: FormFieldTemplate): f is FormExpansionFieldTemplate {
+	return f.type == 'expansion';
 }
 export function formFieldIsDeduction(f: FormFieldTemplate): f is FormDeductionFieldTemplate {
 	return f.type == 'deduction';
@@ -132,37 +144,41 @@ export type FormData = {
 	sections?: FormSectionData[]
 }
 
-export type FormSectionData = Record<string, FormSectionStarterData> | undefined
+export type FormSectionData = Record<string, FormFieldData> | undefined
 
-export type FormSectionStarterData = FormMultiSelectFieldData
+export type FormFieldData = FormBlankFieldData | FormTextFieldData | FormNumberFieldData |
+	FormSelectFieldData | FormMultiSelectFieldData | FormExpansionFieldData | FormDeductionFieldData
 
-/**
- * AnatomStructProperty è il tipo che può avere una proprietà, ogni proprietà ha il suo tipo
- * e prima di utilizzare il dato deve fare i controlli necassari per garantire type-safety
- */
-export type FormFieldData = {
+type FormFieldBaseData = {
 	type: FormFieldType
-	value: string | number | FormSelectFieldValue | FormMultiSelectFieldValue | undefined
+	value?: string | number | FormSelectFieldValue | FormMultiSelectFieldValue | FormExpansionFieldValue
 }
 
-export type FormBlankFieldData = FormFieldData & {
+export type FormBlankFieldData = FormFieldBaseData & {
 	type: 'blank'
 }
-export type FormTextFieldData = FormFieldData & {
+export type FormTextFieldData = FormFieldBaseData & {
 	type: 'text'
 	value?: string
 }
-export type FormNumberFieldData = FormFieldData & {
+export type FormNumberFieldData = FormFieldBaseData & {
 	type: 'number'
 	value?: number
 }
-export type FormSelectFieldData = FormFieldData & {
+export type FormSelectFieldData = FormFieldBaseData & {
 	type: 'select'
 	value?: FormSelectFieldValue
 }
-export type FormMultiSelectFieldData = FormFieldData & {
+export type FormMultiSelectFieldData = FormFieldBaseData & {
 	type: 'multi-select'
 	value?: FormMultiSelectFieldValue
+}
+export type FormExpansionFieldData = FormFieldBaseData & {
+	type: 'expansion'
+	value?: FormExpansionFieldValue
+}
+export type FormDeductionFieldData = FormFieldBaseData & {
+	type: 'deduction'
 }
 
 export function formFieldDataIsBlank(f: FormFieldData): f is FormBlankFieldData {
@@ -180,6 +196,12 @@ export function formFieldDataIsSelect(f: FormFieldData): f is FormSelectFieldDat
 export function formFieldDataIsMultiSelect(f: FormFieldData): f is FormMultiSelectFieldData {
 	return f.type == 'multi-select';
 }
+export function formFieldDataIsExpansion(f: FormFieldData): f is FormExpansionFieldData {
+	return f.type == 'expansion';
+}
+export function formFieldDataIsDeduction(f: FormFieldData): f is FormDeductionFieldData {
+	return f.type == 'deduction';
+}
 
 /** FormSelectFieldValue contiene lo stato di una proprietà `Select` */
 export type FormSelectFieldValue = {
@@ -194,6 +216,10 @@ export type FormMultiSelectFieldValue = {
 	/** il valore selezionato dal menu a tendina */
 	selections: string[]
 	/** le `AnatomStructProperty` innestate, opzionale, indica i valori della proprietà derivate dalla selezione corrente */
-	// TODO: check
 	next?: Record<string, FormFieldData[] | undefined>
+}
+
+export type FormExpansionFieldValue = {
+	fixed?: FormFieldData[][]
+	additional?: FormFieldData[][]
 }

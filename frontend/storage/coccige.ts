@@ -1,4 +1,5 @@
-import { FormSelectFieldTemplate, FormFieldTemplate } from "../models/Form";
+import { DeductionElement } from "../models/Deduction";
+import { FormData, FormSelectFieldTemplate, FormFieldTemplate } from "../models/Form";
 import { Bone } from "../models/Skeleton";
 
 const nextNuclei: FormSelectFieldTemplate = {
@@ -32,7 +33,7 @@ const nextSettori: FormFieldTemplate[] = [
 			'assente': { display: 'Assente' },
 			'presente': { display: 'Presente' }
 		}
-	} as FormSelectFieldTemplate,
+	},
 	{
 		type: 'select',
 		header: 'Qualità',
@@ -44,7 +45,7 @@ const nextSettori: FormFieldTemplate[] = [
 			'completo': { display: 'Completo (100%)' },
 			'completo_ma_frammentario': { display: 'Completo ma frammentario (100%)' }
 		}
-	} as FormSelectFieldTemplate,
+	},
 	{
 		type: 'select',
 		header: 'Quantità',
@@ -56,7 +57,7 @@ const nextSettori: FormFieldTemplate[] = [
 			'75-99': { display: '75-99% of sound cortical surface' },
 			'100': { display: '100% of sound cortical surface' }
 		}
-	} as FormSelectFieldTemplate,
+	},
 	{
 		type: 'select',
 		header: 'Colore',
@@ -67,10 +68,33 @@ const nextSettori: FormFieldTemplate[] = [
 			'arancione_marrone': { display: 'Da arancione a marrone' },
 			'giallo_arancione': { display: 'Da giallo ad arancione' },
 		}
-	} as FormSelectFieldTemplate,
+	},
 	{
 		type: 'text',
 		header: 'Commenti'
+	}
+]
+
+const profiloBiologicoApprocciArgs: FormFieldTemplate[] = [
+	{
+		type: 'select',
+		header: 'Approccio',
+		selectArgs: {
+			'metrico': { display: 'Metrico' },
+			'morfologico': { display: 'Morfologico' },
+			'altro': {
+				display: 'Altro',
+				next: [{ type: 'text', header: 'Nome dell\'approccio' }]
+			}
+		}
+	},
+	{
+		type: 'text',
+		header: 'Nome metodo (anno)'
+	},
+	{
+		type: 'text',
+		header: 'Scoring'
 	}
 ]
 
@@ -113,8 +137,8 @@ export const coccige: Bone = {
 				starters: [
 					{
 						type: 'multi-select',
-						starterID: 'nuclei_di_ossificazione',
-						header: 'Nuclei di Ossificazione',
+						starterID: 'settori',
+						header: 'Settori',
 						selectArgs: {
 							'1': {
 								display: '1',
@@ -133,9 +157,138 @@ export const coccige: Bone = {
 								next: nextSettori
 							}
 						}
+					},
+					{
+						type: 'select',
+						starterID: 'colore_generale',
+						header: 'Colore Generale',
+						selectArgs: {
+							'marrone_marrone_scuro': { display: 'Da marrone a marrone scuro' },
+							'grigio': { display: 'Grigio' },
+							'naturale': { display: 'Naturale' },
+							'arancione_marrone': { display: 'Da arancione a marrone' },
+							'giallo_arancione': { display: 'Da giallo ad arancione' },
+						}
+					},
+					{
+						type: 'text',
+						starterID: 'frammenti',
+						header: 'Frammenti'
+					}
+				]
+			},
+			{
+				title: "Caratteri metrici",
+				starters: [
+					{
+						type: 'expansion',
+						starterID: 'caratteri_metrici',
+						expansionArgs: [
+							{
+								type: 'text',
+								header: 'Codice Misura'
+							},
+							{
+								type: 'text',
+								header: 'Nome Misura'
+							}
+						],
+						next: [{
+							type: 'number',
+							header: 'Misura (mm)'
+						}]
+					}
+				]
+			},
+			{
+				title: "Caratteri non metrici",
+				starters: [
+					{
+						type: 'expansion',
+						starterID: 'caratteri_non_metrici',
+						expansionArgs: [
+							{
+								type: 'text',
+								header: 'Nome Carattere'
+							}
+						],
+						next: [{
+							type: 'select',
+							selectArgs: {
+								'assente': { display: 'Assente' },
+								'non_valutabile': { display: 'Non valutabile' },
+								'presente': { display: 'Presente' }
+							}
+						}]
+					}
+				]
+			},
+			{
+				title: "Profilo biologico",
+				starters: [
+					{
+						type: 'expansion',
+						starterID: 'diagnosi_sesso_biologico',
+						header: 'Diagnosi di sesso biologico',
+						expansionArgs: profiloBiologicoApprocciArgs,
+					},
+					{
+						type: 'expansion',
+						starterID: 'stima_età_alla_morte',
+						header: 'Stima dell\'età alla morte',
+						expansionArgs: profiloBiologicoApprocciArgs,
+						fixed: [
+							[{
+								type: 'select',
+								header: 'Approccio Morfologico',
+								selectArgs: {
+									'scheuer_&_black_2000': {
+										display: 'Scheuer & Black 2000',
+										next: [{
+											type: 'deduction',
+											deductionID: 'coccige_scheuer_&_black_2000'
+										}]
+									},
+									'altro_metodo': {
+										display: 'Altro metodo',
+										next: [
+											{
+												type: 'text',
+												header: 'Nome metodo (anno)'
+											},
+											{
+												type: 'text',
+												header: 'Scoring'
+											}
+										]
+									}
+								}
+							}]
+						]
+					},
+					{
+						type: 'expansion',
+						starterID: 'diagnosi_origine_biogeografica',
+						header: 'Diagnosi di origine biogeografica',
+						expansionArgs: profiloBiologicoApprocciArgs,
+					},
+					{
+						type: 'expansion',
+						starterID: 'stima_statura',
+						header: 'Stima della statura',
+						expansionArgs: profiloBiologicoApprocciArgs,
 					}
 				]
 			}
 		]
 	}
+}
+
+export const coccigeScheuerBlack2000: DeductionElement = {
+	id: 'coccige_scheuer_&_black_2000',
+	fn: CoccigeScheuerBlack2000
+}
+
+function CoccigeScheuerBlack2000(_: FormData): string {
+	return "Metodo presente ed eseguito: non ancora implementato"
 }

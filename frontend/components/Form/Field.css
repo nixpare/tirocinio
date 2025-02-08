@@ -1,4 +1,8 @@
-.field-header {
+.field {
+	min-width: 30ch;
+}
+
+.field .field-header {
 	background-color: rgba(var(--primary-color), .4);
 	border-radius: .2em;
 	margin-bottom: .2em;
@@ -6,30 +10,95 @@
 	text-align: center;
 }
 
-.multi-select {
+.field.text-field input,
+.field.number-field input {
+	min-width: 100%;
+}
+
+.field .select-input {
+	width: fit-content;
+	min-width: 30ch;
+}
+
+.field .multi-select {
 	padding: 1em;
 	background-color: rgba(var(--primary-color), .1);
 	border-radius: .2em;
 	margin-top: .6em;
 }
-.multi-select:not(:has(>*)) {
+.field .multi-select:not(:has(>*)) {
 	display: none;
 }
 
-.multi-select .multi-select-arg {
+.field .multi-select .multi-select-arg {
+	flex-wrap: nowrap;
 	justify-content: start;
 	background-color: rgba(var(--primary-color), .1);
 	margin: .5em;
 }
 
-.multi-select .arg-display {
+.field .multi-select .arg-display {
 	background-color: rgba(var(--primary-color), .4);
 	padding: .4em .5em;
 	border-radius: .2em;
 }
 
-.multi-select .multi-select-arg .next-fields {
+.field .select-field,
+.field .next-fields {
 	display: flex;
 	flex-wrap: wrap;
 	gap: 1em;
+}
+
+.field .multi-select .multi-select-arg .delete-select-arg {
+	padding: 1em .8em;
+	border-radius: .2em;
+	color: #333;
+	background-color: #b90000;
+}
+
+.field.expansion-field > .field-header {
+	font-size: 1.2em;
+	text-align: left;
+}
+
+.field.expansion-field .additional {
+	width: fit-content;
+	margin-top: 1em;
+	padding: 1em 2em;
+}
+
+.field.expansion-field .input-fields {
+	display: flex;
+	gap: 1em;
+}
+
+.field.expansion-field .add-row {
+	text-align: center;
+	width: 100%;
+	margin-top: .4em;
+	padding: .2em;
+	border-radius: .4em;
+	background-color: rgba(var(--primary-color), .6);
+}
+
+.field.expansion-field .expansion-data {
+	margin-top: 1em;
+}
+
+.field.expansion-field .expansion-data > div {
+	display: flex;
+	gap: 1em;
+}
+
+.field.deduction-field {
+	padding: .2em .4em;
+	background-color: rgba(255, 255, 255, .6);
+	border-radius: .2em;
+	display: flex;
+	align-items: center;
+}
+
+.react-tabs__tab:focus:after {
+	content: unset;
 }
