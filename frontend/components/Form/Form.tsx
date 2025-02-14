@@ -135,17 +135,17 @@ export function FormSection({ section, data, update }: {
 
 	const splitClassName = verticalSplit ? undefined : 'split'
 
-	return <div className="form-section">
+	return <div className="container form-section">
 		<h3>{section.title}</h3>
 		<div className={splitClassName}>
-			<div className="container">
+			<div className="container container-start container-align-start">
 				{starters}
 			</div>
 			<div className="container">
 				<div className="images">
 					<Carousel>
-						{section.image?.map((image) => {
-							return <div className="image">
+						{section.image?.map((image, imageIdx) => {
+							return <div className="image" key={imageIdx}>
 								<img src={image} alt={section.title} />
 							</div>
 						})}

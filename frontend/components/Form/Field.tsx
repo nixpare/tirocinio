@@ -3,7 +3,7 @@ import './Field.css'
 import { ChangeEvent, MouseEvent, useContext, useRef, useState } from "react";
 import { Updater, useImmer } from "use-immer";
 import Select, { ActionMeta, MultiValue, SelectInstance, StylesConfig } from 'react-select'
-import { FormFieldData, FormFieldTemplate, formFieldIsBlank, formFieldIsText, formFieldDataIsText, formFieldIsNumber, formFieldDataIsNumber, formFieldIsSelect, formFieldDataIsSelect, FormSelectFieldTemplate, FormSelectFieldData, formFieldIsDeduction, formFieldIsMultiSelect, FormMultiSelectFieldData, FormMultiSelectFieldTemplate, formFieldDataIsMultiSelect, FormFieldSelectArg, formFieldIsExpansion, formFieldDataIsExpansion, FormExpansionFieldData, FormExpansionFieldTemplate } from "../../models/Form";
+import { FormFieldData, FormFieldTemplate, formFieldIsBlank, formFieldIsText, formFieldDataIsText, formFieldIsNumber, formFieldDataIsNumber, formFieldIsSelect, formFieldDataIsSelect, FormSelectFieldTemplate, FormSelectFieldData, formFieldIsDeduction, formFieldIsMultiSelect, FormMultiSelectFieldData, FormMultiSelectFieldTemplate, formFieldDataIsMultiSelect, FormFieldSelectArg, formFieldIsExpansion, formFieldDataIsExpansion, FormExpansionFieldData, FormExpansionFieldTemplate, formFieldIsIncremental, formFieldDataIsIncremental, FormIncrementalFieldData, FormIncrementalFieldTemplate } from "../../models/Form";
 import { EditModeContext, FormDataContext } from "./Form";
 import { deductionMap } from '../../models/Deduction';
 
@@ -11,6 +11,7 @@ export type UpdateFieldFunc = Updater<FormFieldData>
 type UpdateSelectFieldFunc = Updater<FormSelectFieldData>
 type UpdateMultiSelectFieldFunc = Updater<FormMultiSelectFieldData>
 type UpdateExpansionFieldFunc = Updater<FormExpansionFieldData>
+type UpdateIncrementalFieldFunc = Updater<FormIncrementalFieldData>
 
 export function Field({ field, data, update, hideHeader }: {
 	field: FormFieldTemplate,
@@ -95,6 +96,15 @@ export function Field({ field, data, update, hideHeader }: {
 			return <ExpansionField
 				field={field}
 				data={data} update={update as UpdateExpansionFieldFunc}
+				disabled={!editMode} hideHeader={hideHeader}
+			/>
+		case formFieldIsIncremental(field):
+			if (data != undefined && !formFieldDataIsIncremental(data))
+				data = undefined
+
+			return <IncrementalField
+				field={field}
+				data={data} update={update as UpdateIncrementalFieldFunc}
 				disabled={!editMode} hideHeader={hideHeader}
 			/>
 		case formFieldIsDeduction(field):
@@ -203,13 +213,15 @@ function MultiSelectField({ field, data, update, disabled, hideHeader }: {
 	data?: FormMultiSelectFieldData, update: UpdateMultiSelectFieldFunc,
 	disabled: boolean, hideHeader?: boolean
 }) {
-	const [selectedOptions, setSelectedOptions] = useState<SelectOption[]>([])
-	const selectRef = useRef<SelectInstance<SelectOption> | null>(null);
-
 	const options: SelectOption[] | undefined = Object.entries(field.selectArgs).map(([value, arg]) => ({
 		value: value,
 		label: arg.display
 	}))
+
+	const [selectedOptions, setSelectedOptions] = useState<SelectOption[]>(options.filter(opt => {
+		return data && data.value && data.value.selections.includes(opt.value)
+	}))
+	const selectRef = useRef<SelectInstance<SelectOption> | null>(null);
 
 	const styles: StylesConfig<SelectOption, true> = {
 		container: (base, _) => {
@@ -245,6 +257,7 @@ function MultiSelectField({ field, data, update, disabled, hideHeader }: {
 				ref={selectRef}
 				placeholder={field.header}
 				styles={styles}
+				defaultValue={selectedOptions}
 				onChange={onChange} />
 		</div>
 		<div className='multi-select'>
@@ -325,7 +338,6 @@ function ExpansionField({ field, data, update, disabled, hideHeader }: {
 				data.value.additional = []
 
 			data.value.additional.push(expansionData)
-			console.log(expansionData, data.value.additional)
 		})
 		updateExpansionData([])
 	}
@@ -391,32 +403,6 @@ function ExpansionField({ field, data, update, disabled, hideHeader }: {
 				</div>
 			})}
 		</div>
-		<div className="additional">
-			<div className="input-fields">
-				{field.expansionArgs.map((arg, argIdx) => {
-					const updateField: Updater<FormFieldData> = (updater) => {
-						updateExpansionData(data => {
-							if (typeof updater !== 'function') {
-								data[argIdx] = updater
-								return
-							}
-
-							if (data[argIdx] == undefined)
-								data[argIdx] = { type: arg.type }
-
-							updater(data[argIdx])
-						})
-					}
-
-					return <Field field={arg} key={argIdx}
-						data={expansionData[argIdx]} update={updateField}
-					/>
-				})}
-			</div>
-			<button className='add-row' onClick={addRow} disabled={disabled}>
-				Aggiungi <i className="fa-solid fa-plus"></i>
-			</button>
-		</div>
 		<div className="expansion-data">
 			{data?.value?.additional?.map((additionalData, rowIdx) => {
 				return <div key={rowIdx}>
@@ -470,6 +456,32 @@ function ExpansionField({ field, data, update, disabled, hideHeader }: {
 				</div>
 			})}
 		</div>
+		<div className="additional">
+			<div className="input-fields">
+				{field.expansionArgs.map((arg, argIdx) => {
+					const updateField: Updater<FormFieldData> = (updater) => {
+						updateExpansionData(data => {
+							if (typeof updater !== 'function') {
+								data[argIdx] = updater
+								return
+							}
+
+							if (data[argIdx] == undefined)
+								data[argIdx] = { type: arg.type }
+
+							updater(data[argIdx])
+						})
+					}
+
+					return <Field field={arg} key={argIdx}
+						data={expansionData[argIdx]} update={updateField}
+					/>
+				})}
+			</div>
+			<button className='add-row' onClick={addRow} disabled={disabled}>
+				Aggiungi <i className="fa-solid fa-plus"></i>
+			</button>
+		</div>
 	</div>
 }
 
@@ -500,5 +512,110 @@ function ExpansionNextFields({ next, dataOffset, data, update }: {
 				data={data?.[dataOffset + nextIdx]}
 				update={updateNext} />
 		})}
+	</div>
+}
+
+function IncrementalField({ field, data, update, disabled, hideHeader }: {
+	field: FormIncrementalFieldTemplate,
+	data?: FormIncrementalFieldData, update: UpdateIncrementalFieldFunc,
+	disabled: boolean, hideHeader?: boolean
+}) {
+	const [expansionData, updateExpansionData] = useImmer<FormFieldData[]>([])
+
+	const addRow = (ev: MouseEvent<HTMLButtonElement, PointerEvent>) => {
+		ev.preventDefault()
+		update(data => {
+			if (data.value == undefined)
+				data.value = []
+
+			data.value.push(expansionData)
+		})
+		updateExpansionData([])
+	}
+
+	return <div className='field incremental-field'>
+		{!hideHeader && field.header && <p className="field-header">{field.header}</p>}
+		<div className="expansion-data">
+			{data?.value?.map((additionalData, rowIdx) => {
+				return <div key={rowIdx}>
+					<div className="row-counter">
+						<p>{field.prefix ?? '# '}{rowIdx + 1}</p>
+					</div>
+					{field.expansionArgs?.map((arg, argIdx) => {
+						const updateField: Updater<FormFieldData> = (updater) => {
+							update(incrementalData => {
+								if (incrementalData == undefined || incrementalData.value == undefined)
+									throw new Error('incremental is undefined after the first stage')
+
+								if (incrementalData.value[rowIdx] == undefined)
+									incrementalData.value[rowIdx] = []
+
+								if (typeof updater !== 'function') {
+									incrementalData.value[rowIdx][argIdx] = updater
+									return
+								}
+
+								if (incrementalData.value[rowIdx][argIdx] == undefined)
+									incrementalData.value[rowIdx][argIdx] = { type: arg.type }
+
+								updater(incrementalData.value[rowIdx][argIdx])
+							})
+						}
+
+						return <Field field={arg} key={argIdx}
+							data={additionalData[argIdx]} update={updateField}
+							hideHeader
+						/>
+					})}
+					{data?.value?.[rowIdx] && field.next && (() => {
+						const updateNextFields: Updater<FormFieldData[]> = (updater) => {
+							update(incrementalData => {
+								if (incrementalData == undefined || incrementalData.value == undefined ||
+									incrementalData.value == undefined || incrementalData.value[rowIdx] == undefined) {
+									throw new Error('incremental is undefined after the first stage')
+								}
+
+								if (typeof updater !== 'function') {
+									incrementalData.value[rowIdx] = updater
+									return
+								}
+
+								updater(incrementalData.value[rowIdx])
+							})
+						}
+
+						return <ExpansionNextFields next={field.next} dataOffset={field.expansionArgs?.length ?? 0}
+							data={data.value?.[rowIdx]} update={updateNextFields}
+						/>
+					})()}
+				</div>
+			})}
+		</div>
+		<div className="additional">
+			<div className="input-fields">
+				{field.expansionArgs?.map((arg, argIdx) => {
+					const updateField: Updater<FormFieldData> = (updater) => {
+						updateExpansionData(data => {
+							if (typeof updater !== 'function') {
+								data[argIdx] = updater
+								return
+							}
+
+							if (data[argIdx] == undefined)
+								data[argIdx] = { type: arg.type }
+
+							updater(data[argIdx])
+						})
+					}
+
+					return <Field field={arg} key={argIdx}
+						data={expansionData[argIdx]} update={updateField}
+					/>
+				})}
+				<button className='add-row' onClick={addRow} disabled={disabled}>
+					Aggiungi <i className="fa-solid fa-plus"></i>
+				</button>
+			</div>
+		</div>
 	</div>
 }

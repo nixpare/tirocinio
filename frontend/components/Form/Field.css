@@ -57,23 +57,30 @@
 	background-color: #b90000;
 }
 
-.field.expansion-field > .field-header {
+.field.expansion-field > .field-header,
+.field.incremental-field > .field-header {
 	font-size: 1.2em;
 	text-align: left;
 }
 
-.field.expansion-field .additional {
+.field.expansion-field .additional,
+.field.incremental-field .additional {
 	width: fit-content;
 	margin-top: 1em;
 	padding: 1em 2em;
 }
 
-.field.expansion-field .input-fields {
+.field.expansion-field .input-fields,
+.field.incremental-field .input-fields {
 	display: flex;
 	gap: 1em;
 }
+.field.incremental-field .input-fields {
+	min-width: 30ch;
+}
 
-.field.expansion-field .add-row {
+.field.expansion-field .add-row,
+.field.incremental-field .add-row {
 	text-align: center;
 	width: 100%;
 	margin-top: .4em;
@@ -81,14 +88,39 @@
 	border-radius: .4em;
 	background-color: rgba(var(--primary-color), .6);
 }
-
-.field.expansion-field .expansion-data {
-	margin-top: 1em;
+.field.incremental-field .add-row {
+	margin-top: 0;
 }
 
-.field.expansion-field .expansion-data > div {
+.field.expansion-field .expansion-data:has(>*),
+.field.expansion-field .fixed-data:has(>*),
+.field.incremental-field .expansion-data:has(>*) {
+	margin: 1em;
+	padding: 1em;
+	background-color: rgba(var(--primary-color), .1);
+	border-radius: .2em;
+}
+
+.field.expansion-field .expansion-data > div,
+.field.incremental-field .expansion-data > div {
 	display: flex;
 	gap: 1em;
+	margin: .8em;
+	padding: .8em;
+	background-color: rgba(var(--primary-color), .1);
+	border-radius: .2em;
+}
+
+.field.incremental-field .row-counter {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.field.incremental-field .row-counter > p {
+	padding: .4em 1em;
+	background-color: rgba(var(--primary-color), .2);
+	border-radius: .4em;
 }
 
 .field.deduction-field {

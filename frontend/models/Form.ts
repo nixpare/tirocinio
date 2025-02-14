@@ -40,8 +40,9 @@ export type FormSectionStarterTemplate = {
  * FormFieldTemplate contiene le caratteristiche di una proprietà.
  * Le varie proprietà opzionali sono dedicate alle varie modalità di input
  */
-export type FormFieldTemplate = FormBlankFieldTemplate | FormTextFieldTemplate | FormNumberFieldTemplate |
-	FormSelectFieldTemplate | FormMultiSelectFieldTemplate | FormDeductionFieldTemplate | FormExpansionFieldTemplate
+export type FormFieldTemplate = FormFieldBaseTemplate | FormBlankFieldTemplate | FormTextFieldTemplate | FormNumberFieldTemplate |
+	FormSelectFieldTemplate | FormMultiSelectFieldTemplate | FormExpansionFieldTemplate | FormIncrementalFieldTemplate |
+	FormDeductionFieldTemplate
 
 type FormFieldBaseTemplate = {
 	/** il tipo di input sottostante alla proprietà */
@@ -66,7 +67,7 @@ type FormFieldBaseTemplate = {
  *     + `form`: i dati inseriti (`FormData`) presi dalla tabella
  *     + `rowIdx`: l'indice della riga nella tabella, per poter fare calcoli diversi in base alla riga
  */
-export type FormFieldType = 'blank' | 'text' | 'number' | 'select' | 'multi-select' | 'expansion' | 'deduction'
+export type FormFieldType = 'blank' | 'text' | 'number' | 'select' | 'multi-select' | 'expansion' | 'incremental' | 'deduction'
 
 export type FormBlankFieldTemplate = FormFieldBaseTemplate & {
 	type: 'blank'
@@ -93,6 +94,12 @@ export type FormExpansionFieldTemplate = FormFieldBaseTemplate & {
 	expansionArgs: FormFieldTemplate[]
 	next?: FormFieldTemplate[]
 }
+export type FormIncrementalFieldTemplate = FormFieldBaseTemplate & {
+	type: 'incremental'
+	prefix?: string
+	expansionArgs?: FormFieldTemplate[]
+	next?: FormFieldTemplate[]
+}
 export type FormDeductionFieldTemplate = FormFieldBaseTemplate & {
 	type: 'deduction'
 	deductionID: string
@@ -115,6 +122,9 @@ export function formFieldIsMultiSelect(f: FormFieldTemplate): f is FormMultiSele
 }
 export function formFieldIsExpansion(f: FormFieldTemplate): f is FormExpansionFieldTemplate {
 	return f.type == 'expansion';
+}
+export function formFieldIsIncremental(f: FormFieldTemplate): f is FormIncrementalFieldTemplate {
+	return f.type == 'incremental';
 }
 export function formFieldIsDeduction(f: FormFieldTemplate): f is FormDeductionFieldTemplate {
 	return f.type == 'deduction';
@@ -146,12 +156,13 @@ export type FormData = {
 
 export type FormSectionData = Record<string, FormFieldData> | undefined
 
-export type FormFieldData = FormBlankFieldData | FormTextFieldData | FormNumberFieldData |
-	FormSelectFieldData | FormMultiSelectFieldData | FormExpansionFieldData | FormDeductionFieldData
+export type FormFieldData = FormFieldBaseData | FormBlankFieldData | FormTextFieldData | FormNumberFieldData |
+	FormSelectFieldData | FormMultiSelectFieldData | FormExpansionFieldData | FormIncrementalFieldData |
+	FormDeductionFieldData
 
 type FormFieldBaseData = {
 	type: FormFieldType
-	value?: string | number | FormSelectFieldValue | FormMultiSelectFieldValue | FormExpansionFieldValue
+	value?: string | number | FormSelectFieldValue | FormMultiSelectFieldValue | FormExpansionFieldValue | FormIncrementalFieldValue
 }
 
 export type FormBlankFieldData = FormFieldBaseData & {
@@ -177,6 +188,10 @@ export type FormExpansionFieldData = FormFieldBaseData & {
 	type: 'expansion'
 	value?: FormExpansionFieldValue
 }
+export type FormIncrementalFieldData = FormFieldBaseData & {
+	type: 'incremental'
+	value?: FormIncrementalFieldValue
+}
 export type FormDeductionFieldData = FormFieldBaseData & {
 	type: 'deduction'
 }
@@ -198,6 +213,9 @@ export function formFieldDataIsMultiSelect(f: FormFieldData): f is FormMultiSele
 }
 export function formFieldDataIsExpansion(f: FormFieldData): f is FormExpansionFieldData {
 	return f.type == 'expansion';
+}
+export function formFieldDataIsIncremental(f: FormFieldData): f is FormIncrementalFieldData {
+	return f.type == 'incremental';
 }
 export function formFieldDataIsDeduction(f: FormFieldData): f is FormDeductionFieldData {
 	return f.type == 'deduction';
@@ -223,3 +241,5 @@ export type FormExpansionFieldValue = {
 	fixed?: FormFieldData[][]
 	additional?: FormFieldData[][]
 }
+
+export type FormIncrementalFieldValue = FormFieldData[][]

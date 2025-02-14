@@ -135,10 +135,13 @@ input.invalid {
 .container.container-start {
   justify-content: start;
 }
+.container.container-align-start {
+  align-items: start;
+}
 
 .split {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 5fr 2fr;
   grid-template-rows: auto;
   gap: 1em;
 }

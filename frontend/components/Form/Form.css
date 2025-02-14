@@ -31,12 +31,12 @@
 }
 
 .form-section {
-	background-color: rgba(var(--primary-color), .1);
 	border-radius: .4em;
 	align-items: start;
 }
 
 .form-section h3 {
+	width: fit-content;
 	background-color: rgba(var(--primary-color), .2);
 	text-align: center;
 	padding: .4em 1em;

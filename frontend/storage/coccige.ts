@@ -2,6 +2,9 @@ import { DeductionElement } from "../models/Deduction";
 import { FormData, FormSelectFieldTemplate, FormFieldTemplate } from "../models/Form";
 import { Bone } from "../models/Skeleton";
 
+import coccigeNucleiImg from '../public/images/coccige_nuclei.png';
+import coccigeSettoriImg from '../public/images/coccige_settori.png';
+
 const nextNuclei: FormSelectFieldTemplate = {
 	type: 'select',
 	header: 'Stato',
@@ -98,6 +101,154 @@ const profiloBiologicoApprocciArgs: FormFieldTemplate[] = [
 	}
 ]
 
+const patologieSegniNextArgs: FormFieldTemplate[] = [
+	{
+		type: 'multi-select',
+		selectArgs: {
+			'perdita_sostanza': {
+				display: 'Perdita di sostanza',
+				next: [{
+					type: 'select',
+					selectArgs: {
+						'porosità': {
+							display: 'Porosità',
+							next: [{ type: 'text', header: 'Descrizione' }]
+						},
+						'lesione_osteolitica': {
+							display: 'Lesione Osteolitica',
+							next: [{ type: 'text', header: 'Descrizione' }]
+						},
+						'lesioni_cribiotiche': {
+							display: 'Lesioni Cribiotiche',
+							next: [
+								{
+									type: 'deduction',
+									header: 'Rinaldo (2019)',
+									deductionID: 'coccige_rinaldo_2019'
+								},
+								{
+									type: 'text',
+									header: 'Descrizione'
+								}
+							]
+						},
+						'sospetta_lesività': {
+							display: 'Sospetta Lesività',
+							next: [
+								{
+									type: 'select',
+									header: 'Dimensioni',
+									selectArgs: {
+										'<2cm': { display: 'Fino a 2 cm' },
+										'2<5cm': { display: '2 - 5 cm' },
+										'5<10cm': { display: '5 - 10 cm' },
+										'>10cm': { display: 'Più di 10 cm' }
+									}
+								},
+								{
+									type: 'select',
+									header: 'Margini',
+									selectArgs: {
+										'rimodellati': { display: 'Rimodellati' },
+										'non_rimodellati': { display: 'Non rimodellati' }
+									}
+								},
+								{
+									type: 'select',
+									header: 'Forma',
+									selectArgs: {
+										'regolare': { display: 'Regolare' },
+										'irregolare': { display: 'Irregolare' }
+									}
+								},
+								{
+									type: 'text',
+									header: 'Descrizione'
+								}
+							]
+						},
+						'eburneazione': {
+							display: 'Eburneazione',
+							next: [{ type: 'text', header: 'Descrizione' }]
+						},
+						'eburneazione_sclerotica': {
+							display: 'Eburneazione Sclerotica',
+							next: [{ type: 'text', header: 'Descrizione' }]
+						},
+					}
+				}]
+			},
+			'proliferativi': {
+				display: 'Proliferativi',
+				next: [{
+					type: 'select',
+					selectArgs: {
+						'periostite': {
+							display: 'Periostite',
+							next: [
+								{
+									type: 'select',
+									selectArgs: {
+										'recente': { display: 'Recente', next: [{ type: 'text', header: 'Descrizione' }] },
+										'rimodellata': { display: 'Rimodellata', next: [{ type: 'text', header: 'Descrizione' }] },
+										'mista': { display: 'Mista', next: [{ type: 'text', header: 'Descrizione' }] },
+									}
+								}
+							]
+						},
+						'callo_semirecente': {
+							display: 'Callo semirecente',
+							next: [{ type: 'text', header: 'Descrizione' }]
+						},
+						'callo_vecchio': {
+							display: 'Callo vecchio',
+							next: [{ type: 'text', header: 'Descrizione' }]
+						},
+						'osteofiti': {
+							display: 'Osteofiti',
+							next: [{ type: 'text', header: 'Descrizione' }]
+						},
+						'lesioni_blastiche': {
+							display: 'Lesioni Blastiche',
+							next: [{ type: 'text', header: 'Descrizione' }]
+						},
+						'ossificazione_calcificazione': {
+							display: 'Ossificazione e/o Calcificazione',
+							next: [{ type: 'text', header: 'Descrizione' }]
+						},
+						'calcificazioni_viscerali': {
+							display: 'Calcificazioni Viscerali',
+							next: [{ type: 'text', header: 'Descrizione' }]
+						},
+						'altro': {
+							display: 'Altro',
+							next: [{ type: 'text', header: 'Descrizione' }]
+						}
+					}
+				}]
+			},
+			'deformazione': {
+				display: 'Deformazione',
+				next: [{ type: 'text', header: 'Descrizione' }]
+			},
+			'altro': {
+				display: 'Altro',
+				next: [{ type: 'text', header: 'Descrizione' }]
+			}
+		}
+	}
+]
+
+const lesivitàSegniNextArgs: FormFieldTemplate[] = [
+	{
+		type: 'select',
+		selectArgs: {
+			'soluzione_di_continuo': { display: 'Soluzione di Continuo' },
+			'perdita_di_sostanza': { display: 'Perdita di Sostanza' }
+		}
+	}
+]
+
 export const coccige: Bone = {
 	type: 'bone',
 	name: 'Coccige',
@@ -106,6 +257,7 @@ export const coccige: Bone = {
 		sections: [
 			{
 				title: "Fusione/sviluppo",
+				image: [coccigeNucleiImg],
 				starters: [
 					{
 						type: 'multi-select',
@@ -134,6 +286,7 @@ export const coccige: Bone = {
 			},
 			{
 				title: "Completezza, qualità, colore generale",
+				image: [coccigeSettoriImg],
 				starters: [
 					{
 						type: 'multi-select',
@@ -279,6 +432,76 @@ export const coccige: Bone = {
 						expansionArgs: profiloBiologicoApprocciArgs,
 					}
 				]
+			},
+			{
+				title: "Patologie",
+				starters: [
+					{
+						type: 'incremental',
+						starterID: 'segni',
+						header: 'Segni',
+						prefix: 'PCe',
+						next: [
+							{
+								type: 'multi-select',
+								header: 'Settori',
+								selectArgs: {
+									'1': {
+										display: '1',
+										next: patologieSegniNextArgs
+									},
+									'2': {
+										display: '2',
+										next: patologieSegniNextArgs
+									},
+									'3': {
+										display: '3',
+										next: patologieSegniNextArgs
+									},
+									'4': {
+										display: '4',
+										next: patologieSegniNextArgs
+									}
+								}
+							}
+						],
+					}
+				]
+			},
+			{
+				title: "Lesività",
+				image: [coccigeSettoriImg],
+				starters: [
+					{
+						type: 'incremental',
+						starterID: 'lesività_segni',
+						header: 'Lesività Segni',
+						next: [
+							{
+								type: 'multi-select',
+								header: 'Settori',
+								selectArgs: {
+									'1': {
+										display: '1',
+										next: lesivitàSegniNextArgs
+									},
+									'2': {
+										display: '2',
+										next: lesivitàSegniNextArgs
+									},
+									'3': {
+										display: '3',
+										next: lesivitàSegniNextArgs
+									},
+									'4': {
+										display: '4',
+										next: lesivitàSegniNextArgs
+									}
+								}
+							}
+						],
+					}
+				]
 			}
 		]
 	}
@@ -290,5 +513,14 @@ export const coccigeScheuerBlack2000: DeductionElement = {
 }
 
 function CoccigeScheuerBlack2000(_: FormData): string {
+	return "Metodo presente ed eseguito: non ancora implementato"
+}
+
+export const coccigeRinaldo2019: DeductionElement = {
+	id: 'coccige_rinaldo_2019',
+	fn: CoccigeRinaldo2019
+}
+
+function CoccigeRinaldo2019(_: FormData): string {
 	return "Metodo presente ed eseguito: non ancora implementato"
 }
