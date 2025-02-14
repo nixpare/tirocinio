@@ -2,8 +2,8 @@ import { DeductionElement } from "../models/Deduction";
 import { FormData, FormSelectFieldTemplate, FormFieldTemplate } from "../models/Form";
 import { Bone } from "../models/Skeleton";
 
-import coccigeNucleiImg from '../public/images/coccige_nuclei.png';
-import coccigeSettoriImg from '../public/images/coccige_settori.png';
+const coccigeNucleiImg = '/images/coccige_nuclei.png';
+const coccigeSettoriImg = '/images/coccige_settori.png';
 
 const nextNuclei: FormSelectFieldTemplate = {
 	type: 'select',
