@@ -23,6 +23,8 @@ const boneState: FormData = {
     template: coccige.template
 }
 
+console.log(coccige)
+
 function App() {
     const [state, updateState] = useImmer(boneState)
 
