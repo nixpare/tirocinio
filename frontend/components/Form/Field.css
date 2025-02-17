@@ -37,6 +37,17 @@
 	display: none;
 }
 
+.field.multi-select-field .select-all {
+	width: 100%;
+	font-size: .8em;
+	padding-top: .2em;
+	padding-bottom: .2em;
+	margin-bottom: .4em;
+	background-color: rgba(var(--primary-color), .2);
+	color: rgb(var(--primary-color));
+	font-weight: bold;
+}
+
 .field .multi-select .multi-select-arg {
 	flex-wrap: nowrap;
 	justify-content: start;

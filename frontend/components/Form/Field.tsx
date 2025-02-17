@@ -197,7 +197,7 @@ function SelectField({ field, data, update, disabled, breadcrumb, hideHeader }: 
 				ref={selectRef}
 				placeholder={field.header}
 				styles={styles}
-				defaultValue={options.filter(option => option.value == data?.value?.selection)[0]}
+				value={options.filter(option => option.value == data?.value?.selection)[0]}
 				// @ts-ignore
 				onChange={onChange} />
 		</div>
@@ -272,7 +272,7 @@ function MultiSelectField({ field, data, update, disabled, breadcrumb, hideHeade
 		return data && data.value && data.value.selections.includes(opt.value)
 	})
 
-	const selectRef = useRef<SelectInstance<SelectOption> | null>(null);
+	const selectRef = useRef<SelectInstance<SelectOption, true> | null>(null);
 	useEffect(() => {
 		if (selectRef.current == null)
 			return
@@ -300,22 +300,38 @@ function MultiSelectField({ field, data, update, disabled, breadcrumb, hideHeade
 			if (actionMeta.option == undefined)
 				return
 
-			if (!selectData.value)
+			if (selectData.value == undefined)
 				selectData.value = { selections: [] }
+
+			if (selectData.value.selections.includes(actionMeta.option.value))
+				return
 
 			selectData.value.selections.push(actionMeta.option.value)
 		})
 	}
 
-	return <div className="field">
+	const selectAll = (ev: MouseEvent<HTMLButtonElement, PointerEvent>) => {
+		ev.preventDefault()
+
+		update(selectData => {
+			if (selectData.value == undefined) {
+				selectData.value = { selections: options.map(option => option.value) }
+				return
+			}
+
+			selectData.value.selections = options.map(option => option.value)
+		})
+	}
+
+	return <div className="field multi-select-field">
 		<div className="select-input">
 			{!hideHeader && field.header && <p className="field-header">{field.header}</p>}
+			<button className="select-all" onClick={selectAll}>SELEZIONA TUTTO</button>
 			<Select options={options} isMulti isClearable={false} isDisabled={disabled}
-				// @ts-ignore
 				ref={selectRef}
 				placeholder={field.header}
 				styles={styles}
-				defaultValue={selectedOptions}
+				value={selectedOptions}
 				onChange={onChange} />
 		</div>
 		<div className='multi-select'>

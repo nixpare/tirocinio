@@ -13,7 +13,10 @@ export default defineConfig({
     rollupOptions: {
       input: [
         resolve(__dirname, 'frontend/index.html'),
-        resolve(__dirname, 'frontend/coccige.html')
+        resolve(__dirname, 'frontend/coccige.html'),
+        resolve(__dirname, 'frontend/atlante.html'),
+        resolve(__dirname, 'frontend/femore.html'),
+        resolve(__dirname, 'frontend/deduzione.html')
       ]
     }
   },
