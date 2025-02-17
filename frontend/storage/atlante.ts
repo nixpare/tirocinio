@@ -1,4 +1,4 @@
-import { DeductionElement, DeductionResult, walkObject } from "../models/Programmable";
+import { DeductionElement, DeductionResult, SelectArgsElement, walkObject } from "../models/Programmable";
 import { FormExpansionFieldTemplate, FormFieldSelectArg, FormFieldSelectArgs, FormFieldTemplate, FormSelectFieldTemplate } from "../models/Form";
 import { Bone } from "../models/Skeleton";
 import { AnatomStructData } from "../models/AnatomStruct";
@@ -747,7 +747,7 @@ export const atlante: Bone = {
 							{
 								type: 'multi-select',
 								header: 'Segni',
-								selectArgs: patternGetLesivitàSegni,
+								selectArgs: 'atlante_pattern_lesività_segni',
 							},
 							{
 								type: 'select',
@@ -813,7 +813,12 @@ function AtlanteFordisc(): DeductionResult {
 	}
 }
 
-function patternGetLesivitàSegni(struct: AnatomStructData): FormFieldSelectArgs {
+export const atlantePatternLesivitàSegni: SelectArgsElement = {
+	id: 'atlante_pattern_lesività_segni',
+	fn: AtlantePatternLesivitàSegni
+}
+
+function AtlantePatternLesivitàSegni(struct: AnatomStructData): FormFieldSelectArgs {
 	const nSegni = walkObject<number>(struct.form.sections, 'lesività.lesività_segni.value.additional.length')
 	if (nSegni == undefined)
 		return {}

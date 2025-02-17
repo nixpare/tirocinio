@@ -2,7 +2,7 @@ import { StrictMode } from 'react'
 import { useImmer } from 'use-immer'
 import { createRoot } from 'react-dom/client'
 import { Form, EditModeContext } from '../components/Form/Form'
-import { atlante } from '../storage/atlante'
+import { femore } from '../storage/femore'
 import { loadProgrammableFunctions } from '../models/Programmable'
 import { BodyDataContext } from '../models/Body'
 import { testBody } from '../storage/body'
@@ -19,13 +19,13 @@ createRoot(document.getElementById('root')!).render(
 
 const boneState: BoneData = {
     type: 'bone',
-    name: atlante.name,
+    name: femore.name,
     form: {
-        templ: atlante.form,
+        templ: femore.form,
     }
 }
 
-console.log(atlante)
+console.log(femore)
 
 function App() {
     const [state, updateState] = useImmer(boneState)
@@ -43,7 +43,7 @@ function App() {
                 </AnatomStructDataContext.Provider>
             </BodyDataContext.Provider>
 
-            <button onClick={() => { console.log(atlante, state) }}>LOG in Console</button>
+            <button onClick={() => { console.log(femore, state) }}>LOG in Console</button>
         </div>
     )
 }

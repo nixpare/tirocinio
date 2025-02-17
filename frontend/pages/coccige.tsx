@@ -3,13 +3,13 @@ import { useImmer } from 'use-immer'
 import { createRoot } from 'react-dom/client'
 import { Form, EditModeContext } from '../components/Form/Form'
 import { coccige } from '../storage/coccige'
-import { loadDeductionFunctions } from '../models/Programmable'
+import { loadProgrammableFunctions } from '../models/Programmable'
 import { BodyDataContext } from '../models/Body'
 import { testBody } from '../storage/body'
 import { BoneData } from '../models/Skeleton'
 import { AnatomStructDataContext, generateUpdateForm } from '../models/AnatomStruct'
 
-loadDeductionFunctions()
+loadProgrammableFunctions()
 
 createRoot(document.getElementById('root')!).render(
     <StrictMode>

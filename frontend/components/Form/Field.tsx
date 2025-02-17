@@ -5,7 +5,7 @@ import { Updater, useImmer } from "use-immer";
 import Select, { ActionMeta, MultiValue, SelectInstance, StylesConfig } from 'react-select'
 import { FormFieldData, FormFieldTemplate, formFieldIsFixed, formFieldIsText, formFieldDataIsText, formFieldIsNumber, formFieldDataIsNumber, formFieldIsSelect, formFieldDataIsSelect, FormSelectFieldTemplate, FormSelectFieldData, formFieldIsDeduction, formFieldIsMultiSelect, FormMultiSelectFieldData, FormMultiSelectFieldTemplate, formFieldDataIsMultiSelect, FormFieldSelectArg, formFieldIsExpansion, formFieldDataIsExpansion, FormExpansionFieldData, FormExpansionFieldTemplate, FormFieldSelectArgs } from "../../models/Form";
 import { EditModeContext } from "./Form";
-import { deductionMap } from '../../models/Programmable';
+import { deductionFunctionMap, selectArgsFunctionMap } from '../../models/Programmable';
 import { AnatomStructDataContext } from '../../models/AnatomStruct';
 import { BodyDataContext } from '../../models/Body';
 
@@ -109,7 +109,8 @@ export function Field({ field, data, update, breadcrumb, hideHeader }: {
 					throw new Error('informazioni sul form corrente non trovate')
 				}
 
-				({ result } = deductionMap[field.deductionID](struct, body, breadcrumb))
+				const f = deductionFunctionMap[field.deductionID];
+				({ result } = f(struct, body, breadcrumb))
 			} catch (e) {
 				console.error(e)
 				result = 'Errore nel calcolo'
@@ -134,7 +135,7 @@ function SelectField({ field, data, update, disabled, breadcrumb, hideHeader }: 
 }) {
 	let selectArgs: FormFieldSelectArgs = {}
 
-	if (typeof field.selectArgs === 'function') {
+	if (typeof field.selectArgs === 'string') {
 		try {
 			const struct = useContext(AnatomStructDataContext)
 			const body = useContext(BodyDataContext)
@@ -142,7 +143,8 @@ function SelectField({ field, data, update, disabled, breadcrumb, hideHeader }: 
 				throw new Error('informazioni sul form corrente non trovate')
 			}
 
-			selectArgs = field.selectArgs(struct, body, breadcrumb)
+			const f = selectArgsFunctionMap[field.selectArgs]
+			selectArgs = f(struct, body, breadcrumb)
 		} catch (e) {
 			console.error(e)
 		}
@@ -244,7 +246,7 @@ function MultiSelectField({ field, data, update, disabled, breadcrumb, hideHeade
 }) {
 	let selectArgs: FormFieldSelectArgs = {}
 
-	if (typeof field.selectArgs === 'function') {
+	if (typeof field.selectArgs === 'string') {
 		try {
 			const struct = useContext(AnatomStructDataContext)
 			const body = useContext(BodyDataContext)
@@ -252,7 +254,8 @@ function MultiSelectField({ field, data, update, disabled, breadcrumb, hideHeade
 				throw new Error('informazioni sul form corrente non trovate')
 			}
 
-			selectArgs = field.selectArgs(struct, body, breadcrumb)
+			const f = selectArgsFunctionMap[field.selectArgs]
+			selectArgs = f(struct, body, breadcrumb)
 		} catch (e) {
 			console.error(e)
 		}
@@ -339,7 +342,7 @@ function MultiSelectField({ field, data, update, disabled, breadcrumb, hideHeade
 				return <div className='container container-horiz multi-select-arg' key={sel.value}>
 					<div className='arg-display'>{selectedArg.display}</div>
 					<MultiSelectNextFields selected={sel.value} arg={selectedArg}
-						data={data} update={update} breadcrumb={[...breadcrumb, sel.value]}/>
+						data={data} update={update} breadcrumb={[...breadcrumb, sel.value]} />
 					<button className="delete-row" onClick={deleteSelection}>
 						<i className="fa-solid fa-trash"></i>
 					</button>
@@ -384,7 +387,7 @@ function MultiSelectNextFields({ selected, arg, data, update, breadcrumb }: {
 
 			return <Field field={next} key={nextIdx}
 				data={data?.value?.next?.[selected]?.[nextIdx]}
-				update={updateNext} breadcrumb={[...breadcrumb, nextIdx.toString()]}/>
+				update={updateNext} breadcrumb={[...breadcrumb, nextIdx.toString()]} />
 		})}
 	</div>
 }
@@ -465,9 +468,6 @@ function ExpansionField({ field, data, update, disabled, breadcrumb, hideHeader 
 				}
 
 				return <div key={rowIdx}>
-					<button className="delete-row" onClick={deleteAdditional}>
-						<i className="fa-solid fa-trash"></i>
-					</button>
 					{field.incremental && <div className="row-counter">
 						<p>{field.prefix ?? '# '}{rowIdx + 1}</p>
 					</div>}
@@ -519,6 +519,9 @@ function ExpansionField({ field, data, update, disabled, breadcrumb, hideHeader 
 							breadcrumb={[...breadcrumb, 'additional', rowIdx.toString()]}
 						/>
 					})()}
+					<button className="delete-row" onClick={deleteAdditional}>
+						<i className="fa-solid fa-trash"></i>
+					</button>
 				</div>
 			})}
 		</div>
@@ -579,7 +582,7 @@ function ExpansionNextFields({ next, dataOffset, data, update, breadcrumb }: {
 			return <Field field={field} key={nextIdx}
 				data={data?.[dataOffset + nextIdx]}
 				update={updateNext}
-				breadcrumb={[...breadcrumb, (dataOffset + nextIdx).toString()]}/>
+				breadcrumb={[...breadcrumb, (dataOffset + nextIdx).toString()]} />
 		})}
 	</div>
 }

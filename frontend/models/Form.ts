@@ -1,5 +1,3 @@
-import { Programmable } from "./Programmable"
-
 /**
  * AnatomStructTemplate contiene la rappresentazione delle informazioni
  * di una struttura anatomica, intese come "forma dei dati" senza contenere
@@ -84,11 +82,11 @@ export type FormNumberFieldTemplate = FormFieldBaseTemplate & {
 }
 export type FormSelectFieldTemplate = FormFieldBaseTemplate & {
 	type: 'select'
-	selectArgs: FormFieldSelectArgs | Programmable<FormFieldSelectArgs>
+	selectArgs: FormFieldSelectArgs | string
 }
 export type FormMultiSelectFieldTemplate = FormFieldBaseTemplate & {
 	type: 'multi-select'
-	selectArgs: FormFieldSelectArgs | Programmable<FormFieldSelectArgs>
+	selectArgs: FormFieldSelectArgs | string
 }
 export type FormExpansionFieldTemplate = FormFieldBaseTemplate & {
 	type: 'expansion'

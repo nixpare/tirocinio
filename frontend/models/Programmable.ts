@@ -1,9 +1,10 @@
 import { coccigeRinaldo2019, coccigeScheuerBlack2000 } from '../storage/coccige';
-import { atlanteFusioneFazekas1978, atlanteProfiloFazekas1978, atlanteScheuerBlack2000, atlanteFordisc } from '../storage/atlante';
+import { atlanteFusioneFazekas1978, atlanteProfiloFazekas1978, atlanteScheuerBlack2000, atlanteFordisc, atlantePatternLesivitàSegni } from '../storage/atlante';
 import { femoreFusioneFazekas1978, femoreProfiloFazekas1978, femoreScheuerBlack2000, femoreFordisc, femorePurkait2003, femoreWilson2010 } from '../storage/femore';
 import { AnatomStructData } from './AnatomStruct';
 import { BodyData } from './Body';
 import { farekasAtlante1, farekasAtlante2 } from '../storage/deduzione';
+import { FormFieldSelectArgs } from './Form';
 
 export type Programmable<T = Object> = (struct: AnatomStructData, body: BodyData, breadcrum: string[]) => T
 export type ProgrammableElement<T = Object> = {
@@ -16,30 +17,42 @@ export type DeductionResult = {
 }
 export type DeductionFunction = Programmable<DeductionResult>
 export type DeductionElement = ProgrammableElement<DeductionResult>
-export const deductionMap: Record<string, DeductionFunction> = {}
-
-export function loadDeductionFunctions() {
+export const deductionFunctionMap: Record<string, DeductionFunction> = {}
+function loadDeductionFunctions() {
 	// coccige
-	deductionMap[coccigeScheuerBlack2000.id] = coccigeScheuerBlack2000.fn
-	deductionMap[coccigeRinaldo2019.id] = coccigeRinaldo2019.fn
+	deductionFunctionMap[coccigeScheuerBlack2000.id] = coccigeScheuerBlack2000.fn
+	deductionFunctionMap[coccigeRinaldo2019.id] = coccigeRinaldo2019.fn
 
 	// atlante
-	deductionMap[atlanteFusioneFazekas1978.id] = atlanteFusioneFazekas1978.fn
-	deductionMap[atlanteProfiloFazekas1978.id] = atlanteProfiloFazekas1978.fn
-	deductionMap[atlanteScheuerBlack2000.id] = atlanteScheuerBlack2000.fn
-	deductionMap[atlanteFordisc.id] = atlanteFordisc.fn
+	deductionFunctionMap[atlanteFusioneFazekas1978.id] = atlanteFusioneFazekas1978.fn
+	deductionFunctionMap[atlanteProfiloFazekas1978.id] = atlanteProfiloFazekas1978.fn
+	deductionFunctionMap[atlanteScheuerBlack2000.id] = atlanteScheuerBlack2000.fn
+	deductionFunctionMap[atlanteFordisc.id] = atlanteFordisc.fn
 
 	// femore
-	deductionMap[femoreFusioneFazekas1978.id] = femoreFusioneFazekas1978.fn
-	deductionMap[femorePurkait2003.id] = femorePurkait2003.fn
-	deductionMap[femoreProfiloFazekas1978.id] = femoreProfiloFazekas1978.fn
-	deductionMap[femoreScheuerBlack2000.id] = femoreScheuerBlack2000.fn
-	deductionMap[femoreFordisc.id] = femoreFordisc.fn
-	deductionMap[femoreWilson2010.id] = femoreWilson2010.fn
+	deductionFunctionMap[femoreFusioneFazekas1978.id] = femoreFusioneFazekas1978.fn
+	deductionFunctionMap[femorePurkait2003.id] = femorePurkait2003.fn
+	deductionFunctionMap[femoreProfiloFazekas1978.id] = femoreProfiloFazekas1978.fn
+	deductionFunctionMap[femoreScheuerBlack2000.id] = femoreScheuerBlack2000.fn
+	deductionFunctionMap[femoreFordisc.id] = femoreFordisc.fn
+	deductionFunctionMap[femoreWilson2010.id] = femoreWilson2010.fn
 
 	// Testing
-	deductionMap[farekasAtlante1.id] = farekasAtlante1.fn
-	deductionMap[farekasAtlante2.id] = farekasAtlante2.fn
+	deductionFunctionMap[farekasAtlante1.id] = farekasAtlante1.fn
+	deductionFunctionMap[farekasAtlante2.id] = farekasAtlante2.fn
+}
+
+export type SelectArgsFunction = Programmable<FormFieldSelectArgs>
+export type SelectArgsElement = ProgrammableElement<FormFieldSelectArgs>
+export const selectArgsFunctionMap: Record<string, SelectArgsFunction> = {}
+function loadSelectArgsFunctions() {
+	// atlante
+	selectArgsFunctionMap[atlantePatternLesivitàSegni.id] = atlantePatternLesivitàSegni.fn
+}
+
+export function loadProgrammableFunctions() {
+	loadDeductionFunctions()
+	loadSelectArgsFunctions()
 }
 
 export function walkObject<T = Object>(obj: any, query: string, split: string = '.'): T | undefined {
