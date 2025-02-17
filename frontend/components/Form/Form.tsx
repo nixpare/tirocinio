@@ -11,7 +11,6 @@ import { Carousel } from '../UI/Carousel'
 export type UpdateFormFunc = Updater<FormData>
 export type UpdateSectionFunc = Updater<FormSectionData>
 
-export const FormDataContext = createContext<FormData | undefined>(undefined)
 export const EditModeContext = createContext(false)
 export const VerticalSplitContext = createContext(false)
 
@@ -34,7 +33,7 @@ export const VerticalSplitContext = createContext(false)
  * @return ReactNode
  */
 export function Form({ data, updateData }: { data: FormData, updateData: UpdateFormFunc }) {
-	const sections = data.template.sections.map(section => {
+	const sections = data.templ.sections.map(section => {
 		// updatePage è la funzione di produzione sullo stato per la pagina specifica
 		const updateSection: UpdateSectionFunc = (updater) => {
 			updateData(formData => {
@@ -54,18 +53,16 @@ export function Form({ data, updateData }: { data: FormData, updateData: UpdateF
 		}
 
 		return <VerticalSplitContext.Provider value={false} key={section.title}>
-			<FormDataContext.Provider value={data}>
-				<FormSection section={section} data={data.sections?.[section.id]} update={updateSection} />
-			</FormDataContext.Provider>
+			<FormSection section={section} data={data.sections?.[section.id]} update={updateSection} />
 		</VerticalSplitContext.Provider>
 	})
 
 	return <div className="container form">
-		<h4 className="name">{data.name}</h4>
+		<h4 className="title">{data.templ.title}</h4>
 		<div className="form-sections">
 			<Tabs>
 				<TabList>
-					{data.template.sections.map(section => {
+					{data.templ.sections.map(section => {
 						return <Tab key={section.title}>
 							{section.title}
 						</Tab>
@@ -122,6 +119,7 @@ export function FormSection({ section, data, update }: {
 		return <div className="starter-field" key={`${section.title}-${starter.starterID}`}>
 			<Field field={starter}
 				data={data?.[starter.starterID]} update={updateStarter}
+				breadcrumb={[section.id, starter.starterID]}
 			/>
 		</div>
 	})

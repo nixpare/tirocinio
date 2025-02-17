@@ -8,8 +8,8 @@ import { EditModeContext, Form } from '../Form/Form'
 import { FullScreenOverlay } from '../UI/FullscreenOverlay'
 import { SetOverlayFunc } from '../../pages'
 import { useQuery } from '@tanstack/react-query'
-import { BodyData } from '../../models/Body'
-import { BodyDataContext } from './Body'
+import { BodyData, BodyDataContext } from '../../models/Body'
+import { AnatomStructDataContext, generateUpdateForm } from '../../models/AnatomStruct'
 
 type SkeletonProps = {
 	bodyName: string
@@ -134,8 +134,11 @@ function SelectBonesSection({ bones, skeletonData, updateSkeletonData, setOverla
 
 		updateSkeletonData(data => {
 			data[bone.name] = {
+				type: bone.type,
 				name: bone.name,
-				template: bone.template
+				form: {
+					templ: bone.form
+				}
 			}
 		})
 	}
@@ -332,12 +335,18 @@ type BonePopupProps = {
 }
 
 function BonePopup({ bone, updateBone, onClose, editMode = false }: BonePopupProps) {
+	const updateForm = generateUpdateForm(updateBone);
+
 	return (
 		<FullScreenOverlay>
 			<div className="edit-bone-popup">
-				<EditModeContext.Provider value={editMode}>
-					<Form data={bone} updateData={updateBone} />
-				</EditModeContext.Provider>
+				<AnatomStructDataContext.Provider value={bone}>
+					<EditModeContext.Provider value={editMode}>
+
+						<Form data={bone.form} updateData={updateForm} />
+
+					</EditModeContext.Provider>
+				</AnatomStructDataContext.Provider>
 				<button onClick={onClose}>
 					<i className="fa-solid fa-xmark"></i>
 				</button>

@@ -1,6 +1,7 @@
 import { DeductionElement, DeductionResult, walkObject } from "../models/Programmable";
-import { FormData, FormExpansionFieldTemplate, FormFieldSelectArg, FormFieldSelectArgs, FormFieldTemplate, FormSelectFieldTemplate } from "../models/Form";
+import { FormExpansionFieldTemplate, FormFieldSelectArg, FormFieldSelectArgs, FormFieldTemplate, FormSelectFieldTemplate } from "../models/Form";
 import { Bone } from "../models/Skeleton";
+import { AnatomStructData } from "../models/AnatomStruct";
 
 const atlanteImg = '/images/atlante.png';
 const atlanteCentriImg = '/images/atlante_centri.png';
@@ -30,7 +31,7 @@ const nextCentri_A_B: FormSelectFieldTemplate = {
 			display: 'Presente non fuso',
 			next: [
 				{ type: 'number', header: 'Lunghezza massima (mm)' },
-				{ type: 'deduction', header: 'Fazekas (1978)', deductionID: 'atlante_fazekas_1978' },
+				{ type: 'deduction', header: 'Fazekas (1978)', deductionID: 'atlante_fusione_fazekas_1978' },
 				{ type: 'text', header: 'Commenti' }
 			]
 		},
@@ -491,7 +492,7 @@ const lesivitàSegniNextArgs: FormFieldTemplate[] = [
 export const atlante: Bone = {
 	type: 'bone',
 	name: 'Atlante',
-	template: {
+	form: {
 		title: "Atlante",
 		sections: [
 			{
@@ -768,12 +769,23 @@ export const atlante: Bone = {
 	}
 }
 
-export const atlanteFazekas1978: DeductionElement = {
-	id: 'atlante_fazekas_1978',
-	fn: AtlanteFazekas1978
+export const atlanteFusioneFazekas1978: DeductionElement = {
+	id: 'atlante_fusione_fazekas_1978',
+	fn: AtlanteFusioneFazekas1978
 }
 
-function AtlanteFazekas1978(_: FormData): DeductionResult {
+function AtlanteFusioneFazekas1978(): DeductionResult {
+	return {
+		result: "Metodo presente ed eseguito: non ancora implementato"
+	}
+}
+
+export const atlanteProfiloFazekas1978: DeductionElement = {
+	id: 'atlante_profilo_fazekas_1978',
+	fn: AtlanteProfiloFazekas1978
+}
+
+function AtlanteProfiloFazekas1978(): DeductionResult {
 	return {
 		result: "Metodo presente ed eseguito: non ancora implementato"
 	}
@@ -784,7 +796,7 @@ export const atlanteScheuerBlack2000: DeductionElement = {
 	fn: AtlanteScheuerBlack2000
 }
 
-function AtlanteScheuerBlack2000(_: FormData): DeductionResult {
+function AtlanteScheuerBlack2000(): DeductionResult {
 	return {
 		result: "Metodo presente ed eseguito: non ancora implementato"
 	}
@@ -795,18 +807,18 @@ export const atlanteFordisc: DeductionElement = {
 	fn: AtlanteFordisc
 }
 
-function AtlanteFordisc(_: FormData): DeductionResult {
+function AtlanteFordisc(): DeductionResult {
 	return {
 		result: "Metodo presente ed eseguito: non ancora implementato"
 	}
 }
 
-function patternGetLesivitàSegni(form: FormData): FormFieldSelectArgs {
-	const nSegni = walkObject<number>(form.sections, 'lesività.lesività_segni.value.additional.length')
+function patternGetLesivitàSegni(struct: AnatomStructData): FormFieldSelectArgs {
+	const nSegni = walkObject<number>(struct.form.sections, 'lesività.lesività_segni.value.additional.length')
 	if (nSegni == undefined)
 		return {}
 
-	const [lesività] = form.template.sections.filter(section => section.id == 'lesività')
+	const [lesività] = struct.form.templ.sections.filter(section => section.id == 'lesività')
 	const [segni] = lesività.starters.filter(field => field.starterID == 'lesività_segni')
 	const prefix = (segni as FormExpansionFieldTemplate).prefix ?? ''
 

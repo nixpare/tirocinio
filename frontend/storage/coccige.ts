@@ -1,9 +1,9 @@
 import { DeductionElement, DeductionResult } from "../models/Programmable";
-import { FormData, FormSelectFieldTemplate, FormFieldTemplate } from "../models/Form";
+import { FormSelectFieldTemplate, FormFieldTemplate } from "../models/Form";
 import { Bone } from "../models/Skeleton";
 
-const coccigeNucleiImg = '/images/coccige_nuclei.png';
-const coccigeSettoriImg = '/images/coccige_settori.png';
+const coccigeNucleiImg = '/images/coccige_nuclei.png'
+const coccigeSettoriImg = '/images/coccige_settori.png'
 
 const nextNuclei: FormSelectFieldTemplate = {
 	type: 'select',
@@ -252,7 +252,7 @@ const lesivitàSegniNextArgs: FormFieldTemplate[] = [
 export const coccige: Bone = {
 	type: 'bone',
 	name: 'Coccige',
-	template: {
+	form: {
 		title: "Coccige",
 		sections: [
 			{
@@ -521,7 +521,7 @@ export const coccigeScheuerBlack2000: DeductionElement = {
 	fn: CoccigeScheuerBlack2000
 }
 
-function CoccigeScheuerBlack2000(_: FormData): DeductionResult {
+function CoccigeScheuerBlack2000(): DeductionResult {
 	return {
 		result: "Metodo presente ed eseguito: non ancora implementato"
 	}
@@ -532,7 +532,7 @@ export const coccigeRinaldo2019: DeductionElement = {
 	fn: CoccigeRinaldo2019
 }
 
-function CoccigeRinaldo2019(_: FormData): DeductionResult {
+function CoccigeRinaldo2019(): DeductionResult {
 	return {
 		result: "Metodo presente ed eseguito: non ancora implementato"
 	}

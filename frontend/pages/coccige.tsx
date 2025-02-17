@@ -1,14 +1,13 @@
-import './coccige.css'
-
 import { StrictMode } from 'react'
 import { useImmer } from 'use-immer'
 import { createRoot } from 'react-dom/client'
 import { Form, EditModeContext } from '../components/Form/Form'
-import { FormData } from '../models/Form'
 import { coccige } from '../storage/coccige'
 import { loadDeductionFunctions } from '../models/Programmable'
-import { BodyDataContext } from '../components/Body/Body'
+import { BodyDataContext } from '../models/Body'
 import { testBody } from '../storage/body'
+import { BoneData } from '../models/Skeleton'
+import { AnatomStructDataContext, generateUpdateForm } from '../models/AnatomStruct'
 
 loadDeductionFunctions()
 
@@ -18,23 +17,32 @@ createRoot(document.getElementById('root')!).render(
     </StrictMode>,
 )
 
-const boneState: FormData = {
+const boneState: BoneData = {
+    type: 'bone',
     name: coccige.name,
-    template: coccige.template
+    form: {
+        templ: coccige.form,
+    }
 }
 
 console.log(coccige)
 
 function App() {
     const [state, updateState] = useImmer(boneState)
+    const updateForm = generateUpdateForm(updateState)
 
     return (
         <div className="container app">
             <BodyDataContext.Provider value={testBody}>
-                <EditModeContext.Provider value={true}>
-                    <Form data={state} updateData={updateState} />
-                </EditModeContext.Provider>
+                <AnatomStructDataContext.Provider value={state}>
+                    <EditModeContext.Provider value={true}>
+
+                        <Form data={state.form} updateData={updateForm} />
+
+                    </EditModeContext.Provider>
+                </AnatomStructDataContext.Provider>
             </BodyDataContext.Provider>
+
             <button onClick={() => { console.log(coccige, state) }}>LOG in Console</button>
         </div>
     )

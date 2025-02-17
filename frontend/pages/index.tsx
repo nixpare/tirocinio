@@ -1,5 +1,3 @@
-import './index.css'
-
 import { StrictMode, useState } from 'react'
 import { createRoot } from 'react-dom/client'
 import { Skeleton } from '../components/Body/Skeleton'

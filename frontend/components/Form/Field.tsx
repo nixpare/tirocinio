@@ -4,18 +4,20 @@ import { ChangeEvent, MouseEvent, useContext, useEffect, useRef } from "react";
 import { Updater, useImmer } from "use-immer";
 import Select, { ActionMeta, MultiValue, SelectInstance, StylesConfig } from 'react-select'
 import { FormFieldData, FormFieldTemplate, formFieldIsFixed, formFieldIsText, formFieldDataIsText, formFieldIsNumber, formFieldDataIsNumber, formFieldIsSelect, formFieldDataIsSelect, FormSelectFieldTemplate, FormSelectFieldData, formFieldIsDeduction, formFieldIsMultiSelect, FormMultiSelectFieldData, FormMultiSelectFieldTemplate, formFieldDataIsMultiSelect, FormFieldSelectArg, formFieldIsExpansion, formFieldDataIsExpansion, FormExpansionFieldData, FormExpansionFieldTemplate, FormFieldSelectArgs } from "../../models/Form";
-import { EditModeContext, FormDataContext } from "./Form";
+import { EditModeContext } from "./Form";
 import { deductionMap } from '../../models/Programmable';
+import { AnatomStructDataContext } from '../../models/AnatomStruct';
+import { BodyDataContext } from '../../models/Body';
 
 export type UpdateFieldFunc = Updater<FormFieldData>
 type UpdateSelectFieldFunc = Updater<FormSelectFieldData>
 type UpdateMultiSelectFieldFunc = Updater<FormMultiSelectFieldData>
 type UpdateExpansionFieldFunc = Updater<FormExpansionFieldData>
 
-export function Field({ field, data, update, hideHeader }: {
+export function Field({ field, data, update, breadcrumb, hideHeader }: {
 	field: FormFieldTemplate,
 	data?: FormFieldData, update: UpdateFieldFunc,
-	hideHeader?: boolean
+	breadcrumb: string[], hideHeader?: boolean
 }) {
 	const editMode = useContext(EditModeContext)
 
@@ -78,7 +80,7 @@ export function Field({ field, data, update, hideHeader }: {
 			return <SelectField
 				field={field}
 				data={data} update={update as UpdateSelectFieldFunc}
-				disabled={!editMode} hideHeader={hideHeader}
+				disabled={!editMode} breadcrumb={breadcrumb} hideHeader={hideHeader}
 			/>
 		case formFieldIsMultiSelect(field):
 			if (data != undefined && !formFieldDataIsMultiSelect(data))
@@ -87,7 +89,7 @@ export function Field({ field, data, update, hideHeader }: {
 			return <MultiSelectField
 				field={field}
 				data={data} update={update as UpdateMultiSelectFieldFunc}
-				disabled={!editMode} hideHeader={hideHeader}
+				disabled={!editMode} breadcrumb={breadcrumb} hideHeader={hideHeader}
 			/>
 		case formFieldIsExpansion(field):
 			if (data != undefined && !formFieldDataIsExpansion(data))
@@ -96,17 +98,18 @@ export function Field({ field, data, update, hideHeader }: {
 			return <ExpansionField
 				field={field}
 				data={data} update={update as UpdateExpansionFieldFunc}
-				disabled={!editMode} hideHeader={hideHeader}
+				disabled={!editMode} breadcrumb={breadcrumb} hideHeader={hideHeader}
 			/>
 		case formFieldIsDeduction(field):
 			let result: string;
 			try {
-				const formData = useContext(FormDataContext)
-				if (!formData) {
+				const struct = useContext(AnatomStructDataContext)
+				const body = useContext(BodyDataContext)
+				if (!struct || !body) {
 					throw new Error('informazioni sul form corrente non trovate')
 				}
 
-				({ result } = deductionMap[field.deductionID](formData))
+				({ result } = deductionMap[field.deductionID](struct, body, breadcrumb))
 			} catch (e) {
 				console.error(e)
 				result = 'Errore nel calcolo'
@@ -124,20 +127,22 @@ type SelectOption = {
 	label: string
 }
 
-function SelectField({ field, data, update, disabled, hideHeader }: {
+function SelectField({ field, data, update, disabled, breadcrumb, hideHeader }: {
 	field: FormSelectFieldTemplate,
 	data?: FormSelectFieldData, update: UpdateSelectFieldFunc,
-	disabled: boolean, hideHeader?: boolean
+	disabled: boolean, breadcrumb: string[], hideHeader?: boolean
 }) {
 	let selectArgs: FormFieldSelectArgs = {}
 
 	if (typeof field.selectArgs === 'function') {
 		try {
-			const formData = useContext(FormDataContext)
-			if (!formData)
+			const struct = useContext(AnatomStructDataContext)
+			const body = useContext(BodyDataContext)
+			if (!struct || !body) {
 				throw new Error('informazioni sul form corrente non trovate')
+			}
 
-			selectArgs = field.selectArgs(formData)
+			selectArgs = field.selectArgs(struct, body, breadcrumb)
 		} catch (e) {
 			console.error(e)
 		}
@@ -196,13 +201,15 @@ function SelectField({ field, data, update, disabled, hideHeader }: {
 		</div>
 		{data && data.value &&
 			<SelectNextFields arg={selectArgs[data.value.selection]}
-				data={data} update={update} />}
+				data={data} update={update}
+				breadcrumb={[...breadcrumb, data.value.selection]} />}
 	</div>
 }
 
-function SelectNextFields({ arg, data, update }: {
+function SelectNextFields({ arg, data, update, breadcrumb }: {
 	arg: FormFieldSelectArg,
 	data?: FormSelectFieldData, update: UpdateSelectFieldFunc,
+	breadcrumb: string[]
 }) {
 	return <div className='next-fields'>
 		{arg.next?.map((next, nextIdx) => {
@@ -225,25 +232,27 @@ function SelectNextFields({ arg, data, update }: {
 
 			return <Field field={next} key={nextIdx}
 				data={data?.value?.next?.[nextIdx]}
-				update={updateNext} />
+				update={updateNext} breadcrumb={[...breadcrumb, nextIdx.toString()]} />
 		})}
 	</div>
 }
 
-function MultiSelectField({ field, data, update, disabled, hideHeader }: {
+function MultiSelectField({ field, data, update, disabled, breadcrumb, hideHeader }: {
 	field: FormMultiSelectFieldTemplate,
 	data?: FormMultiSelectFieldData, update: UpdateMultiSelectFieldFunc,
-	disabled: boolean, hideHeader?: boolean
+	disabled: boolean, breadcrumb: string[], hideHeader?: boolean
 }) {
 	let selectArgs: FormFieldSelectArgs = {}
 
 	if (typeof field.selectArgs === 'function') {
 		try {
-			const formData = useContext(FormDataContext)
-			if (!formData)
+			const struct = useContext(AnatomStructDataContext)
+			const body = useContext(BodyDataContext)
+			if (!struct || !body) {
 				throw new Error('informazioni sul form corrente non trovate')
+			}
 
-			selectArgs = field.selectArgs(formData)
+			selectArgs = field.selectArgs(struct, body, breadcrumb)
 		} catch (e) {
 			console.error(e)
 		}
@@ -330,7 +339,7 @@ function MultiSelectField({ field, data, update, disabled, hideHeader }: {
 				return <div className='container container-horiz multi-select-arg' key={sel.value}>
 					<div className='arg-display'>{selectedArg.display}</div>
 					<MultiSelectNextFields selected={sel.value} arg={selectedArg}
-						data={data} update={update} />
+						data={data} update={update} breadcrumb={[...breadcrumb, sel.value]}/>
 					<button className="delete-row" onClick={deleteSelection}>
 						<i className="fa-solid fa-trash"></i>
 					</button>
@@ -340,9 +349,10 @@ function MultiSelectField({ field, data, update, disabled, hideHeader }: {
 	</div>
 }
 
-function MultiSelectNextFields({ selected, arg, data, update }: {
+function MultiSelectNextFields({ selected, arg, data, update, breadcrumb }: {
 	selected: string, arg: FormFieldSelectArg,
 	data?: FormMultiSelectFieldData, update: UpdateMultiSelectFieldFunc,
+	breadcrumb: string[],
 }) {
 	return <div className='next-fields'>
 		{arg.next?.map((next, nextIdx) => {
@@ -374,15 +384,15 @@ function MultiSelectNextFields({ selected, arg, data, update }: {
 
 			return <Field field={next} key={nextIdx}
 				data={data?.value?.next?.[selected]?.[nextIdx]}
-				update={updateNext} />
+				update={updateNext} breadcrumb={[...breadcrumb, nextIdx.toString()]}/>
 		})}
 	</div>
 }
 
-function ExpansionField({ field, data, update, disabled, hideHeader }: {
+function ExpansionField({ field, data, update, disabled, breadcrumb, hideHeader }: {
 	field: FormExpansionFieldTemplate,
 	data?: FormExpansionFieldData, update: UpdateExpansionFieldFunc,
-	disabled: boolean, hideHeader?: boolean
+	disabled: boolean, breadcrumb: string[], hideHeader?: boolean
 }) {
 	const [additionalTempData, updateAdditionalTempData] = useImmer<FormFieldData[]>([])
 
@@ -434,29 +444,9 @@ function ExpansionField({ field, data, update, disabled, hideHeader }: {
 
 						return <Field field={field} key={fieldIdx}
 							data={data?.value?.fixed?.[rowIdx]?.[fieldIdx]} update={updateField}
+							breadcrumb={[...breadcrumb, 'fixed', rowIdx.toString(), fieldIdx.toString()]}
 						/>
 					})}
-					{data?.value?.additional?.[rowIdx] && field.next && (() => {
-						const updateNextFields: Updater<FormFieldData[]> = (updater) => {
-							update(expansionData => {
-								if (expansionData == undefined || expansionData.value == undefined ||
-									expansionData.value.additional == undefined || expansionData.value.additional[rowIdx] == undefined) {
-									throw new Error('expansion is undefined after the first stage')
-								}
-
-								if (typeof updater !== 'function') {
-									expansionData.value.additional[rowIdx] = updater
-									return
-								}
-
-								updater(expansionData.value.additional[rowIdx])
-							})
-						}
-
-						return <ExpansionNextFields next={field.next} dataOffset={field.expansionArgs?.length ?? 0}
-							data={data.value?.additional?.[rowIdx]} update={updateNextFields}
-						/>
-					})()}
 				</div>
 			})}
 		</div>
@@ -504,6 +494,7 @@ function ExpansionField({ field, data, update, disabled, hideHeader }: {
 
 						return <Field field={arg} key={argIdx}
 							data={additionalData[argIdx]} update={updateField}
+							breadcrumb={[...breadcrumb, 'additional', rowIdx.toString(), argIdx.toString()]}
 						/>
 					})}
 					{data?.value?.additional?.[rowIdx] && field.next && (() => {
@@ -525,6 +516,7 @@ function ExpansionField({ field, data, update, disabled, hideHeader }: {
 
 						return <ExpansionNextFields next={field.next} dataOffset={field.expansionArgs?.length ?? 0}
 							data={data.value?.additional?.[rowIdx]} update={updateNextFields}
+							breadcrumb={[...breadcrumb, 'additional', rowIdx.toString()]}
 						/>
 					})()}
 				</div>
@@ -549,6 +541,7 @@ function ExpansionField({ field, data, update, disabled, hideHeader }: {
 
 					return <Field field={arg} key={argIdx}
 						data={additionalTempData[argIdx]} update={updateField}
+						breadcrumb={[...breadcrumb, 'add-input', argIdx.toString()]}
 					/>
 				})}
 			</div>
@@ -559,9 +552,10 @@ function ExpansionField({ field, data, update, disabled, hideHeader }: {
 	</div>
 }
 
-function ExpansionNextFields({ next, dataOffset, data, update }: {
+function ExpansionNextFields({ next, dataOffset, data, update, breadcrumb }: {
 	next: FormFieldTemplate[], dataOffset: number,
 	data?: FormFieldData[], update: Updater<FormFieldData[]>,
+	breadcrumb: string[]
 }) {
 	return <div className='next-fields'>
 		{next.map((field, nextIdx) => {
@@ -584,7 +578,8 @@ function ExpansionNextFields({ next, dataOffset, data, update }: {
 
 			return <Field field={field} key={nextIdx}
 				data={data?.[dataOffset + nextIdx]}
-				update={updateNext} />
+				update={updateNext}
+				breadcrumb={[...breadcrumb, (dataOffset + nextIdx).toString()]}/>
 		})}
 	</div>
 }

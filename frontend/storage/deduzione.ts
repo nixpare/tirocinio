@@ -1,40 +1,33 @@
-import { useContext } from "react";
-import { BodyDataContext } from "../components/Body/Body";
-import { FormData, FormTableDeductionFieldTemplate, FormTableDropdownFieldTemplate, FormTableNumberFieldTemplate } from "../models/Form";
+import { BodyData } from "../models/Body";
 import { Bone } from "../models/Skeleton";
-import { ProgrammableElement } from "../models/Programmable";
+import { DeductionElement, DeductionResult, walkBreadcrumb } from "../models/Programmable";
+import { AnatomStructData } from "../models/AnatomStruct";
+import { FormFieldTemplate } from "../models/Form";
 
-export const farekasAtlante: ProgrammableElement = {
-	id: 'farekas_atlante',
-	fn: FarekasAtlante
+export const farekasAtlante1: DeductionElement = {
+	id: 'farekas_atlante_1',
+	fn: (struct, body, breadcrumb) => {
+		return FarekasAtlante(struct, body, breadcrumb, 'sec_1.test_1')
+	}
 }
 
-function FarekasAtlante(anatom: FormData, rowIdx: number): string {
-	const body = useContext(BodyDataContext)
-	if (!body)
-		throw new Error('informazioni sul corpo non trovate')
+export const farekasAtlante2: DeductionElement = {
+	id: 'farekas_atlante_2',
+	fn: (struct, body, breadcrumb) => {
+		return FarekasAtlante(struct, body, breadcrumb, 'sec_2.test_2')
+	}
+}
 
+function FarekasAtlante(struct: AnatomStructData, body: BodyData, breadcrumb: string[], breadcrumbQuery: string): DeductionResult {
 	const name = walkObject<string>(body, 'generals.name')
 	const age = walkObject<number>(body, 'generals.age')
 
 	console.log(name, age)
 
-	const section = 0
-	const table = 0
-	const row = walkObject(anatom, `sections.${section}.${table}.${rowIdx}`)
-
-	const stateField = 1
-	const lengthField = 0
-	const length = walkObject(row, `${stateField}.value.next.${lengthField}.value`) as number | undefined
-
-	/* const section = data.sections?.[0]
-	const table = section?.[0]
-	const row = table?.[rowIdx]
-	const state = row?.[1]?.value as FormTableDropdownFieldValue | undefined
-	const length = state?.next?.[0]?.value as number | undefined */
-
+	const [settore] = walkBreadcrumb(breadcrumb, breadcrumbQuery)
+	const length = walkObject<number>(struct.form.sections, `sec_1.test_1.value.next.${settore}.0.value`)
 	if (!length)
-		return 'Lunghezza non presente'
+		return { result: 'Lunghezza non presente' }
 
 	const possibleAges = []
 
@@ -55,29 +48,27 @@ function FarekasAtlante(anatom: FormData, rowIdx: number): string {
 	}
 
 	if (possibleAges.length == 0) {
-		return 'Nessuna età deducibile'
+		return { result: 'Nessuna età deducibile' }
 	}
 
-	return possibleAges.toString()
+	return { result: possibleAges.toString() }
 }
 
-const metodoEtaPrenatale = {
-	type: 'dropdown',
+const metodoEtaPrenatale1: FormFieldTemplate = {
+	type: 'select',
 	header: 'Metodo età prenatale',
-	dropdownArgs: [
-		{
-			value: 'farekas_1978_atlante',
+	selectArgs: {
+		'farekas_1978_atlante': {
 			display: 'Fazekas (1978)',
 			next: [
 				{
 					type: 'deduction',
 					header: 'Età prenatale',
-					deductionID: farekasAtlante.id
-				} as FormTableDeductionFieldTemplate
+					deductionID: farekasAtlante1.id
+				}
 			]
 		},
-		{
-			value: 'custom_method',
+		'custom_method': {
 			display: 'Altro',
 			next: [
 				{
@@ -90,95 +81,122 @@ const metodoEtaPrenatale = {
 				}
 			]
 		}
-	]
-} as FormTableDropdownFieldTemplate
+	}
+}
 
-export const deduzioneBone: Bone = {
+const metodoEtaPrenatale2: FormFieldTemplate = {
+	type: 'select',
+	header: 'Metodo età prenatale',
+	selectArgs: {
+		'farekas_1978_atlante': {
+			display: 'Fazekas (1978)',
+			next: [
+				{
+					type: 'deduction',
+					header: 'Età prenatale',
+					deductionID: farekasAtlante2.id
+				}
+			]
+		},
+		'custom_method': {
+			display: 'Altro',
+			next: [
+				{
+					type: 'text',
+					header: 'Nome metodo (anno)'
+				},
+				{
+					type: 'text',
+					header: 'Età prenatale'
+				}
+			]
+		}
+	}
+}
+
+export const deduzione: Bone = {
 	type: 'bone',
 	name: 'Osso con Deduzione',
-	template: {
+	form: {
 		title: "Osso con Deduzione",
 		sections: [
 			{
-				title: 'Fusione e Sviluppo Atlante',
-				tables: [
+				id: 'sec_1',
+				title: 'Sezione Deduzione',
+				starters: [
 					{
-						headers: ['Centri di ossifocazione', 'Stato'],
-						fields: [
-							{
-								type: 'text',
-								fixedArgs: ['A', 'B', 'C'],
-							},
-							{
-								type: 'dropdown',
-								defaultValue: {
-									type: 'dropdown',
-									display: 'Tutto Presente',
-									value: {
-										selection: 'presente_fuso'
-									}
-								},
-								dropdownArgs: [
+						type: 'multi-select',
+						starterID: 'test_1',
+						header: 'Test Deduzione',
+						selectArgs: {
+							'a': {
+								display: 'A',
+								next: [
 									{
-										value: 'assente_per_immaturità',
-										display: 'Assente per Immaturità'
+										type: 'number',
+										header: 'Lunghezza massima (mm)'
 									},
+									metodoEtaPrenatale1,
 									{
-										value: 'assente_per_tafonomia',
-										display: 'Assente per Tafonomia'
-									},
-									{
-										value: 'assente_non_valutabile',
-										display: 'Assente non valutabile'
-									},
-									{
-										value: 'presente_ma_fusione_non_valutabile',
-										display: 'Presente ma fusione non valutabile'
-									},
-									{
-										value: 'presente_non_fuso',
-										display: 'Presente non Fuso',
-										next: [
-											{
-												type: 'number',
-												header: 'Lunghezza massima (mm)'
-											} as FormTableNumberFieldTemplate,
-											metodoEtaPrenatale,
-											{
-												type: 'text',
-												header: 'Commenti'
-											}
-										]
-									},
-									{
-										value: 'presente_in_fusione',
-										display: 'Presente in Fusione'
-									},
-									{
-										value: 'presente_fuso',
-										display: 'Presente Fuso'
+										type: 'text',
+										header: 'Commenti'
 									}
 								]
-							} as FormTableDropdownFieldTemplate
-						]
-					},
-					{
-						headers: ['Deduzione da sopra', 'Valore'],
-						fields: [
-							{
-								type: 'blank',
-								fixedArgs: ['A', 'B', 'C']
 							},
-							{
-								...metodoEtaPrenatale,
-								defaultValue: {
-									type: 'dropdown',
-									value: {
-										selection: 'farekas_1978_atlante'
+							'b': {
+								display: 'B',
+								next: [
+									{
+										type: 'number',
+										header: 'Lunghezza massima (mm)'
+									},
+									metodoEtaPrenatale1,
+									{
+										type: 'text',
+										header: 'Commenti'
 									}
-								}
+								]
+							},
+							'c': {
+								display: 'C',
+								next: [
+									{
+										type: 'number',
+										header: 'Lunghezza massima (mm)'
+									},
+									metodoEtaPrenatale1,
+									{
+										type: 'text',
+										header: 'Commenti'
+									}
+								]
 							}
-						]
+						}
+					}
+				]
+			},
+			{
+				id: 'sec_2',
+				title: 'Altra Sezione',
+				starters: [
+					{
+						type: 'multi-select',
+						starterID: 'test_2',
+						header: 'Test Deduzione da altra sezione',
+						selectArgs: {
+							'a': {
+								display: 'A',
+								next: [metodoEtaPrenatale2]
+							},
+							'b': {
+								display: 'B',
+								next: [metodoEtaPrenatale2]
+							},
+							'c': {
+								display: 'C',
+								next: [metodoEtaPrenatale2]
+							}
+						}
 					}
 				]
 			}

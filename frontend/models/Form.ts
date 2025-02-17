@@ -68,7 +68,7 @@ type FormFieldBaseTemplate = {
  *     + `form`: i dati inseriti (`FormData`) presi dalla tabella
  *     + `rowIdx`: l'indice della riga nella tabella, per poter fare calcoli diversi in base alla riga
  */
-export type FormFieldType = 'fixed' | 'text' | 'number' | 'select' | 'multi-select' | 'expansion' | 'incremental' | 'deduction'
+export type FormFieldType = 'fixed' | 'text' | 'number' | 'select' | 'multi-select' | 'expansion' | 'deduction'
 
 export type FormFixedFieldTemplate = FormFieldBaseTemplate & {
 	type: 'fixed'
@@ -143,11 +143,7 @@ export type FormFieldSelectArg = {
  * al template della struttura anatomica di riferimento.
  */
 export type FormData = {
-	/** il nome della struttura anatomica */
-	name: string
-	/** una copia del template della struttura anatomica */
-	template: FormTemplate,
-	/** TODO: check if this is enough */
+	templ: FormTemplate
 	sections?: Record<string, FormSectionData>
 }
 
