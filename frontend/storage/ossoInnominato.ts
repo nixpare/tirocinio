@@ -10,7 +10,7 @@ export const ossoInnominato: Bone = {
 			// Page Test
 			{
 				title: "Test variadic mouse",
-				image: ['/images/slide-image-1.png', '/images/slide-image-2.png'],
+				images: ['/images/slide-image-1.png', '/images/slide-image-2.png'],
 				tables: [
 					{
 						headers: ["Nucleo", "Stato"],
@@ -57,7 +57,7 @@ export const ossoInnominato: Bone = {
 			// Page 1
 			{
 				title: "Centri di ossificazione: presenza/assenza, fusione lunghezza diafisi",
-				image: ['/images/slide-image-1.png'],
+				images: ['/images/slide-image-1.png'],
 				tables: [
 					{
 						headers: ["Nucleo", "Stato", "Lunghezza (cm)"],
@@ -86,7 +86,7 @@ export const ossoInnominato: Bone = {
 			// Page 2
 			{
 				title: "Completezza, qualità, colore generale",
-				image: ['/images/slide-image-2.png'],
+				images: ['/images/slide-image-2.png'],
 				tables: [
 					{
 						headers: ["Settore", "Presente/Assente", "Note"],
@@ -134,7 +134,7 @@ export const ossoInnominato: Bone = {
 			// Page 3
 			{
 				title: "Caratteri metrici",
-				image: ['/images/slide-image-3.png', '/images/slide-image-4.png'],
+				images: ['/images/slide-image-3.png', '/images/slide-image-4.png'],
 				tables: [
 					{
 						headers: ["Codice Misura", "Nome Misura", "Misura (cm)"],
@@ -200,7 +200,7 @@ export const ossoInnominato: Bone = {
 			// Page 7
 			{
 				title: "Lesività - Descrizione",
-				image: ["/images/slide-image-5.png"],
+				images: ["/images/slide-image-5.png"],
 				tables: [
 					{
 						headers: ["#", "Classe", "Descrizione segni"],

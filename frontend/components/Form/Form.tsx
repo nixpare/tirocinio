@@ -34,28 +34,28 @@ export const VerticalSplitContext = createContext(false)
  * @return ReactNode
  */
 export function Form({ data, updateData }: { data: FormData, updateData: UpdateFormFunc }) {
-	const sections = data.template.sections.map((section, sectionIdx) => {
+	const sections = data.template.sections.map(section => {
 		// updatePage è la funzione di produzione sullo stato per la pagina specifica
 		const updateSection: UpdateSectionFunc = (updater) => {
 			updateData(formData => {
-				if (!formData.sections)
-					formData.sections = []
+				if (formData.sections == undefined)
+					formData.sections = {}
 
 				if (typeof updater !== 'function') {
-					formData.sections[sectionIdx] = updater
+					formData.sections[section.id] = updater
 					return
 				}
 
-				if (!formData.sections[sectionIdx])
-					formData.sections[sectionIdx] = {}
+				if (formData.sections[section.id] == undefined)
+					formData.sections[section.id] = {}
 
-				updater(formData.sections[sectionIdx])
+				updater(formData.sections[section.id])
 			})
 		}
 
 		return <VerticalSplitContext.Provider value={false} key={section.title}>
 			<FormDataContext.Provider value={data}>
-				<FormSection section={section} data={data.sections?.[sectionIdx]} update={updateSection} />
+				<FormSection section={section} data={data.sections?.[section.id]} update={updateSection} />
 			</FormDataContext.Provider>
 		</VerticalSplitContext.Provider>
 	})
@@ -126,7 +126,7 @@ export function FormSection({ section, data, update }: {
 		</div>
 	})
 
-	if (!section.image) {
+	if (!section.images) {
 		return <div className="container form-section">
 			<h3>{section.title}</h3>
 			{starters}
@@ -144,7 +144,7 @@ export function FormSection({ section, data, update }: {
 			<div className="container">
 				<div className="images">
 					<Carousel>
-						{section.image?.map((image, imageIdx) => {
+						{section.images?.map((image, imageIdx) => {
 							return <div className="image" key={imageIdx}>
 								<img src={image} alt={section.title} />
 							</div>

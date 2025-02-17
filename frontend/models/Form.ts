@@ -1,3 +1,4 @@
+import { Programmable } from "./Programmable"
 
 /**
  * AnatomStructTemplate contiene la rappresentazione delle informazioni
@@ -24,12 +25,13 @@ export type FormTemplate = {
  *   delle immagini, aggiunto ad-hoc dall'utente e modificabile/rimovibile)
  */
 export type FormSectionTemplate = {
+	id: string
 	/** titolo della pagina */
 	title: string
 	/** le proprietà iniziali */
 	starters: FormSectionStarterTemplate[]
 	/** immagini da affiancare alle tabelle delle proprietà */
-	image?: string[]
+	images?: string[]
 }
 
 export type FormSectionStarterTemplate = {
@@ -40,9 +42,8 @@ export type FormSectionStarterTemplate = {
  * FormFieldTemplate contiene le caratteristiche di una proprietà.
  * Le varie proprietà opzionali sono dedicate alle varie modalità di input
  */
-export type FormFieldTemplate = FormFieldBaseTemplate | FormBlankFieldTemplate | FormTextFieldTemplate | FormNumberFieldTemplate |
-	FormSelectFieldTemplate | FormMultiSelectFieldTemplate | FormExpansionFieldTemplate | FormIncrementalFieldTemplate |
-	FormDeductionFieldTemplate
+export type FormFieldTemplate = FormFieldBaseTemplate | FormFixedFieldTemplate | FormTextFieldTemplate | FormNumberFieldTemplate |
+	FormSelectFieldTemplate | FormMultiSelectFieldTemplate | FormExpansionFieldTemplate | FormDeductionFieldTemplate
 
 type FormFieldBaseTemplate = {
 	/** il tipo di input sottostante alla proprietà */
@@ -53,7 +54,7 @@ type FormFieldBaseTemplate = {
 
 /**
  * FormFieldType contiene le varie tipologie di input supportate dalle proprietà:
- * + `blank`: una cella vuota
+ * + `fixed`: una cella con un testo fissato
  * + `text`: un semplice <input type="text" />
  * + `number`: un semplice <input type="number" />
  * + `select`: un componente simile a un elemento <select> con varie <option>, dove ad ogni valore selezionabile dal
@@ -67,10 +68,11 @@ type FormFieldBaseTemplate = {
  *     + `form`: i dati inseriti (`FormData`) presi dalla tabella
  *     + `rowIdx`: l'indice della riga nella tabella, per poter fare calcoli diversi in base alla riga
  */
-export type FormFieldType = 'blank' | 'text' | 'number' | 'select' | 'multi-select' | 'expansion' | 'incremental' | 'deduction'
+export type FormFieldType = 'fixed' | 'text' | 'number' | 'select' | 'multi-select' | 'expansion' | 'incremental' | 'deduction'
 
-export type FormBlankFieldTemplate = FormFieldBaseTemplate & {
-	type: 'blank'
+export type FormFixedFieldTemplate = FormFieldBaseTemplate & {
+	type: 'fixed'
+	value?: string
 }
 export type FormTextFieldTemplate = FormFieldBaseTemplate & {
 	type: 'text'
@@ -82,21 +84,17 @@ export type FormNumberFieldTemplate = FormFieldBaseTemplate & {
 }
 export type FormSelectFieldTemplate = FormFieldBaseTemplate & {
 	type: 'select'
-	selectArgs: Record<string, FormFieldSelectArg>
+	selectArgs: FormFieldSelectArgs | Programmable<FormFieldSelectArgs>
 }
 export type FormMultiSelectFieldTemplate = FormFieldBaseTemplate & {
 	type: 'multi-select'
-	selectArgs: Record<string, FormFieldSelectArg>
+	selectArgs: FormFieldSelectArgs | Programmable<FormFieldSelectArgs>
 }
 export type FormExpansionFieldTemplate = FormFieldBaseTemplate & {
 	type: 'expansion'
-	fixed?: FormFieldTemplate[][]
-	expansionArgs: FormFieldTemplate[]
-	next?: FormFieldTemplate[]
-}
-export type FormIncrementalFieldTemplate = FormFieldBaseTemplate & {
-	type: 'incremental'
+	incremental?: boolean
 	prefix?: string
+	fixed?: FormFieldTemplate[][]
 	expansionArgs?: FormFieldTemplate[]
 	next?: FormFieldTemplate[]
 }
@@ -105,8 +103,8 @@ export type FormDeductionFieldTemplate = FormFieldBaseTemplate & {
 	deductionID: string
 }
 
-export function formFieldIsBlank(f: FormFieldTemplate): f is FormBlankFieldTemplate {
-	return f.type == 'blank';
+export function formFieldIsFixed(f: FormFieldTemplate): f is FormFixedFieldTemplate {
+	return f.type == 'fixed';
 }
 export function formFieldIsText(f: FormFieldTemplate): f is FormTextFieldTemplate {
 	return f.type == 'text';
@@ -123,12 +121,11 @@ export function formFieldIsMultiSelect(f: FormFieldTemplate): f is FormMultiSele
 export function formFieldIsExpansion(f: FormFieldTemplate): f is FormExpansionFieldTemplate {
 	return f.type == 'expansion';
 }
-export function formFieldIsIncremental(f: FormFieldTemplate): f is FormIncrementalFieldTemplate {
-	return f.type == 'incremental';
-}
 export function formFieldIsDeduction(f: FormFieldTemplate): f is FormDeductionFieldTemplate {
 	return f.type == 'deduction';
 }
+
+export type FormFieldSelectArgs = Record<string, FormFieldSelectArg>
 
 /** FormFieldSelectArg rappresenta un'opzione di un campo Select */
 export type FormFieldSelectArg = {
@@ -151,23 +148,19 @@ export type FormData = {
 	/** una copia del template della struttura anatomica */
 	template: FormTemplate,
 	/** TODO: check if this is enough */
-	sections?: FormSectionData[]
+	sections?: Record<string, FormSectionData>
 }
 
 export type FormSectionData = Record<string, FormFieldData> | undefined
 
-export type FormFieldData = FormFieldBaseData | FormBlankFieldData | FormTextFieldData | FormNumberFieldData |
-	FormSelectFieldData | FormMultiSelectFieldData | FormExpansionFieldData | FormIncrementalFieldData |
-	FormDeductionFieldData
+export type FormFieldData = FormFieldBaseData | FormTextFieldData | FormNumberFieldData |
+	FormSelectFieldData | FormMultiSelectFieldData | FormExpansionFieldData | FormDeductionFieldData
 
 type FormFieldBaseData = {
 	type: FormFieldType
-	value?: string | number | FormSelectFieldValue | FormMultiSelectFieldValue | FormExpansionFieldValue | FormIncrementalFieldValue
+	value?: string | number | FormSelectFieldValue | FormMultiSelectFieldValue | FormExpansionFieldValue
 }
 
-export type FormBlankFieldData = FormFieldBaseData & {
-	type: 'blank'
-}
 export type FormTextFieldData = FormFieldBaseData & {
 	type: 'text'
 	value?: string
@@ -188,17 +181,10 @@ export type FormExpansionFieldData = FormFieldBaseData & {
 	type: 'expansion'
 	value?: FormExpansionFieldValue
 }
-export type FormIncrementalFieldData = FormFieldBaseData & {
-	type: 'incremental'
-	value?: FormIncrementalFieldValue
-}
 export type FormDeductionFieldData = FormFieldBaseData & {
 	type: 'deduction'
 }
 
-export function formFieldDataIsBlank(f: FormFieldData): f is FormBlankFieldData {
-	return f.type == 'blank';
-}
 export function formFieldDataIsText(f: FormFieldData): f is FormTextFieldData {
 	return f.type == 'text';
 }
@@ -213,9 +199,6 @@ export function formFieldDataIsMultiSelect(f: FormFieldData): f is FormMultiSele
 }
 export function formFieldDataIsExpansion(f: FormFieldData): f is FormExpansionFieldData {
 	return f.type == 'expansion';
-}
-export function formFieldDataIsIncremental(f: FormFieldData): f is FormIncrementalFieldData {
-	return f.type == 'incremental';
 }
 export function formFieldDataIsDeduction(f: FormFieldData): f is FormDeductionFieldData {
 	return f.type == 'deduction';
@@ -241,5 +224,3 @@ export type FormExpansionFieldValue = {
 	fixed?: FormFieldData[][]
 	additional?: FormFieldData[][]
 }
-
-export type FormIncrementalFieldValue = FormFieldData[][]

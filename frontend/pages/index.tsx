@@ -5,7 +5,7 @@ import { createRoot } from 'react-dom/client'
 import { Skeleton } from '../components/Body/Skeleton'
 import { FullScreenOverlay, FullscreenOverlayProps } from '../components/UI/FullscreenOverlay'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { loadDeductionFunctions } from '../models/Deduction'
+import { loadDeductionFunctions } from '../models/Programmable'
 
 export type SetOverlayFunc = (overlay: React.ReactNode, overlayProps?: FullscreenOverlayProps) => void
 type OverlayContent = {
@@ -39,7 +39,7 @@ function App() {
         <div className="container app">
             <Skeleton
                 bodyName={bodyName}
-                setOverlay={setOverlay}/>
+                setOverlay={setOverlay} />
             {overlayContent.content && <FullScreenOverlay {...overlayContent.props}>
                 {overlayContent.content}
             </FullScreenOverlay>}

@@ -2,9 +2,9 @@ import { useContext } from "react";
 import { BodyDataContext } from "../components/Body/Body";
 import { FormData, FormTableDeductionFieldTemplate, FormTableDropdownFieldTemplate, FormTableNumberFieldTemplate } from "../models/Form";
 import { Bone } from "../models/Skeleton";
-import { DeductionElement } from "../models/Deduction";
+import { ProgrammableElement } from "../models/Programmable";
 
-export const farekasAtlante: DeductionElement = {
+export const farekasAtlante: ProgrammableElement = {
 	id: 'farekas_atlante',
 	fn: FarekasAtlante
 }

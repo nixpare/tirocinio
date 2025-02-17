@@ -1,11 +1,11 @@
-import './coccige.css'
+import './atlante.css'
 
 import { StrictMode } from 'react'
 import { useImmer } from 'use-immer'
 import { createRoot } from 'react-dom/client'
 import { Form, EditModeContext } from '../components/Form/Form'
 import { FormData } from '../models/Form'
-import { coccige } from '../storage/coccige'
+import { atlante } from '../storage/atlante'
 import { loadDeductionFunctions } from '../models/Programmable'
 import { BodyDataContext } from '../components/Body/Body'
 import { testBody } from '../storage/body'
@@ -19,11 +19,11 @@ createRoot(document.getElementById('root')!).render(
 )
 
 const boneState: FormData = {
-    name: coccige.name,
-    template: coccige.template
+    name: atlante.name,
+    template: atlante.template
 }
 
-console.log(coccige)
+console.log(atlante)
 
 function App() {
     const [state, updateState] = useImmer(boneState)
@@ -35,7 +35,7 @@ function App() {
                     <Form data={state} updateData={updateState} />
                 </EditModeContext.Provider>
             </BodyDataContext.Provider>
-            <button onClick={() => { console.log(coccige, state) }}>LOG in Console</button>
+            <button onClick={() => { console.log(atlante, state) }}>LOG in Console</button>
         </div>
     )
 }

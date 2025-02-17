@@ -1,4 +1,4 @@
-import { DeductionElement } from "../models/Deduction";
+import { DeductionElement, DeductionResult } from "../models/Programmable";
 import { FormData, FormSelectFieldTemplate, FormFieldTemplate } from "../models/Form";
 import { Bone } from "../models/Skeleton";
 
@@ -256,8 +256,9 @@ export const coccige: Bone = {
 		title: "Coccige",
 		sections: [
 			{
+				id: 'fusione',
 				title: "Fusione/sviluppo",
-				image: [coccigeNucleiImg],
+				images: [coccigeNucleiImg],
 				starters: [
 					{
 						type: 'multi-select',
@@ -285,8 +286,9 @@ export const coccige: Bone = {
 				]
 			},
 			{
+				id: 'completezza',
 				title: "Completezza, qualità, colore generale",
-				image: [coccigeSettoriImg],
+				images: [coccigeSettoriImg],
 				starters: [
 					{
 						type: 'multi-select',
@@ -331,6 +333,7 @@ export const coccige: Bone = {
 				]
 			},
 			{
+				id: 'caratteri_metrici',
 				title: "Caratteri metrici",
 				starters: [
 					{
@@ -354,6 +357,7 @@ export const coccige: Bone = {
 				]
 			},
 			{
+				id: 'caratteri_non_metrici',
 				title: "Caratteri non metrici",
 				starters: [
 					{
@@ -377,6 +381,7 @@ export const coccige: Bone = {
 				]
 			},
 			{
+				id: 'profilo_biologico',
 				title: "Profilo biologico",
 				starters: [
 					{
@@ -434,12 +439,14 @@ export const coccige: Bone = {
 				]
 			},
 			{
+				id: 'patologie',
 				title: "Patologie",
 				starters: [
 					{
-						type: 'incremental',
+						type: 'expansion',
 						starterID: 'segni',
 						header: 'Segni',
+						incremental: true,
 						prefix: 'PCe',
 						next: [
 							{
@@ -469,13 +476,15 @@ export const coccige: Bone = {
 				]
 			},
 			{
+				id: 'lesività',
 				title: "Lesività",
-				image: [coccigeSettoriImg],
+				images: [coccigeSettoriImg],
 				starters: [
 					{
-						type: 'incremental',
+						type: 'expansion',
 						starterID: 'lesività_segni',
 						header: 'Lesività Segni',
+						incremental: true,
 						next: [
 							{
 								type: 'multi-select',
@@ -512,8 +521,10 @@ export const coccigeScheuerBlack2000: DeductionElement = {
 	fn: CoccigeScheuerBlack2000
 }
 
-function CoccigeScheuerBlack2000(_: FormData): string {
-	return "Metodo presente ed eseguito: non ancora implementato"
+function CoccigeScheuerBlack2000(_: FormData): DeductionResult {
+	return {
+		result: "Metodo presente ed eseguito: non ancora implementato"
+	}
 }
 
 export const coccigeRinaldo2019: DeductionElement = {
@@ -521,6 +532,8 @@ export const coccigeRinaldo2019: DeductionElement = {
 	fn: CoccigeRinaldo2019
 }
 
-function CoccigeRinaldo2019(_: FormData): string {
-	return "Metodo presente ed eseguito: non ancora implementato"
+function CoccigeRinaldo2019(_: FormData): DeductionResult {
+	return {
+		result: "Metodo presente ed eseguito: non ancora implementato"
+	}
 }
