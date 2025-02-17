@@ -11,10 +11,12 @@
 }
 
 .field.fixed-field > .fixed-value,
-.field.deduction-field > .deduction-result {
+.field.deduction-field .deduction-result {
 	padding: .2em .4em;
 	background-color: rgba(255, 255, 255, .6);
 	border-radius: .2em;
+	width: 100%;
+	text-align: center;
 }
 
 .field.text-field input,
@@ -135,6 +137,63 @@
 	padding: .4em 1em;
 	background-color: rgba(var(--primary-color), .2);
 	border-radius: .4em;
+}
+
+.field.deduction-field > div {
+	display: flex;
+	align-items: start;
+	margin-top: .5em;
+	gap: 1em;
+}
+
+.field.deduction-field .deduction-hint {
+	text-align: center;
+	display: flex;
+	align-items: start;
+	gap: .5em;
+}
+
+.field.deduction-field .deduction-hint .toggle-hint {
+	padding: .2em .6em;
+	transition: transform .3s;
+}
+.field.deduction-field .deduction-hint .toggle-hint > i {
+	transition: transform .3s;
+}
+.field.deduction-field .deduction-hint.show-hint .toggle-hint > i {
+	transform: rotate(90deg);
+}
+
+.field.deduction-field .deduction-hint:not(.show-hint) table {
+	display: none;
+}
+
+.field.deduction-field .deduction-hint table th,
+.field.deduction-field .deduction-hint table td {
+	max-width: 15ch;
+	padding: .4em 1em;
+}
+
+.field.deduction-field .deduction-hint table th {
+	background-color: rgba(var(--primary-color), .2);
+}
+
+.field.deduction-field .deduction-hint table td {
+	background-color: rgba(255, 255, 255, .4);
+}
+
+.field.deduction-field .deduction-hint table thead tr:first-child th:first-child {
+	border-top-left-radius: .2em;
+}
+.field.deduction-field .deduction-hint table thead tr:first-child th:last-child {
+	border-top-right-radius: .2em;
+}
+.field.deduction-field .deduction-hint table tbody tr:last-child td:first-child {
+	border-bottom-left-radius: .2em;
+}
+
+.field.deduction-field .deduction-hint table tbody tr:last-child td:last-child {
+	border-bottom-right-radius: .2em;
 }
 
 .react-tabs__tab:focus:after {

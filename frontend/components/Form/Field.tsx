@@ -1,11 +1,11 @@
 import './Field.css'
 
-import { ChangeEvent, MouseEvent, useContext, useEffect, useRef } from "react";
+import { ChangeEvent, MouseEvent, useContext, useEffect, useRef, useState } from "react";
 import { Updater, useImmer } from "use-immer";
 import Select, { ActionMeta, MultiValue, SelectInstance, StylesConfig } from 'react-select'
 import { FormFieldData, FormFieldTemplate, formFieldIsFixed, formFieldIsText, formFieldDataIsText, formFieldIsNumber, formFieldDataIsNumber, formFieldIsSelect, formFieldDataIsSelect, FormSelectFieldTemplate, FormSelectFieldData, formFieldIsDeduction, formFieldIsMultiSelect, FormMultiSelectFieldData, FormMultiSelectFieldTemplate, formFieldDataIsMultiSelect, FormFieldSelectArg, formFieldIsExpansion, formFieldDataIsExpansion, FormExpansionFieldData, FormExpansionFieldTemplate, FormFieldSelectArgs } from "../../models/Form";
 import { EditModeContext } from "./Form";
-import { deductionFunctionMap, selectArgsFunctionMap } from '../../models/Programmable';
+import { deductionFunctionMap, DeductionTable, selectArgsFunctionMap } from '../../models/Programmable';
 import { AnatomStructDataContext } from '../../models/AnatomStruct';
 import { BodyDataContext } from '../../models/Body';
 
@@ -101,6 +101,8 @@ export function Field({ field, data, update, breadcrumb, hideHeader }: {
 				disabled={!editMode} breadcrumb={breadcrumb} hideHeader={hideHeader}
 			/>
 		case formFieldIsDeduction(field):
+			const deduction = deductionFunctionMap[field.deductionID];
+			
 			let result: string;
 			try {
 				const struct = useContext(AnatomStructDataContext)
@@ -109,8 +111,7 @@ export function Field({ field, data, update, breadcrumb, hideHeader }: {
 					throw new Error('informazioni sul form corrente non trovate')
 				}
 
-				const f = deductionFunctionMap[field.deductionID];
-				({ result } = f(struct, body, breadcrumb))
+				({ result } = deduction.fn(struct, body, breadcrumb))
 			} catch (e) {
 				console.error(e)
 				result = 'Errore nel calcolo'
@@ -118,7 +119,10 @@ export function Field({ field, data, update, breadcrumb, hideHeader }: {
 
 			return <div className="field deduction-field">
 				{!hideHeader && field.header && <p className="field-header">{field.header}</p>}
-				<p className="deduction-result">{result}</p>
+				<div>
+					<p className="deduction-result">{result}</p>
+					{deduction.hint && <DeductionHint hint={deduction.hint} />}
+				</div>
 			</div>
 	}
 }
@@ -600,5 +604,33 @@ function ExpansionNextFields({ next, dataOffset, data, update, breadcrumb }: {
 				update={updateNext}
 				breadcrumb={[...breadcrumb, (dataOffset + nextIdx).toString()]} />
 		})}
+	</div>
+}
+
+function DeductionHint({ hint }: { hint: DeductionTable }) {
+	const [show, setShow] = useState(false)
+	const toggle = (ev: MouseEvent<HTMLButtonElement>) => {
+		ev.preventDefault()
+		setShow(!show)
+	}
+	
+	return <div className={`deduction-hint ${show ? 'show-hint': ''}`}>
+		<button className="toggle-hint" onClick={toggle}>
+			<i className="fa-solid fa-chevron-right"></i>
+		</button>
+		<table>
+			<thead>
+				<tr>
+					{hint.headers?.map(header => <th>{header}</th>)}
+				</tr>
+			</thead>
+			<tbody>
+				{hint.body.map(row => {
+					return <tr>
+						{row.map(el => <td>{el}</td>)}
+					</tr>
+				})}
+			</tbody>
+		</table>
 	</div>
 }
