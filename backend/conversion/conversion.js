@@ -15,23 +15,38 @@ const headers = {
 // Function to fetch a single page of data
 const fetchPage = async (endpoint, documentName) => {
 	try {
-		let response = await fetch(`${baseURL}/${endpoint}`, { headers });
-		const documents = (await response.json()).data;
+		let url = `${baseURL}/${endpoint}`
+		let response = await fetch(url, { headers });
+		if (!response.ok) {
+			console.error(`Error fetching ${url}:`, await response.text());
+			return null;
+		}
 
+		const documents = (await response.json()).data;
 		const id = documents
 			.filter(doc => doc.Nome.includes(documentName))
 			.map(doc => doc.documentId)[0];
 		
-		response = await fetch(`${baseURL}/${endpoint}/${id}?populate[0]=Sezioni&populate[1]=Sezioni.Immagine&populate[2]=Sezioni.Campo`, { headers });
+		url += `/${id}?populate[0]=Sezioni&populate[1]=Sezioni.Immagine&populate[2]=Sezioni.Campo`
+		response = await fetch(url, { headers });
+		if (!response.ok) {
+			console.error(`Error fetching ${url}:`, await response.text());
+			return null;
+		}
+
 		const data = (await response.json()).data
 		return data;
 	} catch (error) {
-		console.error(`Error fetching ${endpoint} page ${page}:`, error.message);
+		console.error(error);
 		return null;
 	}
 };
 
 fetchPage('ossa', 'Coccige').then(data => {
+	if (!data) {
+		return;
+	}
+
 	console.log(data)
 	console.log(data.Sezioni[0].Immagine)
 	console.log(data.Sezioni[0].Campo)
