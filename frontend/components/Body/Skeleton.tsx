@@ -2,7 +2,7 @@ import './Skeleton.css'
 
 import { ChangeEvent, ChangeEventHandler, DetailedHTMLProps, HTMLAttributes, useEffect, useState } from 'react'
 import { Updater, useImmer } from 'use-immer'
-import { Bone, BoneData, SkeletonData } from '../../models/Skeleton'
+import { Bone, BoneData } from '../../models/AnatomStruct'
 import { ConfirmPopup } from '../UI/ConfirmPopup'
 import { EditModeContext, Form } from '../Form/Form'
 import { FullScreenOverlay } from '../UI/FullscreenOverlay'
@@ -68,7 +68,7 @@ export function Skeleton({ bodyName, setOverlay }: SkeletonProps) {
 	return (
 		<BodyDataContext.Provider value={body}>
 			<SkeletonView bodyName={bodyName}
-				skeleton={body.skeleton} bones={bones}
+				skeleton={body.bones} bones={bones}
 				setOverlay={setOverlay} />
 		</BodyDataContext.Provider>
 	)
@@ -76,13 +76,13 @@ export function Skeleton({ bodyName, setOverlay }: SkeletonProps) {
 
 type SkeletonViewProps = {
 	bodyName: string
-	skeleton: SkeletonData
+	skeleton: Record<string, BoneData>
 	bones: Bone[]
 	setOverlay: SetOverlayFunc
 }
 
 export function SkeletonView({ bodyName, skeleton, bones, setOverlay }: SkeletonViewProps) {
-	const [data, updateData] = useImmer<SkeletonData>(skeleton)
+	const [data, updateData] = useImmer(skeleton)
 
 	const saveChanges = async () => {
 		const resp = await fetch(`/body/${bodyName}/skeleton`, {
@@ -95,7 +95,7 @@ export function SkeletonView({ bodyName, skeleton, bones, setOverlay }: Skeleton
 		if (!resp.ok)
 			showMessage(await resp.text(), setOverlay)
 	}
-	
+
 	useEffect(() => {
 		saveChanges()
 	}, [data])
@@ -113,8 +113,8 @@ export function SkeletonView({ bodyName, skeleton, bones, setOverlay }: Skeleton
 
 type SelectBonesSectionProps = {
 	bones: Bone[]
-	skeletonData: SkeletonData
-	updateSkeletonData: Updater<SkeletonData>
+	skeletonData: Record<string, BoneData>
+	updateSkeletonData: Updater<Record<string, BoneData>>
 	setOverlay: SetOverlayFunc
 }
 
@@ -123,7 +123,7 @@ function SelectBonesSection({ bones, skeletonData, updateSkeletonData, setOverla
 	useEffect(() => {
 		updateSelectedBones(Object.values(skeletonData))
 	}, [skeletonData])
-	
+
 	const selectBone = (idx: number, checked: boolean) => {
 		const bone = bones[idx]
 
@@ -158,14 +158,14 @@ function SelectBonesSection({ bones, skeletonData, updateSkeletonData, setOverla
 						return (
 							<SelectBone key={bone.name}
 								bone={bone} checked={checked}
-								onChange={setBoneChecked}/>
+								onChange={setBoneChecked} />
 						)
 					})}
 				</ul>
 			) : (
 				<div>Nessuna</div>
 			)}
-			
+
 		</div>
 	)
 }
@@ -187,8 +187,8 @@ function SelectBone({ bone, checked, onChange }: SelectBoneProps) {
 }
 
 type EditBonesSection = {
-	skeletonData: SkeletonData
-	updateSkeletonData: Updater<SkeletonData>
+	skeletonData: Record<string, BoneData>
+	updateSkeletonData: Updater<Record<string, BoneData>>
 	setOverlay: SetOverlayFunc
 }
 
@@ -216,7 +216,7 @@ function EditBonesSection({ skeletonData, updateSkeletonData, setOverlay }: Edit
 							<EditBone key={bone.name}
 								bone={bone} updateBone={updateBone}
 								updateSkeletonData={updateSkeletonData}
-								setOverlay={setOverlay}/>
+								setOverlay={setOverlay} />
 						)
 					})}
 				</ul>
@@ -230,7 +230,7 @@ function EditBonesSection({ skeletonData, updateSkeletonData, setOverlay }: Edit
 type EditBoneProps = {
 	bone: BoneData
 	updateBone: Updater<BoneData>
-	updateSkeletonData: Updater<SkeletonData>
+	updateSkeletonData: Updater<Record<string, BoneData>>
 	setOverlay: SetOverlayFunc
 }
 
@@ -302,7 +302,7 @@ function EditBone({ bone, updateBone, updateSkeletonData, setOverlay }: EditBone
 function showMessage(message: string, setOverlay: SetOverlayFunc) {
 	const MessageNode = () => {
 		const [stateClass, setStateClass] = useState('')
-		
+
 		const dismiss = () => {
 			setStateClass('hide')
 			setTimeout(() => {
@@ -321,7 +321,7 @@ function showMessage(message: string, setOverlay: SetOverlayFunc) {
 			</div>
 		)
 	}
-	
+
 	setOverlay(<MessageNode />, {
 		className: 'window-message'
 	})
@@ -357,7 +357,7 @@ function BonePopup({ bone, updateBone, onClose, editMode = false }: BonePopupPro
 
 type DeleteBonePopupProps = {
 	boneName: string
-	updateSkeletonData: Updater<SkeletonData>
+	updateSkeletonData: Updater<Record<string, BoneData>>
 	setOverlay: SetOverlayFunc
 	confirmLabel?: string
 	cancelLabel?: string
@@ -374,7 +374,7 @@ function DeleteBonePopup({ boneName, updateSkeletonData, setOverlay, children, .
 	const closeOverlay = () => {
 		setOverlay(undefined);
 	}
-	
+
 	return (
 		<ConfirmPopup {...props}
 			onConfirm={deleteBone} onCancel={closeOverlay}

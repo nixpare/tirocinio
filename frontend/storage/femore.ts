@@ -1,6 +1,6 @@
 import { FormFieldSelectArg, FormFieldTemplate } from "../models/Form";
 import { DeductionElement, DeductionResult } from "../models/Programmable";
-import { Bone } from "../models/Skeleton";
+import { Bone } from "../models/AnatomStruct";
 
 const femoreCentriImg = '/images/femore_centri.png'
 const femoreSettoriImg = '/images/femore_settori.png'
@@ -85,7 +85,7 @@ const profiloMetodiSessoArgs: Record<string, FormFieldSelectArg> = {
 			header: 'Metodo',
 			fixed: [
 				[
-					{ type: 'fixed', header: 'Metodo', value: 'Purkait (2003)'},
+					{ type: 'fixed', header: 'Metodo', value: 'Purkait (2003)' },
 					{ type: 'deduction', header: 'Esito', deductionID: 'femore_purkait_2003' }
 				]
 			],

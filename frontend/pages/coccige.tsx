@@ -6,8 +6,7 @@ import { coccige } from '../storage/coccige'
 import { loadProgrammableFunctions } from '../models/Programmable'
 import { BodyDataContext } from '../models/Body'
 import { testBody } from '../storage/body'
-import { BoneData } from '../models/Skeleton'
-import { AnatomStructDataContext, generateUpdateForm } from '../models/AnatomStruct'
+import { AnatomStructDataContext, BoneData, generateUpdateForm } from '../models/AnatomStruct'
 
 loadProgrammableFunctions()
 

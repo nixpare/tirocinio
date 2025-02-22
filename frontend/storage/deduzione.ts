@@ -1,7 +1,6 @@
 import { BodyData } from "../models/Body";
-import { Bone } from "../models/Skeleton";
 import { DeductionElement, DeductionResult, DeductionTable, walkBreadcrumb } from "../models/Programmable";
-import { AnatomStructData } from "../models/AnatomStruct";
+import { AnatomStructData, Bone } from "../models/AnatomStruct";
 import { FormFieldTemplate } from "../models/Form";
 
 const farekasTable: DeductionTable = {

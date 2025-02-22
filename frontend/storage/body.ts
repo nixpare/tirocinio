@@ -5,5 +5,5 @@ export const testBody: BodyData = {
 		name: "Test body",
 		age: 100
 	},
-	skeleton: {}
+	bones: {}
 }

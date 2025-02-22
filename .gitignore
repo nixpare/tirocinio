@@ -26,4 +26,6 @@ dist-ssr
 
 # config files
 
+.env
 backend_config.json
+*.rest

@@ -1,6 +1,6 @@
 import { DeductionElement, DeductionResult } from "../models/Programmable";
 import { FormSelectFieldTemplate, FormFieldTemplate } from "../models/Form";
-import { Bone } from "../models/Skeleton";
+import { Bone } from "../models/AnatomStruct";
 
 const coccigeNucleiImg = '/images/coccige_nuclei.png'
 const coccigeSettoriImg = '/images/coccige_settori.png'
