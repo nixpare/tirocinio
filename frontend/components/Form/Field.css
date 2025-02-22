@@ -20,6 +20,7 @@
 }
 
 .field.text-field input,
+.field.text-field textarea,
 .field.number-field input {
 	min-width: 100%;
 }

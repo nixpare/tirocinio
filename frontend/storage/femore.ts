@@ -274,35 +274,35 @@ export const femore: Bone = {
 									selectArgs: {
 										'assente_per_immaturità': {
 											display: 'Assente per Immaturità',
-											next: [{ type: 'text', header: 'Commenti' }]
+											next: [{ type: 'text', header: 'Commenti', multiline: true }]
 										},
 										'assente_per_tafonomia': {
 											display: 'Assente per Tafonomia',
-											next: [{ type: 'text', header: 'Commenti' }]
+											next: [{ type: 'text', header: 'Commenti', multiline: true }]
 										},
 										'assente_non_valutabile': {
 											display: 'Assente non valutabile',
-											next: [{ type: 'text', header: 'Commenti' }]
+											next: [{ type: 'text', header: 'Commenti', multiline: true }]
 										},
 										'presente_fusione_non_valutabile': {
 											display: 'Presente ma fusione non valutabile',
-											next: [{ type: 'text', header: 'Commenti' }]
+											next: [{ type: 'text', header: 'Commenti', multiline: true }]
 										},
 										'presente_non_fuso': {
 											display: 'Presente non fuso',
 											next: [
 												{ type: 'number', header: 'Lunghezza massima (mm)' },
 												{ type: 'deduction', header: 'Fazekas (1978)', deductionID: 'femore_fazekas_1978' },
-												{ type: 'text', header: 'Commenti' }
+												{ type: 'text', header: 'Commenti', multiline: true }
 											]
 										},
 										'presente_in_fusione': {
 											display: 'Presente in fusione',
-											next: [{ type: 'text', header: 'Commenti' }]
+											next: [{ type: 'text', header: 'Commenti', multiline: true }]
 										},
 										'presente_fuso': {
 											display: 'Presente fuso',
-											next: [{ type: 'text', header: 'Commenti' }]
+											next: [{ type: 'text', header: 'Commenti', multiline: true }]
 										}
 									}
 								}]

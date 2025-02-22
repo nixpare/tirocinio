@@ -59,8 +59,10 @@ button.icon-button {
   vertical-align: middle;
 }
 
-input {
+input,
+textarea {
   color: inherit;
+  font-family: inherit;
   border: none;
   border-radius: .2em;
   background-color: rgba(255, 255, 255, .6);

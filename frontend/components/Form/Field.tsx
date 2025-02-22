@@ -31,7 +31,7 @@ export function Field({ field, data, update, breadcrumb, hideHeader }: {
 			if (data != undefined && !formFieldDataIsText(data))
 				data = undefined
 
-			const handleTextInput = (ev: ChangeEvent<HTMLInputElement>): void => {
+			const handleTextInput = (ev: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>): void => {
 				update({
 					type: 'text',
 					value: ev.target.value
@@ -40,10 +40,18 @@ export function Field({ field, data, update, breadcrumb, hideHeader }: {
 
 			return <div className="field text-field">
 				{!hideHeader && field.header && <p className="field-header">{field.header}</p>}
-				<input type="text"
-					value={data?.value ?? ''}
-					onChange={handleTextInput} disabled={!editMode}
-				/>
+				{!field.multiline ? <>
+					<input type="text"
+						value={data?.value ?? ''}
+						onChange={handleTextInput} disabled={!editMode}
+					/>
+				</> : <>
+					<textarea
+						value={data?.value ?? ''}
+						onChange={handleTextInput} disabled={!editMode}
+					/>
+				</>}
+				
 			</div>
 		case formFieldIsNumber(field):
 			if (data != undefined && !formFieldDataIsNumber(data))

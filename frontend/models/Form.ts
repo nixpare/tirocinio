@@ -74,6 +74,7 @@ export type FormFixedFieldTemplate = FormFieldBaseTemplate & {
 }
 export type FormTextFieldTemplate = FormFieldBaseTemplate & {
 	type: 'text'
+	multiline?: boolean
 }
 export type FormNumberFieldTemplate = FormFieldBaseTemplate & {
 	type: 'number'
