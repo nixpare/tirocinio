@@ -1,6 +1,6 @@
 import { StrictMode, useState } from 'react'
 import { createRoot } from 'react-dom/client'
-import { Skeleton } from '../components/Body/Skeleton'
+import { Bones } from '../components/Body/Bones'
 import { FullScreenOverlay, FullscreenOverlayProps } from '../components/UI/FullscreenOverlay'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { loadProgrammableFunctions } from '../models/Programmable'
@@ -35,7 +35,7 @@ function App() {
 
     return (
         <div className="container app">
-            <Skeleton
+            <Bones
                 bodyName={bodyName}
                 setOverlay={setOverlay} />
             {overlayContent.content && <FullScreenOverlay {...overlayContent.props}>

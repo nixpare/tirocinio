@@ -98,7 +98,7 @@ func (db *Database) getBody(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(body)
 }
 
-func (db *Database) updateBodySkeleton(w http.ResponseWriter, r *http.Request) {
+func (db *Database) updateBodyBones(w http.ResponseWriter, r *http.Request) {
 	bodyName := r.PathValue("bodyName")
 	if bodyName == "" {
 		w.WriteHeader(http.StatusBadRequest)
@@ -112,8 +112,8 @@ func (db *Database) updateBodySkeleton(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var skeleton bson.M
-	err := json.NewDecoder(r.Body).Decode(&skeleton)
+	var bones bson.M
+	err := json.NewDecoder(r.Body).Decode(&bones)
 	if err != nil {
 		handleDatabaseError(w, r, err)
 		return
@@ -128,7 +128,7 @@ func (db *Database) updateBodySkeleton(w http.ResponseWriter, r *http.Request) {
 		},
 		bson.M{
 			"$set": bson.M{
-				"skeleton": skeleton,
+				"bones": bones,
 			},
 		},
 	)
@@ -138,7 +138,7 @@ func (db *Database) updateBodySkeleton(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if result.ModifiedCount != 1 {
-		log.Printf("update body skeleton: %s: no data was modified\n", bodyName)
+		log.Printf("update body bones: %s: no data was modified\n", bodyName)
 		return
 	}
 }

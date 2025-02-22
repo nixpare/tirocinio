@@ -42,7 +42,7 @@ func Routes(db *Database, staticHandler http.Handler, reactPort int, redirectToR
 		w.Write([]byte("bad request"))
 	})
 
-	mux.HandleFunc("PUT /body/{bodyName}/skeleton", db.updateBodySkeleton)
+	mux.HandleFunc("PUT /body/{bodyName}/bones", db.updateBodyBones)
 
 	return mux
 }

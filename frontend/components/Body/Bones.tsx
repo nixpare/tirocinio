@@ -1,4 +1,4 @@
-import './Skeleton.css'
+import './Bones.css'
 
 import { ChangeEvent, ChangeEventHandler, DetailedHTMLProps, HTMLAttributes, useEffect, useState } from 'react'
 import { Updater, useImmer } from 'use-immer'
@@ -11,12 +11,12 @@ import { useQuery } from '@tanstack/react-query'
 import { BodyData, BodyDataContext } from '../../models/Body'
 import { AnatomStructDataContext, generateUpdateForm } from '../../models/AnatomStruct'
 
-type SkeletonProps = {
+type BonesProps = {
 	bodyName: string
 	setOverlay: SetOverlayFunc
 }
 
-export function Skeleton({ bodyName, setOverlay }: SkeletonProps) {
+export function Bones({ bodyName, setOverlay }: BonesProps) {
 	const bones_url = '/bones'
 	const { data: bones, isLoading: bonesLoading, error: bonesError } = useQuery({
 		queryKey: [bones_url],
@@ -67,25 +67,25 @@ export function Skeleton({ bodyName, setOverlay }: SkeletonProps) {
 
 	return (
 		<BodyDataContext.Provider value={body}>
-			<SkeletonView bodyName={bodyName}
-				skeleton={body.bones} bones={bones}
+			<BonesView bodyName={bodyName}
+				bonesData={body.bones} bones={bones}
 				setOverlay={setOverlay} />
 		</BodyDataContext.Provider>
 	)
 }
 
-type SkeletonViewProps = {
+type BonesViewProps = {
 	bodyName: string
-	skeleton: Record<string, BoneData>
+	bonesData: Record<string, BoneData>
 	bones: Bone[]
 	setOverlay: SetOverlayFunc
 }
 
-export function SkeletonView({ bodyName, skeleton, bones, setOverlay }: SkeletonViewProps) {
-	const [data, updateData] = useImmer(skeleton)
+export function BonesView({ bodyName, bonesData, bones, setOverlay }: BonesViewProps) {
+	const [data, updateData] = useImmer(bonesData)
 
 	const saveChanges = async () => {
-		const resp = await fetch(`/body/${bodyName}/skeleton`, {
+		const resp = await fetch(`/body/${bodyName}/bones`, {
 			method: 'PUT',
 			body: JSON.stringify(data),
 			headers: {
@@ -101,28 +101,28 @@ export function SkeletonView({ bodyName, skeleton, bones, setOverlay }: Skeleton
 	}, [data])
 
 	return (
-		<div className="container skeleton">
+		<div className="container bones">
 			<h1>Scheletro</h1>
 			<SelectBonesSection bones={bones}
-				skeletonData={data} updateSkeletonData={updateData}
+				bonesData={data} updateBonesData={updateData}
 				setOverlay={setOverlay} />
-			<EditBonesSection skeletonData={data} updateSkeletonData={updateData} setOverlay={setOverlay} />
+			<EditBonesSection bonesData={data} updateBonesData={updateData} setOverlay={setOverlay} />
 		</div>
 	)
 }
 
 type SelectBonesSectionProps = {
 	bones: Bone[]
-	skeletonData: Record<string, BoneData>
-	updateSkeletonData: Updater<Record<string, BoneData>>
+	bonesData: Record<string, BoneData>
+	updateBonesData: Updater<Record<string, BoneData>>
 	setOverlay: SetOverlayFunc
 }
 
-function SelectBonesSection({ bones, skeletonData, updateSkeletonData, setOverlay }: SelectBonesSectionProps) {
+function SelectBonesSection({ bones, bonesData, updateBonesData, setOverlay }: SelectBonesSectionProps) {
 	const [selectedBones, updateSelectedBones] = useImmer<BoneData[]>([])
 	useEffect(() => {
-		updateSelectedBones(Object.values(skeletonData))
-	}, [skeletonData])
+		updateSelectedBones(Object.values(bonesData))
+	}, [bonesData])
 
 	const selectBone = (idx: number, checked: boolean) => {
 		const bone = bones[idx]
@@ -132,7 +132,7 @@ function SelectBonesSection({ bones, skeletonData, updateSkeletonData, setOverla
 			return;
 		}
 
-		updateSkeletonData(data => {
+		updateBonesData(data => {
 			data[bone.name] = {
 				type: bone.type,
 				name: bone.name,
@@ -187,13 +187,13 @@ function SelectBone({ bone, checked, onChange }: SelectBoneProps) {
 }
 
 type EditBonesSection = {
-	skeletonData: Record<string, BoneData>
-	updateSkeletonData: Updater<Record<string, BoneData>>
+	bonesData: Record<string, BoneData>
+	updateBonesData: Updater<Record<string, BoneData>>
 	setOverlay: SetOverlayFunc
 }
 
-function EditBonesSection({ skeletonData, updateSkeletonData, setOverlay }: EditBonesSection) {
-	const bones = Object.values(skeletonData)
+function EditBonesSection({ bonesData, updateBonesData, setOverlay }: EditBonesSection) {
+	const bones = Object.values(bonesData)
 
 	return (
 		<div className="edit-bones">
@@ -202,20 +202,20 @@ function EditBonesSection({ skeletonData, updateSkeletonData, setOverlay }: Edit
 				<ul>
 					{bones.map(bone => {
 						const updateBone: Updater<BoneData> = (updater) => {
-							updateSkeletonData(skeletonData => {
+							updateBonesData(bonesData => {
 								if (typeof updater !== 'function') {
-									skeletonData[bone.name] = updater
+									bonesData[bone.name] = updater
 									return
 								}
 
-								updater(skeletonData[bone.name])
+								updater(bonesData[bone.name])
 							})
 						}
 
 						return (
 							<EditBone key={bone.name}
 								bone={bone} updateBone={updateBone}
-								updateSkeletonData={updateSkeletonData}
+								updateBonesData={updateBonesData}
 								setOverlay={setOverlay} />
 						)
 					})}
@@ -230,11 +230,11 @@ function EditBonesSection({ skeletonData, updateSkeletonData, setOverlay }: Edit
 type EditBoneProps = {
 	bone: BoneData
 	updateBone: Updater<BoneData>
-	updateSkeletonData: Updater<Record<string, BoneData>>
+	updateBonesData: Updater<Record<string, BoneData>>
 	setOverlay: SetOverlayFunc
 }
 
-function EditBone({ bone, updateBone, updateSkeletonData, setOverlay }: EditBoneProps) {
+function EditBone({ bone, updateBone, updateBonesData, setOverlay }: EditBoneProps) {
 	type BonePopupProps = {
 		opened: boolean
 		editMode: boolean
@@ -261,7 +261,7 @@ function EditBone({ bone, updateBone, updateSkeletonData, setOverlay }: EditBone
 	const deleteBone = () => {
 		setOverlay((
 			<DeleteBonePopup className="delete-bone-popup"
-				boneName={bone.name} updateSkeletonData={updateSkeletonData}
+				boneName={bone.name} updateBonesData={updateBonesData}
 				setOverlay={setOverlay}
 			>
 				<div>
@@ -357,16 +357,16 @@ function BonePopup({ bone, updateBone, onClose, editMode = false }: BonePopupPro
 
 type DeleteBonePopupProps = {
 	boneName: string
-	updateSkeletonData: Updater<Record<string, BoneData>>
+	updateBonesData: Updater<Record<string, BoneData>>
 	setOverlay: SetOverlayFunc
 	confirmLabel?: string
 	cancelLabel?: string
 } & DetailedHTMLProps<HTMLAttributes<HTMLDivElement>, HTMLDivElement>
 
-function DeleteBonePopup({ boneName, updateSkeletonData, setOverlay, children, ...props }: DeleteBonePopupProps) {
+function DeleteBonePopup({ boneName, updateBonesData, setOverlay, children, ...props }: DeleteBonePopupProps) {
 	const deleteBone = () => {
-		updateSkeletonData(skeletonData => {
-			delete skeletonData[boneName]
+		updateBonesData(bonesData => {
+			delete bonesData[boneName]
 		})
 		closeOverlay()
 	}

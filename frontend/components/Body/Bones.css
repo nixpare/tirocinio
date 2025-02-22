@@ -1,4 +1,4 @@
-.skeleton {
+.bones {
 	width: 100%;
 	align-items: start;
 	padding: 2em 6em;
@@ -6,7 +6,7 @@
 	border-radius: .4em;
 }
 
-.skeleton h1 {
+.bones h1 {
 	width: 100%;
 	text-align: center;
 	margin-bottom: 1em;
