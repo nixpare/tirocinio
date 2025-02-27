@@ -1,0 +1,37 @@
+.top-nav {
+    display: flex;
+    justify-content: space-between;
+	width: 100%;
+	padding: 20px 30px;
+}
+
+.top-nav .logo {
+    display: flex;
+    align-items: center;
+}
+
+.top-nav nav ul {
+    list-style-type: none;
+    padding: 0;
+}
+.top-nav nav ul li {
+    margin-left: 15px;
+}
+
+.side-nav {
+	padding: 1em;
+	background-color: #f4f4f9;
+}
+
+.side-nav .p-panelmenu {
+	width: 20ch;
+}
+
+.side-nav .p-panelmenu .p-panelmenu-header-content,
+.side-nav .p-panelmenu .p-menuitem-content {
+	padding: 1em;
+}
+
+.side-nav .p-panelmenu .p-submenu-icon {
+	margin-right: .6em;
+}

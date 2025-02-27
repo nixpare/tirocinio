@@ -1,15 +1,15 @@
-import './Bones.css'
-
 import { ChangeEvent, ChangeEventHandler, DetailedHTMLProps, HTMLAttributes, useEffect, useState } from 'react'
 import { Updater, useImmer } from 'use-immer'
 import { Bone, BoneData } from '../../models/AnatomStruct'
 import { ConfirmPopup } from '../UI/ConfirmPopup'
 import { EditModeContext, Form } from '../Form/Form'
 import { FullScreenOverlay } from '../UI/FullscreenOverlay'
-import { SetOverlayFunc } from '../../pages'
+import { SetOverlayFunc } from '../../pages/ossa'
 import { useQuery } from '@tanstack/react-query'
 import { BodyData, BodyDataContext } from '../../models/Body'
 import { AnatomStructDataContext, generateUpdateForm } from '../../models/AnatomStruct'
+
+import './Bones.css'
 
 type BonesProps = {
 	bodyName: string
@@ -17,7 +17,7 @@ type BonesProps = {
 }
 
 export function Bones({ bodyName, setOverlay }: BonesProps) {
-	const bones_url = '/bones'
+	const bones_url = '/api/bones'
 	const { data: bones, isLoading: bonesLoading, error: bonesError } = useQuery({
 		queryKey: [bones_url],
 		queryFn: async () => {
@@ -31,7 +31,7 @@ export function Bones({ bodyName, setOverlay }: BonesProps) {
 		retry: false
 	})
 
-	const body_url = `/body/${bodyName}`
+	const body_url = `/api/body/${bodyName}`
 	const { data: body, isLoading: bodyLoading, error: bodyError } = useQuery({
 		queryKey: [body_url],
 		queryFn: async () => {
@@ -85,7 +85,7 @@ export function BonesView({ bodyName, bonesData, bones, setOverlay }: BonesViewP
 	const [data, updateData] = useImmer(bonesData)
 
 	const saveChanges = async () => {
-		const resp = await fetch(`/body/${bodyName}/bones`, {
+		const resp = await fetch(`/api/body/${bodyName}/bones`, {
 			method: 'PUT',
 			body: JSON.stringify(data),
 			headers: {
