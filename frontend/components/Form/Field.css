@@ -25,6 +25,21 @@
 	min-width: 100%;
 }
 
+.field.text-field textarea {
+	min-height: 5em;
+	white-space: pre;
+	overflow-wrap: normal;
+}
+.field.text-field textarea::-webkit-scrollbar {
+	background-color: transparent;
+	width: .8em;
+	height: .8em;
+}
+.field.text-field textarea::-webkit-scrollbar-thumb {
+	background-color: rgba(255, 255, 255, .8);
+	border-radius: 2em;
+}
+
 .field .select-input {
 	width: fit-content;
 	min-width: 30ch;
