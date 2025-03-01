@@ -1,9 +1,4 @@
-.body-home {
-	display: flex;
-	width: 100%;
-}
-
-.body-home .content {
-	flex-grow: 1;
-	padding: 20px;
+.body .MuiDrawer-paper {
+	width: fit-content !important;
+	min-width: 250px;
 }

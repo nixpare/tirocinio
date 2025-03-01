@@ -4,7 +4,7 @@ import { createRoot } from 'react-dom/client'
 import { Form, EditModeContext } from '../components/Form/Form'
 import { femore } from '../storage/femore'
 import { loadProgrammableFunctions } from '../models/Programmable'
-import { BodyDataContext } from '../models/Body'
+import { BodyContext } from '../models/Body'
 import { testBody } from '../storage/body'
 import { AnatomStructDataContext, BoneData, generateUpdateForm } from '../models/AnatomStruct'
 
@@ -32,7 +32,7 @@ function App() {
 
     return (
         <div className="container app">
-            <BodyDataContext.Provider value={testBody}>
+            <BodyContext.Provider value={testBody}>
                 <AnatomStructDataContext.Provider value={state}>
                     <EditModeContext.Provider value={true}>
 
@@ -40,7 +40,7 @@ function App() {
 
                     </EditModeContext.Provider>
                 </AnatomStructDataContext.Provider>
-            </BodyDataContext.Provider>
+            </BodyContext.Provider>
 
             <button onClick={() => { console.log(femore, state) }}>LOG in Console</button>
         </div>

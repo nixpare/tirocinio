@@ -7,7 +7,7 @@ import { FormFieldData, FormFieldTemplate, formFieldIsFixed, formFieldIsText, fo
 import { EditModeContext } from "./Form";
 import { deductionFunctionMap, DeductionTable, selectArgsFunctionMap } from '../../models/Programmable';
 import { AnatomStructDataContext } from '../../models/AnatomStruct';
-import { BodyDataContext } from '../../models/Body';
+import { BodyContext } from '../../models/Body';
 
 export type UpdateFieldFunc = Updater<FormFieldData>
 type UpdateSelectFieldFunc = Updater<FormSelectFieldData>
@@ -51,7 +51,7 @@ export function Field({ field, data, update, breadcrumb, hideHeader }: {
 						onChange={handleTextInput} disabled={!editMode}
 					/>
 				</>}
-				
+
 			</div>
 		case formFieldIsNumber(field):
 			if (data != undefined && !formFieldDataIsNumber(data))
@@ -110,11 +110,11 @@ export function Field({ field, data, update, breadcrumb, hideHeader }: {
 			/>
 		case formFieldIsDeduction(field):
 			const deduction = deductionFunctionMap[field.deductionID];
-			
+
 			let result: string;
 			try {
 				const struct = useContext(AnatomStructDataContext)
-				const body = useContext(BodyDataContext)
+				const body = useContext(BodyContext)
 				if (!struct || !body) {
 					throw new Error('informazioni sul form corrente non trovate')
 				}
@@ -150,7 +150,7 @@ function SelectField({ field, data, update, disabled, breadcrumb, hideHeader }: 
 	if (typeof field.selectArgs === 'string') {
 		try {
 			const struct = useContext(AnatomStructDataContext)
-			const body = useContext(BodyDataContext)
+			const body = useContext(BodyContext)
 			if (!struct || !body) {
 				throw new Error('informazioni sul form corrente non trovate')
 			}
@@ -261,7 +261,7 @@ function MultiSelectField({ field, data, update, disabled, breadcrumb, hideHeade
 	if (typeof field.selectArgs === 'string') {
 		try {
 			const struct = useContext(AnatomStructDataContext)
-			const body = useContext(BodyDataContext)
+			const body = useContext(BodyContext)
 			if (!struct || !body) {
 				throw new Error('informazioni sul form corrente non trovate')
 			}
@@ -621,8 +621,8 @@ function DeductionHint({ hint }: { hint: DeductionTable }) {
 		ev.preventDefault()
 		setShow(!show)
 	}
-	
-	return <div className={`deduction-hint ${show ? 'show-hint': ''}`}>
+
+	return <div className={`deduction-hint ${show ? 'show-hint' : ''}`}>
 		<button className="toggle-hint" onClick={toggle}>
 			<i className="fa-solid fa-chevron-right"></i>
 		</button>

@@ -1,22 +1,17 @@
-import { ChangeEvent, ChangeEventHandler, DetailedHTMLProps, HTMLAttributes, useEffect, useState } from 'react'
-import { Updater, useImmer } from 'use-immer'
-import { Bone, BoneData } from '../../models/AnatomStruct'
-import { ConfirmPopup } from '../UI/ConfirmPopup'
-import { EditModeContext, Form } from '../Form/Form'
-import { FullScreenOverlay } from '../UI/FullscreenOverlay'
-import { SetOverlayFunc } from '../../pages/ossa'
-import { useQuery } from '@tanstack/react-query'
-import { BodyData, BodyDataContext } from '../../models/Body'
-import { AnatomStructDataContext, generateUpdateForm } from '../../models/AnatomStruct'
-
 import './Bones.css'
 
-type BonesProps = {
-	bodyName: string
-	setOverlay: SetOverlayFunc
-}
+import { ChangeEvent, ChangeEventHandler, useContext, useEffect, useState } from 'react'
+import { Updater, useImmer } from 'use-immer'
+import { Bone, BoneData } from '../../models/AnatomStruct'
+import { EditModeContext, Form } from '../Form/Form'
+import { FullScreenOverlay } from '../UI/FullscreenOverlay'
+import { useQuery } from '@tanstack/react-query'
+import { BodyContext } from '../../models/Body'
+import { AnatomStructDataContext, generateUpdateForm } from '../../models/AnatomStruct'
+import { Breadcrumbs, Container, Link, Typography } from '@mui/material'
+import { Link as RouterLink, useParams } from 'react-router'
 
-export function Bones({ bodyName, setOverlay }: BonesProps) {
+export function Bones() {
 	const bones_url = '/api/bones'
 	const { data: bones, isLoading: bonesLoading, error: bonesError } = useQuery({
 		queryKey: [bones_url],
@@ -31,69 +26,46 @@ export function Bones({ bodyName, setOverlay }: BonesProps) {
 		retry: false
 	})
 
-	const body_url = `/api/body/${bodyName}`
-	const { data: body, isLoading: bodyLoading, error: bodyError } = useQuery({
-		queryKey: [body_url],
-		queryFn: async () => {
-			const res = await fetch(body_url)
-			if (!res.ok)
-				throw new Error(await res.text())
-
-			const body: BodyData = await res.json()
-			return body
-		},
-		retry: false
-	})
-
-	if (bonesLoading || bodyLoading)
+	if (bonesLoading)
 		return (
 			<div>
 				<h3>Caricamento</h3>
 			</div>
 		)
 
-	if (bonesError || bodyError || !bones || !body)
+	if (bonesError || !bones) {
+		const errMessage = bonesError ? bonesError.message : 'Errore durante il caricamento delle ossa'
+
 		return (
 			<div>
 				<h3>Errore</h3>
-				{bonesError && (
-					<p>{bonesError.message}</p>
-				)}
-				{bodyError && (
-					<p>{bodyError.message}</p>
-				)}
+				<p>{errMessage}</p>
 			</div>
 		)
+	}
 
 	return (
-		<BodyDataContext.Provider value={body}>
-			<BonesView bodyName={bodyName}
-				bonesData={body.bones} bones={bones}
-				setOverlay={setOverlay} />
-		</BodyDataContext.Provider>
+		<BonesView bones={bones} />
 	)
 }
 
-type BonesViewProps = {
-	bodyName: string
-	bonesData: Record<string, BoneData>
-	bones: Bone[]
-	setOverlay: SetOverlayFunc
-}
+export function BonesView({ bones }: { bones: Bone[] }) {
+	const body = useContext(BodyContext);
+	if (!body) throw new Error('BonesView must be used within a BodyContext')
 
-export function BonesView({ bodyName, bonesData, bones, setOverlay }: BonesViewProps) {
-	const [data, updateData] = useImmer(bonesData)
+	const [data, updateData] = useImmer(body.bones)
 
 	const saveChanges = async () => {
-		const resp = await fetch(`/api/body/${bodyName}/bones`, {
+		const resp = await fetch(`/api/body/${body.generals.name}/bones`, {
 			method: 'PUT',
 			body: JSON.stringify(data),
 			headers: {
 				'Content-Type': 'application/json'
 			}
 		})
-		if (!resp.ok)
-			showMessage(await resp.text(), setOverlay)
+		if (!resp.ok) {
+			//showMessage(await resp.text(), setOverlay)
+		}
 	}
 
 	useEffect(() => {
@@ -101,13 +73,25 @@ export function BonesView({ bodyName, bonesData, bones, setOverlay }: BonesViewP
 	}, [data])
 
 	return (
-		<div className="container bones">
-			<h1>Scheletro</h1>
-			<SelectBonesSection bones={bones}
-				bonesData={data} updateBonesData={updateData}
-				setOverlay={setOverlay} />
-			<EditBonesSection bonesData={data} updateBonesData={updateData} setOverlay={setOverlay} />
-		</div>
+		<Container className="bones">
+			<Breadcrumbs separator="›" aria-label="breadcrumb">
+				<Link to={`/body/${body.generals.name}`} underline="hover"
+					component={RouterLink}>
+						{body.generals.name}
+				</Link>
+				<Typography sx={{ color: 'text.primary' }}>Ossa</Typography>
+			</Breadcrumbs>
+			<h1>Ossa</h1>
+			<SelectBonesSection
+				bones={bones}
+				bonesData={data}
+				updateBonesData={updateData}
+			/>
+			<EditBonesSection
+				bonesData={data}
+				updateBonesData={updateData}
+			/>
+		</Container >
 	)
 }
 
@@ -115,10 +99,9 @@ type SelectBonesSectionProps = {
 	bones: Bone[]
 	bonesData: Record<string, BoneData>
 	updateBonesData: Updater<Record<string, BoneData>>
-	setOverlay: SetOverlayFunc
 }
 
-function SelectBonesSection({ bones, bonesData, updateBonesData, setOverlay }: SelectBonesSectionProps) {
+function SelectBonesSection({ bones, bonesData, updateBonesData }: SelectBonesSectionProps) {
 	const [selectedBones, updateSelectedBones] = useImmer<BoneData[]>([])
 	useEffect(() => {
 		updateSelectedBones(Object.values(bonesData))
@@ -128,7 +111,7 @@ function SelectBonesSection({ bones, bonesData, updateBonesData, setOverlay }: S
 		const bone = bones[idx]
 
 		if (!checked) {
-			showMessage(`Non puoi deselezionare ${bone.name} perchè sono registrati dei dati. Eliminali prima nella sezione sotto`, setOverlay);
+			//showMessage(`Non puoi deselezionare ${bone.name} perchè sono registrati dei dati. Eliminali prima nella sezione sotto`, setOverlay);
 			return;
 		}
 
@@ -189,10 +172,9 @@ function SelectBone({ bone, checked, onChange }: SelectBoneProps) {
 type EditBonesSection = {
 	bonesData: Record<string, BoneData>
 	updateBonesData: Updater<Record<string, BoneData>>
-	setOverlay: SetOverlayFunc
 }
 
-function EditBonesSection({ bonesData, updateBonesData, setOverlay }: EditBonesSection) {
+function EditBonesSection({ bonesData, updateBonesData }: EditBonesSection) {
 	const bones = Object.values(bonesData)
 
 	return (
@@ -214,9 +196,10 @@ function EditBonesSection({ bonesData, updateBonesData, setOverlay }: EditBonesS
 
 						return (
 							<EditBone key={bone.name}
-								bone={bone} updateBone={updateBone}
+								bone={bone}
+								updateBone={updateBone}
 								updateBonesData={updateBonesData}
-								setOverlay={setOverlay} />
+							/>
 						)
 					})}
 				</ul>
@@ -231,10 +214,9 @@ type EditBoneProps = {
 	bone: BoneData
 	updateBone: Updater<BoneData>
 	updateBonesData: Updater<Record<string, BoneData>>
-	setOverlay: SetOverlayFunc
 }
 
-function EditBone({ bone, updateBone, updateBonesData, setOverlay }: EditBoneProps) {
+function EditBone({ bone, updateBone, updateBonesData }: EditBoneProps) {
 	type BonePopupProps = {
 		opened: boolean
 		editMode: boolean
@@ -259,7 +241,7 @@ function EditBone({ bone, updateBone, updateBonesData, setOverlay }: EditBonePro
 	}
 
 	const deleteBone = () => {
-		setOverlay((
+		/* setOverlay((
 			<DeleteBonePopup className="delete-bone-popup"
 				boneName={bone.name} updateBonesData={updateBonesData}
 				setOverlay={setOverlay}
@@ -268,7 +250,7 @@ function EditBone({ bone, updateBone, updateBonesData, setOverlay }: EditBonePro
 					Sei sicuro di voler eliminare <span className="bone-name">{bone.name}</span>?
 				</div>
 			</DeleteBonePopup>
-		))
+		)) */
 	}
 
 	const closePopup = () => {
@@ -282,12 +264,15 @@ function EditBone({ bone, updateBone, updateBonesData, setOverlay }: EditBonePro
 		<li className="edit-bone">
 			{bone.name}
 			<div>
-				<button className="icon-button" onClick={viewBone}>
+				{/* <button className="icon-button" onClick={viewBone}>
 					<i className="fa-solid fa-eye"></i>
 				</button>
 				<button className="icon-button" onClick={editBone}>
 					<i className="fa-solid fa-pen-to-square"></i>
-				</button>
+				</button> */}
+				<Link to={bone.name} component={RouterLink}>
+					<i className="fa-solid fa-eye"></i>
+				</Link>
 				<button className="icon-button delete-button" onClick={deleteBone}>
 					<i className="fa-solid fa-trash"></i>
 				</button>
@@ -299,32 +284,37 @@ function EditBone({ bone, updateBone, updateBonesData, setOverlay }: EditBonePro
 	)
 }
 
-function showMessage(message: string, setOverlay: SetOverlayFunc) {
-	const MessageNode = () => {
-		const [stateClass, setStateClass] = useState('')
+export function BoneView() {
+	const { id } = useParams<{ id: string }>();
+	if (!id) throw new Error('BoneView must be used with an id parameter')
 
-		const dismiss = () => {
-			setStateClass('hide')
-			setTimeout(() => {
-				setOverlay(null)
-			}, 600)
-		}
+	const body = useContext(BodyContext);
+	if (!body) throw new Error('BoneView must be used within a BodyContext')
 
-		useEffect(() => {
-			setStateClass('show')
-		}, [])
+	const bone = body.bones[id];
 
-		return (
-			<div className={`message ${stateClass}`}>
-				<div>{message}</div>
-				<button onClick={dismiss}>Chiudi</button>
-			</div>
-		)
-	}
+	const baseURL = `/body/${body.generals.name}`;
 
-	setOverlay(<MessageNode />, {
-		className: 'window-message'
-	})
+	return (
+		<Container>
+			<Breadcrumbs separator="›" aria-label="breadcrumb">
+				<Link to={baseURL} underline="hover"
+					component={RouterLink}>
+					{body.generals.name}
+				</Link>
+				<Link to={baseURL + '/ossa'} underline="hover"
+					component={RouterLink}>
+					Ossa
+				</Link>
+				<Typography sx={{ color: 'text.primary' }}>{bone.name}</Typography>
+			</Breadcrumbs>
+			<AnatomStructDataContext.Provider value={bone}>
+				<EditModeContext.Provider value={false}>
+					<Form data={bone.form} updateData={() => {}} />
+				</EditModeContext.Provider>
+			</AnatomStructDataContext.Provider>
+		</Container>
+	)
 }
 
 type BonePopupProps = {
@@ -355,7 +345,7 @@ function BonePopup({ bone, updateBone, onClose, editMode = false }: BonePopupPro
 	)
 }
 
-type DeleteBonePopupProps = {
+/* type DeleteBonePopupProps = {
 	boneName: string
 	updateBonesData: Updater<Record<string, BoneData>>
 	setOverlay: SetOverlayFunc
@@ -382,4 +372,4 @@ function DeleteBonePopup({ boneName, updateBonesData, setOverlay, children, ...p
 			{children}
 		</ConfirmPopup>
 	)
-}
+} */

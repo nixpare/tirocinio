@@ -1,12 +1,16 @@
 import './Body.css'
 
 import { useQuery } from '@tanstack/react-query'
-import { BodyData, BodyDataContext } from '../../models/Body'
-import { Link, Outlet, useParams } from 'react-router';
-import { MenuItem } from 'primereact/menuitem';
-import { PageNav } from '../UI/Nav';
+import { BodyData, BodyContext } from '../../models/Body'
+import { Outlet, useParams } from 'react-router';
+import { createTheme } from '@mui/material/styles';
+import { Navigation } from '@toolpad/core/AppProvider';
+import { ReactRouterAppProvider } from '@toolpad/core/react-router';
+import { DashboardLayout } from '@toolpad/core/DashboardLayout';
+import { Breadcrumbs, Container, Typography } from '@mui/material';
+import { useContext } from 'react';
 
-export default function Body() {
+export function BodyLayout() {
 	const { name } = useParams();
 	if (!name) {
 		return <h3>Nome non specificato</h3>;
@@ -43,30 +47,71 @@ export default function Body() {
 			</div>
 		)
 	}
-		
+
+	const baseURL = `body/${encodeURIComponent(name)}`
+	const navigation: Navigation = [
+		{
+			segment: baseURL,
+			title: name,
+			icon: <i className="fa-solid fa-house"></i>,
+		},
+		{
+			segment: baseURL + '/ossa',
+			title: 'Ossa',
+			icon: <i className="fa-solid fa-bone"></i>
+		}
+	]
 
 	return (
-		<BodyDataContext.Provider value={body}>
-			<BodyHome name={name} />
-		</BodyDataContext.Provider>
+		<BodyContext.Provider value={body}>
+			<ReactRouterAppProvider
+				navigation={navigation}
+				theme={theme}
+				branding={{
+					title: 'Tirocinio',
+					logo: <img
+						src="/favicon.ico" alt="Logo"
+						style={{ height: '100%', padding: '.6em' }}
+					/>,
+					homeUrl: '/'
+				}}
+			>
+				<div className="body">
+					<DashboardLayout defaultSidebarCollapsed>
+						<Outlet />
+					</DashboardLayout>
+				</div>
+			</ReactRouterAppProvider>
+		</BodyContext.Provider>
 	)
 }
 
-export function BodyHome({ name }: { name: string }) {
-	const sitemap: MenuItem[] = [
-		{
-			label: name,
-			items: [
-				{ template: <Link to={`/body/${name}`}>Home</Link> },
-				{ template: <Link to={`/body/${name}/ossa`}>ossa</Link> }
-			]
-		},
-	]
+export function BodyHome() {
+	const body = useContext(BodyContext);
+	if (!body) throw new Error('BodyHome must be used within a BodyContext')
 
-	return <div className="body-home">
-		<PageNav sitemap={sitemap} />		
-		<div className="container content">
-			<Outlet />
-		</div>
-	</div>
+	return (
+		<Container>
+			<Breadcrumbs separator="›" aria-label="breadcrumb">
+				<Typography sx={{ color: 'text.primary' }}>{body.generals.name}</Typography>
+			</Breadcrumbs>
+			<h1>{body.generals.name}</h1>
+		</Container>
+	)
 }
+
+const theme = createTheme({
+	cssVariables: {
+		colorSchemeSelector: 'data-toolpad-color-scheme',
+	},
+	colorSchemes: { light: true, dark: true },
+	breakpoints: {
+		values: {
+			xs: 0,
+			sm: 600,
+			md: 600,
+			lg: 1200,
+			xl: 1536,
+		},
+	},
+});

@@ -1,16 +1,12 @@
-import "primereact/resources/themes/lara-light-cyan/theme.css";
-
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
-import { BrowserRouter, Route } from "react-router";
-import { PrimeReactProvider } from 'primereact/api';
+import { BrowserRouter, Route, useNavigate } from "react-router";
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { loadProgrammableFunctions } from '../models/Programmable'
-import Body from '../components/Body/Body'
+import { BodyHome, BodyLayout } from '../components/Body/Body'
 import { Routes } from 'react-router';
-import TopNav from '../components/UI/Nav';
-import { TestOssa } from './ossa';
-
+import { Bones, BoneView } from '../components/Body/Bones';
+import { Container } from '@mui/material';
 
 const queryClient = new QueryClient()
 loadProgrammableFunctions()
@@ -19,9 +15,7 @@ createRoot(document.getElementById('root')!).render(
     <StrictMode>
         <BrowserRouter>
             <QueryClientProvider client={queryClient}>
-                <PrimeReactProvider>
-                    <App />
-                </PrimeReactProvider>
+                <App />
             </QueryClientProvider>
         </BrowserRouter>
     </StrictMode>,
@@ -29,13 +23,29 @@ createRoot(document.getElementById('root')!).render(
 
 function App() {
     return <div>
-        <TopNav />
         <Routes>
-            <Route path="/" element={<TestOssa />} />
-            <Route path="/body/:name" element={<Body />}>
-                <Route index element={<h1>Home</h1>} />
-                <Route path="ossa" element={<h1>Ossa</h1>} />
+            <Route path="/" element={<RedirectToTestBody />} />
+            <Route path="/body/:name" element={<BodyLayout />}>
+                <Route index element={<BodyHome />} />
+                <Route path="ossa">
+                    <Route index element={<Bones />} />
+                    <Route path=":id" element={<BoneView />} />
+                </Route>
             </Route>
         </Routes>
     </div>
+}
+
+function RedirectToTestBody() {
+    const navigate = useNavigate();
+
+    setTimeout(() => {
+        navigate('/body/Test body');
+    }, 1000)
+
+    return (
+        <Container>
+            <h1>Redirecting to Test Body...</h1>
+        </Container>
+    )
 }

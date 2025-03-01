@@ -13,4 +13,4 @@ export type BodyData = {
 	exteriors: Record<string, ExteriorData>
 }
 
-export const BodyDataContext = createContext<BodyData | undefined>(undefined)
+export const BodyContext = createContext<BodyData | undefined>(undefined)
