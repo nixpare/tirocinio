@@ -6,7 +6,8 @@ import { atlante } from '../storage/atlante'
 import { loadProgrammableFunctions } from '../models/Programmable'
 import { BodyContextProvider } from '../models/Body'
 import { testBody } from '../storage/body'
-import { AnatomStructDataContext, BoneData, generateUpdateForm } from '../models/AnatomStruct'
+import { AnatomStructDataContext, BoneData } from '../models/AnatomStruct'
+import { generateChildUpdater } from '../utils/updater'
 
 loadProgrammableFunctions()
 
@@ -27,12 +28,14 @@ const boneState: BoneData = {
 console.log(atlante)
 
 function App() {
+    const [body, updateBody] = useImmer(testBody);
+    
     const [state, updateState] = useImmer(boneState)
-    const updateForm = generateUpdateForm(updateState)
+    const updateForm = generateChildUpdater(updateState, 'form')
 
     return (
         <div className="container app">
-            <BodyContextProvider.Provider value={testBody}>
+            <BodyContextProvider.Provider value={{ body, updateBody }}>
                 <AnatomStructDataContext.Provider value={state}>
                     <EditModeContext.Provider value={true}>
 

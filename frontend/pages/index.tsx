@@ -41,11 +41,18 @@ function RedirectToTestBody() {
 
     setTimeout(() => {
         navigate('/body/Test body');
-    }, 1000)
+    }, 3000)
 
     return (
         <Container>
             <h1>Redirecting to Test Body...</h1>
+            <h3>Altre pagine del progetto:</h3>
+            <div className="container container-horiz">
+                <a href="/coccige">Prototipo coccige</a>
+                <a href="/atlante">Prototipo atlante</a>
+                <a href="/femore">Prototipo femore</a>
+                <a href="/deduzione">Prototipo deduzione</a>
+            </div>
         </Container>
     )
 }

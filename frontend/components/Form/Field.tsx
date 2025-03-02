@@ -114,12 +114,12 @@ export function Field({ field, data, update, breadcrumb, hideHeader }: {
 			let result: string;
 			try {
 				const struct = useContext(AnatomStructDataContext)
-				const body = useContext(BodyContextProvider)
-				if (!struct || !body) {
+				const bodyContext = useContext(BodyContextProvider)
+				if (!struct || !bodyContext) {
 					throw new Error('informazioni sul form corrente non trovate')
 				}
 
-				({ result } = deduction.fn(struct, body, breadcrumb))
+				({ result } = deduction.fn(struct, bodyContext.body, breadcrumb))
 			} catch (e) {
 				console.error(e)
 				result = 'Errore nel calcolo'
@@ -150,13 +150,13 @@ function SelectField({ field, data, update, disabled, breadcrumb, hideHeader }: 
 	if (typeof field.selectArgs === 'string') {
 		try {
 			const struct = useContext(AnatomStructDataContext)
-			const body = useContext(BodyContextProvider)
-			if (!struct || !body) {
+			const bodyContext = useContext(BodyContextProvider)
+			if (!struct || !bodyContext) {
 				throw new Error('informazioni sul form corrente non trovate')
 			}
 
 			const f = selectArgsFunctionMap[field.selectArgs]
-			selectArgs = f(struct, body, breadcrumb)
+			selectArgs = f(struct, bodyContext.body, breadcrumb)
 		} catch (e) {
 			console.error(e)
 		}
@@ -261,13 +261,13 @@ function MultiSelectField({ field, data, update, disabled, breadcrumb, hideHeade
 	if (typeof field.selectArgs === 'string') {
 		try {
 			const struct = useContext(AnatomStructDataContext)
-			const body = useContext(BodyContextProvider)
-			if (!struct || !body) {
+			const bodyContext = useContext(BodyContextProvider)
+			if (!struct || !bodyContext) {
 				throw new Error('informazioni sul form corrente non trovate')
 			}
 
 			const f = selectArgsFunctionMap[field.selectArgs]
-			selectArgs = f(struct, body, breadcrumb)
+			selectArgs = f(struct, bodyContext.body, breadcrumb)
 		} catch (e) {
 			console.error(e)
 		}
