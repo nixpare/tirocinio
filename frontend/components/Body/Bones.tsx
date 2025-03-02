@@ -7,9 +7,32 @@ import { EditModeContext, Form } from '../Form/Form'
 import { useQuery } from '@tanstack/react-query'
 import { BodyContextProvider } from '../../models/Body'
 import { AnatomStructDataContext } from '../../models/AnatomStruct'
-import { Breadcrumbs, Container, Link, Typography } from '@mui/material'
-import { Link as RouterLink, useParams, useSearchParams } from 'react-router'
+import { Alert, Breadcrumbs, Container, Link, Typography } from '@mui/material'
+import { Outlet, Link as RouterLink, useParams, useSearchParams } from 'react-router'
 import { generateChildUpdater } from '../../utils/updater'
+import { saveBones } from '../../utils/api'
+import { enqueueSnackbar } from 'notistack'
+
+export function BonesLayout() {
+	const bodyContext = useContext(BodyContextProvider);
+	if (!bodyContext) throw new Error('BonesLayout must be used within a BodyContext')
+
+	const { body } = bodyContext
+
+	useEffect(() => {
+		saveBones(body.generals.name, body.bones).catch((err: Error) => {
+			enqueueSnackbar(
+				<Alert severity='error'>
+					{err.message}
+				</Alert>
+			)
+		})
+	}, [body.bones])
+
+	return (
+		<Outlet />
+	)
+}
 
 export function Bones() {
 	const bones_url = '/api/bones'

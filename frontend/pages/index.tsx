@@ -5,7 +5,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { loadProgrammableFunctions } from '../models/Programmable'
 import { BodyHome, BodyLayout } from '../components/Body/Body'
 import { Routes } from 'react-router';
-import { Bones, BoneView } from '../components/Body/Bones';
+import { Bones, BonesLayout, BoneView } from '../components/Body/Bones';
 import { Container } from '@mui/material';
 import { CustomSnackbarProvider } from '../components/UI/Snackbar';
 
@@ -27,10 +27,10 @@ createRoot(document.getElementById('root')!).render(
 function App() {
     return <div>
         <Routes>
-            <Route path="/" element={<RedirectToTestBody />} />
+            <Route path="/" element={<Index />} />
             <Route path="/body/:name" element={<BodyLayout />}>
                 <Route index element={<BodyHome />} />
-                <Route path="ossa">
+                <Route path="ossa" element={<BonesLayout />}>
                     <Route index element={<Bones />} />
                     <Route path=":id" element={<BoneView />} />
                 </Route>
@@ -39,7 +39,7 @@ function App() {
     </div>
 }
 
-function RedirectToTestBody() {
+function Index() {
     const navigate = useNavigate();
 
     setTimeout(() => {

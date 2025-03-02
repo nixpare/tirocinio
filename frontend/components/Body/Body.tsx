@@ -7,27 +7,29 @@ import { createTheme } from '@mui/material/styles';
 import { Navigation } from '@toolpad/core/AppProvider';
 import { ReactRouterAppProvider } from '@toolpad/core/react-router';
 import { DashboardLayout } from '@toolpad/core/DashboardLayout';
-import { Alert, Box, Breadcrumbs, Typography } from '@mui/material';
-import { useContext, useEffect } from 'react';
-import { useImmer } from 'use-immer';
-import { saveBones } from '../../utils/api';
-import { enqueueSnackbar } from 'notistack';
+import { Box, Breadcrumbs, Typography } from '@mui/material';
+import { useContext } from 'react';
+import { Updater, useImmer } from 'use-immer';
 
 export function BodyLayout() {
+	const [body, updateBody] = useImmer<BodyData | null>(null);
+
 	const { name } = useParams();
 	if (!name) {
 		return <h3>Nome non specificato</h3>;
 	}
 
 	const url = `/api/body/${name}`
-	const { data, isLoading, error } = useQuery<BodyData>({
+	const { isLoading, error } = useQuery({
 		queryKey: [url],
 		queryFn: async () => {
 			const res = await fetch(url)
 			if (!res.ok)
 				throw new Error(await res.text())
 
-			return await res.json()
+			const data: BodyData = await res.json();
+			updateBody(data);
+			return data;
 		},
 		retry: false
 	})
@@ -39,7 +41,7 @@ export function BodyLayout() {
 			</div>
 		)
 
-	if (error || !data) {
+	if (error || !body) {
 		const errMessage = error ? error.message : 'Errore durante il caricamento del corpo'
 
 		return (
@@ -50,18 +52,7 @@ export function BodyLayout() {
 		)
 	}
 
-	const Content = () => {
-		const [body, updateBody] = useImmer(data)
-		useEffect(() => {
-			saveBones(body.generals.name, body.bones).catch((err: Error) => {
-				enqueueSnackbar(
-					<Alert severity='error'>
-						{err.message}
-					</Alert>
-				)
-			})
-		}, [body.bones])
-		
+	const Content = ({ body, updateBody }: { body: BodyData, updateBody: Updater<BodyData> }) => {
 		const context: BodyContext = { body, updateBody }
 
 		const baseURL = `body/${encodeURIComponent(name)}`
@@ -103,7 +94,7 @@ export function BodyLayout() {
 	}
 
 	return (
-		<Content />
+		<Content body={body} updateBody={updateBody as Updater<BodyData>} />
 	);
 }
 
