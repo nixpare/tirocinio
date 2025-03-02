@@ -7,7 +7,7 @@ import { FormFieldData, FormFieldTemplate, formFieldIsFixed, formFieldIsText, fo
 import { EditModeContext } from "./Form";
 import { deductionFunctionMap, DeductionTable, selectArgsFunctionMap } from '../../models/Programmable';
 import { AnatomStructDataContext } from '../../models/AnatomStruct';
-import { BodyContext } from '../../models/Body';
+import { BodyContextProvider } from '../../models/Body';
 
 export type UpdateFieldFunc = Updater<FormFieldData>
 type UpdateSelectFieldFunc = Updater<FormSelectFieldData>
@@ -114,7 +114,7 @@ export function Field({ field, data, update, breadcrumb, hideHeader }: {
 			let result: string;
 			try {
 				const struct = useContext(AnatomStructDataContext)
-				const body = useContext(BodyContext)
+				const body = useContext(BodyContextProvider)
 				if (!struct || !body) {
 					throw new Error('informazioni sul form corrente non trovate')
 				}
@@ -150,7 +150,7 @@ function SelectField({ field, data, update, disabled, breadcrumb, hideHeader }: 
 	if (typeof field.selectArgs === 'string') {
 		try {
 			const struct = useContext(AnatomStructDataContext)
-			const body = useContext(BodyContext)
+			const body = useContext(BodyContextProvider)
 			if (!struct || !body) {
 				throw new Error('informazioni sul form corrente non trovate')
 			}
@@ -261,7 +261,7 @@ function MultiSelectField({ field, data, update, disabled, breadcrumb, hideHeade
 	if (typeof field.selectArgs === 'string') {
 		try {
 			const struct = useContext(AnatomStructDataContext)
-			const body = useContext(BodyContext)
+			const body = useContext(BodyContextProvider)
 			if (!struct || !body) {
 				throw new Error('informazioni sul form corrente non trovate')
 			}

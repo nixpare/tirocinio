@@ -1,5 +1,6 @@
 import { createContext } from "react"
 import { BoneData, ExteriorData, VisceraData } from "./AnatomStruct"
+import { Updater } from "use-immer"
 
 export type GeneralInfo = {
 	name: string
@@ -13,4 +14,9 @@ export type BodyData = {
 	exteriors: Record<string, ExteriorData>
 }
 
-export const BodyContext = createContext<BodyData | undefined>(undefined)
+export type BodyContext = {
+	body: BodyData
+	updateBody: Updater<BodyData>
+}
+
+export const BodyContextProvider = createContext<BodyContext | undefined>(undefined)

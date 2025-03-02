@@ -1,14 +1,15 @@
 import './Body.css'
 
 import { useQuery } from '@tanstack/react-query'
-import { BodyData, BodyContext } from '../../models/Body'
+import { BodyData, BodyContextProvider, BodyContext } from '../../models/Body'
 import { Outlet, useParams } from 'react-router';
 import { createTheme } from '@mui/material/styles';
 import { Navigation } from '@toolpad/core/AppProvider';
 import { ReactRouterAppProvider } from '@toolpad/core/react-router';
 import { DashboardLayout } from '@toolpad/core/DashboardLayout';
-import { Breadcrumbs, Container, Typography } from '@mui/material';
+import { Box, Breadcrumbs, Typography } from '@mui/material';
 import { useContext } from 'react';
+import { useImmer } from 'use-immer';
 
 export function BodyLayout() {
 	const { name } = useParams();
@@ -16,29 +17,28 @@ export function BodyLayout() {
 		return <h3>Nome non specificato</h3>;
 	}
 
-	const body_url = `/api/body/${name}`
-	const { data: body, isLoading: bodyLoading, error: bodyError } = useQuery({
-		queryKey: [body_url],
+	const url = `/api/body/${name}`
+	const { data, isLoading, error } = useQuery<BodyData>({
+		queryKey: [url],
 		queryFn: async () => {
-			const res = await fetch(body_url)
+			const res = await fetch(url)
 			if (!res.ok)
 				throw new Error(await res.text())
 
-			const body: BodyData = await res.json()
-			return body
+			return await res.json()
 		},
 		retry: false
 	})
 
-	if (bodyLoading)
+	if (isLoading)
 		return (
 			<div>
 				<h3>Caricamento</h3>
 			</div>
 		)
 
-	if (bodyError || !body) {
-		const errMessage = bodyError ? bodyError.message : 'Errore durante il caricamento del corpo'
+	if (error || !data) {
+		const errMessage = error ? error.message : 'Errore durante il caricamento del corpo'
 
 		return (
 			<div>
@@ -48,55 +48,67 @@ export function BodyLayout() {
 		)
 	}
 
-	const baseURL = `body/${encodeURIComponent(name)}`
-	const navigation: Navigation = [
-		{
-			segment: baseURL,
-			title: name,
-			icon: <i className="fa-solid fa-house"></i>,
-		},
-		{
-			segment: baseURL + '/ossa',
-			title: 'Ossa',
-			icon: <i className="fa-solid fa-bone"></i>
+	const Content = () => {
+		const [body, updateBody] = useImmer(data)
+		const context: BodyContext = {
+			body: body,
+			updateBody: updateBody
 		}
-	]
+
+		const baseURL = `body/${encodeURIComponent(name)}`
+		const navigation: Navigation = [
+			{
+				segment: baseURL,
+				title: name,
+				icon: <i className="fa-solid fa-house"></i>,
+			},
+			{
+				segment: baseURL + '/ossa',
+				title: 'Ossa',
+				icon: <i className="fa-solid fa-bone"></i>
+			}
+		]
+
+		return (
+			<BodyContextProvider.Provider value={context}>
+				<ReactRouterAppProvider
+					navigation={navigation}
+					theme={theme}
+					branding={{
+						title: 'Tirocinio',
+						logo: <img
+							src="/favicon.ico" alt="Logo"
+							style={{ height: '100%', padding: '.6em' }}
+						/>,
+						homeUrl: '/'
+					}}
+				>
+					<div className="body">
+						<DashboardLayout defaultSidebarCollapsed>
+							<Outlet />
+						</DashboardLayout>
+					</div>
+				</ReactRouterAppProvider>
+			</BodyContextProvider.Provider>
+		)
+	}
 
 	return (
-		<BodyContext.Provider value={body}>
-			<ReactRouterAppProvider
-				navigation={navigation}
-				theme={theme}
-				branding={{
-					title: 'Tirocinio',
-					logo: <img
-						src="/favicon.ico" alt="Logo"
-						style={{ height: '100%', padding: '.6em' }}
-					/>,
-					homeUrl: '/'
-				}}
-			>
-				<div className="body">
-					<DashboardLayout defaultSidebarCollapsed>
-						<Outlet />
-					</DashboardLayout>
-				</div>
-			</ReactRouterAppProvider>
-		</BodyContext.Provider>
-	)
+		<Content />
+	);
 }
 
 export function BodyHome() {
-	const body = useContext(BodyContext);
-	if (!body) throw new Error('BodyHome must be used within a BodyContext')
+	const { body } = useContext(BodyContextProvider) ?? { body: null };
+	if (!body) throw new Error('BodyHome must be used within a BodyContextProvider')
 
 	return (
-		<Container>
+		<Box sx={{ padding: '2em 4em' }}>
 			<Breadcrumbs separator="›" aria-label="breadcrumb">
 				<Typography sx={{ color: 'text.primary' }}>{body.generals.name}</Typography>
 			</Breadcrumbs>
 			<h1>{body.generals.name}</h1>
-		</Container>
+		</Box>
 	)
 }
 

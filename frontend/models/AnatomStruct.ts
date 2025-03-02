@@ -1,6 +1,5 @@
 import { createContext } from "react"
 import { FormTemplate, FormData } from "./Form"
-import { Updater } from "use-immer"
 
 export type AnatomStructType = 'bone' | 'viscera' | 'exterior'
 
@@ -44,17 +43,4 @@ export type Exterior = AnatomStructBase & {
 
 export type ExteriorData = AnatomStructDataBase & {
 	type: 'exterior'
-}
-
-export function generateUpdateForm<T extends AnatomStructData>(update: Updater<T>): Updater<FormData> {
-	return (updater) => {
-		update(state => {
-			if (typeof updater !== 'function') {
-				state.form = updater
-				return
-			}
-
-			updater(state.form)
-		})
-	}
 }

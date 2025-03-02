@@ -1,15 +1,15 @@
 import './Bones.css'
 
-import { ChangeEvent, ChangeEventHandler, useContext, useEffect, useState } from 'react'
+import { ChangeEvent, ChangeEventHandler, useContext, useEffect } from 'react'
 import { Updater, useImmer } from 'use-immer'
 import { Bone, BoneData } from '../../models/AnatomStruct'
 import { EditModeContext, Form } from '../Form/Form'
-import { FullScreenOverlay } from '../UI/FullscreenOverlay'
 import { useQuery } from '@tanstack/react-query'
-import { BodyContext } from '../../models/Body'
-import { AnatomStructDataContext, generateUpdateForm } from '../../models/AnatomStruct'
+import { BodyContextProvider } from '../../models/Body'
+import { AnatomStructDataContext } from '../../models/AnatomStruct'
 import { Breadcrumbs, Container, Link, Typography } from '@mui/material'
-import { Link as RouterLink, useParams } from 'react-router'
+import { Link as RouterLink, useParams, useSearchParams } from 'react-router'
+import { generateChildUpdater } from '../../utils/updater'
 
 export function Bones() {
 	const bones_url = '/api/bones'
@@ -50,15 +50,16 @@ export function Bones() {
 }
 
 export function BonesView({ bones }: { bones: Bone[] }) {
-	const body = useContext(BodyContext);
-	if (!body) throw new Error('BonesView must be used within a BodyContext')
+	const bodyContext = useContext(BodyContextProvider);
+	if (!bodyContext) throw new Error('BonesView must be used within a BodyContext')
 
-	const [data, updateData] = useImmer(body.bones)
+	const { body, updateBody } = bodyContext
+	const updateBodyBones = generateChildUpdater(updateBody, 'bones')
 
 	const saveChanges = async () => {
 		const resp = await fetch(`/api/body/${body.generals.name}/bones`, {
 			method: 'PUT',
-			body: JSON.stringify(data),
+			body: JSON.stringify(body.bones),
 			headers: {
 				'Content-Type': 'application/json'
 			}
@@ -70,26 +71,26 @@ export function BonesView({ bones }: { bones: Bone[] }) {
 
 	useEffect(() => {
 		saveChanges()
-	}, [data])
+	}, [body.bones])
 
 	return (
 		<Container className="bones">
 			<Breadcrumbs separator="›" aria-label="breadcrumb">
 				<Link to={`/body/${body.generals.name}`} underline="hover"
 					component={RouterLink}>
-						{body.generals.name}
+					{body.generals.name}
 				</Link>
 				<Typography sx={{ color: 'text.primary' }}>Ossa</Typography>
 			</Breadcrumbs>
 			<h1>Ossa</h1>
 			<SelectBonesSection
 				bones={bones}
-				bonesData={data}
-				updateBonesData={updateData}
+				bonesData={body.bones}
+				updateBonesData={updateBodyBones}
 			/>
 			<EditBonesSection
-				bonesData={data}
-				updateBonesData={updateData}
+				bonesData={body.bones}
+				updateBonesData={updateBodyBones}
 			/>
 		</Container >
 	)
@@ -182,26 +183,12 @@ function EditBonesSection({ bonesData, updateBonesData }: EditBonesSection) {
 			<p>Gestisci ossa registrate:</p>
 			{bones.length > 0 ? (
 				<ul>
-					{bones.map(bone => {
-						const updateBone: Updater<BoneData> = (updater) => {
-							updateBonesData(bonesData => {
-								if (typeof updater !== 'function') {
-									bonesData[bone.name] = updater
-									return
-								}
-
-								updater(bonesData[bone.name])
-							})
-						}
-
-						return (
-							<EditBone key={bone.name}
-								bone={bone}
-								updateBone={updateBone}
-								updateBonesData={updateBonesData}
-							/>
-						)
-					})}
+					{bones.map(bone => (
+						<EditBone key={bone.name}
+							bone={bone}
+							updateBonesData={updateBonesData}
+						/>
+					))}
 				</ul>
 			) : (
 				<div>Nessuna registrata</div>
@@ -212,34 +199,10 @@ function EditBonesSection({ bonesData, updateBonesData }: EditBonesSection) {
 
 type EditBoneProps = {
 	bone: BoneData
-	updateBone: Updater<BoneData>
 	updateBonesData: Updater<Record<string, BoneData>>
 }
 
-function EditBone({ bone, updateBone, updateBonesData }: EditBoneProps) {
-	type BonePopupProps = {
-		opened: boolean
-		editMode: boolean
-	}
-	const [popupOpened, setPopupOpened] = useState<BonePopupProps>({
-		opened: false,
-		editMode: false
-	})
-
-	const viewBone = () => {
-		setPopupOpened({
-			opened: true,
-			editMode: false
-		})
-	}
-
-	const editBone = () => {
-		setPopupOpened({
-			opened: true,
-			editMode: true
-		})
-	}
-
+function EditBone({ bone/* , updateBonesData */ }: EditBoneProps) {
 	const deleteBone = () => {
 		/* setOverlay((
 			<DeleteBonePopup className="delete-bone-popup"
@@ -253,33 +216,24 @@ function EditBone({ bone, updateBone, updateBonesData }: EditBoneProps) {
 		)) */
 	}
 
-	const closePopup = () => {
-		setPopupOpened({
-			opened: false,
-			editMode: false
-		})
-	}
-
 	return (
 		<li className="edit-bone">
 			{bone.name}
 			<div>
-				{/* <button className="icon-button" onClick={viewBone}>
+				<Link to={bone.name} component={RouterLink}
+					className="button icon-button"
+				>
 					<i className="fa-solid fa-eye"></i>
-				</button>
-				<button className="icon-button" onClick={editBone}>
+				</Link>
+				<Link to={`${bone.name}?edit`} component={RouterLink}
+					className="button icon-button"
+				>
 					<i className="fa-solid fa-pen-to-square"></i>
-				</button> */}
-				<Link to={bone.name} component={RouterLink}>
-					<i className="fa-solid fa-eye"></i>
 				</Link>
 				<button className="icon-button delete-button" onClick={deleteBone}>
 					<i className="fa-solid fa-trash"></i>
 				</button>
 			</div>
-			{popupOpened.opened && <>
-				<BonePopup bone={bone} updateBone={updateBone} onClose={closePopup} editMode={popupOpened.editMode} />
-			</>}
 		</li>
 	)
 }
@@ -288,13 +242,21 @@ export function BoneView() {
 	const { id } = useParams<{ id: string }>();
 	if (!id) throw new Error('BoneView must be used with an id parameter')
 
-	const body = useContext(BodyContext);
-	if (!body) throw new Error('BoneView must be used within a BodyContext')
+	const bodyContext = useContext(BodyContextProvider);
+	if (!bodyContext) throw new Error('BoneView must be used within a BodyContext')
 
+	const { body, updateBody } = bodyContext;
 	const bone = body.bones[id];
 
-	const baseURL = `/body/${body.generals.name}`;
+	const updateBodyBones = generateChildUpdater(updateBody, 'bones')
+	const updateBodyBone = generateChildUpdater(updateBodyBones, id)
+	const updateBodyBoneData = generateChildUpdater(updateBodyBone, 'form')
 
+	const baseURL = `/body/${body.generals.name}`;
+	
+	const [searchParams] = useSearchParams();
+	const editMode = searchParams.get('edit') !== null;
+	
 	return (
 		<Container>
 			<Breadcrumbs separator="›" aria-label="breadcrumb">
@@ -309,39 +271,11 @@ export function BoneView() {
 				<Typography sx={{ color: 'text.primary' }}>{bone.name}</Typography>
 			</Breadcrumbs>
 			<AnatomStructDataContext.Provider value={bone}>
-				<EditModeContext.Provider value={false}>
-					<Form data={bone.form} updateData={() => {}} />
+				<EditModeContext.Provider value={editMode}>
+					<Form data={bone.form} updateData={updateBodyBoneData} />
 				</EditModeContext.Provider>
 			</AnatomStructDataContext.Provider>
 		</Container>
-	)
-}
-
-type BonePopupProps = {
-	bone: BoneData
-	updateBone: Updater<BoneData>
-	onClose: () => void
-	editMode?: boolean
-}
-
-function BonePopup({ bone, updateBone, onClose, editMode = false }: BonePopupProps) {
-	const updateForm = generateUpdateForm(updateBone);
-
-	return (
-		<FullScreenOverlay>
-			<div className="edit-bone-popup">
-				<AnatomStructDataContext.Provider value={bone}>
-					<EditModeContext.Provider value={editMode}>
-
-						<Form data={bone.form} updateData={updateForm} />
-
-					</EditModeContext.Provider>
-				</AnatomStructDataContext.Provider>
-				<button onClick={onClose}>
-					<i className="fa-solid fa-xmark"></i>
-				</button>
-			</div>
-		</FullScreenOverlay>
 	)
 }
 

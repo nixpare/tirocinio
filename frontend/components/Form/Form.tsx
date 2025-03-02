@@ -8,9 +8,6 @@ import { FormSectionTemplate, FormData, FormSectionData } from '../../models/For
 import { Field, UpdateFieldFunc } from './Field'
 import { Carousel } from '../UI/Carousel'
 
-export type UpdateFormFunc = Updater<FormData>
-export type UpdateSectionFunc = Updater<FormSectionData>
-
 export const EditModeContext = createContext(false)
 export const VerticalSplitContext = createContext(false)
 
@@ -32,10 +29,10 @@ export const VerticalSplitContext = createContext(false)
  * @param state stato utilizzato per la creazione del componente
  * @return ReactNode
  */
-export function Form({ data, updateData }: { data: FormData, updateData: UpdateFormFunc }) {
+export function Form({ data, updateData }: { data: FormData, updateData: Updater<FormData> }) {
 	const sections = data.templ.sections.map(section => {
 		// updatePage è la funzione di produzione sullo stato per la pagina specifica
-		const updateSection: UpdateSectionFunc = (updater) => {
+		const updateSection: Updater<FormSectionData> = (updater) => {
 			updateData(formData => {
 				if (formData.sections == undefined)
 					formData.sections = {}
@@ -90,7 +87,7 @@ export function Form({ data, updateData }: { data: FormData, updateData: UpdateF
  */
 export function FormSection({ section, data, update }: {
 	section: FormSectionTemplate, data: FormSectionData,
-	update: UpdateSectionFunc
+	update: Updater<FormSectionData>
 }) {
 	const verticalSplit = useContext(VerticalSplitContext)
 

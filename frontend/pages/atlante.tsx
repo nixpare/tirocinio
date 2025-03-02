@@ -4,7 +4,7 @@ import { createRoot } from 'react-dom/client'
 import { Form, EditModeContext } from '../components/Form/Form'
 import { atlante } from '../storage/atlante'
 import { loadProgrammableFunctions } from '../models/Programmable'
-import { BodyContext } from '../models/Body'
+import { BodyContextProvider } from '../models/Body'
 import { testBody } from '../storage/body'
 import { AnatomStructDataContext, BoneData, generateUpdateForm } from '../models/AnatomStruct'
 
@@ -32,7 +32,7 @@ function App() {
 
     return (
         <div className="container app">
-            <BodyContext.Provider value={testBody}>
+            <BodyContextProvider.Provider value={testBody}>
                 <AnatomStructDataContext.Provider value={state}>
                     <EditModeContext.Provider value={true}>
 
@@ -40,7 +40,7 @@ function App() {
 
                     </EditModeContext.Provider>
                 </AnatomStructDataContext.Provider>
-            </BodyContext.Provider>
+            </BodyContextProvider.Provider>
 
             <button onClick={() => { console.log(atlante, state) }}>LOG in Console</button>
         </div>
