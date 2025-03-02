@@ -19,4 +19,4 @@ export type BodyContext = {
 	updateBody: Updater<BodyData>
 }
 
-export const BodyContextProvider = createContext<BodyContext | undefined>(undefined)
+export const BodyContextProvider = createContext<BodyContext | null>(null)

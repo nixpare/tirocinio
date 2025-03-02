@@ -7,6 +7,7 @@ import { BodyHome, BodyLayout } from '../components/Body/Body'
 import { Routes } from 'react-router';
 import { Bones, BoneView } from '../components/Body/Bones';
 import { Container } from '@mui/material';
+import { CustomSnackbarProvider } from '../components/UI/Snackbar';
 
 const queryClient = new QueryClient()
 loadProgrammableFunctions()
@@ -15,7 +16,9 @@ createRoot(document.getElementById('root')!).render(
     <StrictMode>
         <BrowserRouter>
             <QueryClientProvider client={queryClient}>
-                <App />
+                <CustomSnackbarProvider>
+                    <App />
+                </CustomSnackbarProvider>
             </QueryClientProvider>
         </BrowserRouter>
     </StrictMode>,

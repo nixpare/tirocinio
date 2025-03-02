@@ -13,14 +13,26 @@
 	margin-bottom: 2em;
 }
 
-.select-bones>ul,
-.select-bones>div,
-.add-bones>ul,
-.add-bones>div,
-.edit-bones>ul,
-.edit-bones>div {
-	width: fit-content;
+.select-bones>.search,
+.edit-bones>.search {
+	display: flex;
+	align-items: center;
+	gap: 1em;
+}
+
+.select-bones>.search>input,
+.edit-bones>.search>input {
+	width: 40ch;
+	padding: .5em;
+	border-radius: .4em;
+	background-color: rgba(var(--primary-color), .1);
+}
+
+.select-bones>.options,
+.edit-bones>.options {
 	min-width: min(350px, 100%);
+	max-height: 12em;
+	overflow-y: auto;
 	list-style: none;
 	display: flex;
 	flex-wrap: wrap;
@@ -31,18 +43,21 @@
 	gap: 1em;
 }
 
+.select-bones>.options>*,
+.edit-bones>.options>* {
+	flex-basis: 16em;
+}
+
 .edit-bones>ul {
 	flex-direction: column;
 }
 
-.select-bones>p,
-.add-bones>p,
-.edit-bones>p {
+.select-bones p,
+.edit-bones p {
 	font-size: 1.2em;
 }
 
 .select-bone,
-.add-bone,
 .edit-bone {
 	display: flex;
 	align-items: center;
@@ -51,9 +66,28 @@
 	padding: .5em;
 	background-color: rgba(var(--primary-color), .6);
 	border-radius: .4em;
+	position: relative;
+}
+
+.select-bone:not(:hover)>.show-on-hover {
+	opacity: 0;
+}
+
+.select-bone>.show-on-hover {
+	position: absolute;
+	inset: 0;
+	background-color: rgba(0, 0, 0, .5);
+	backdrop-filter: blur(2px);
+	color: #fff;
+	border-radius: inherit;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	transition: opacity .2s ease-in-out;
 }
 
 .edit-bone {
+	padding-left: 1em;
 	justify-content: space-between;
 }
 

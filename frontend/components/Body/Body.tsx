@@ -7,9 +7,11 @@ import { createTheme } from '@mui/material/styles';
 import { Navigation } from '@toolpad/core/AppProvider';
 import { ReactRouterAppProvider } from '@toolpad/core/react-router';
 import { DashboardLayout } from '@toolpad/core/DashboardLayout';
-import { Box, Breadcrumbs, Typography } from '@mui/material';
-import { useContext } from 'react';
+import { Alert, Box, Breadcrumbs, Typography } from '@mui/material';
+import { useContext, useEffect } from 'react';
 import { useImmer } from 'use-immer';
+import { saveBones } from '../../utils/api';
+import { enqueueSnackbar } from 'notistack';
 
 export function BodyLayout() {
 	const { name } = useParams();
@@ -50,10 +52,17 @@ export function BodyLayout() {
 
 	const Content = () => {
 		const [body, updateBody] = useImmer(data)
-		const context: BodyContext = {
-			body: body,
-			updateBody: updateBody
-		}
+		useEffect(() => {
+			saveBones(body.generals.name, body.bones).catch((err: Error) => {
+				enqueueSnackbar(
+					<Alert severity='error'>
+						{err.message}
+					</Alert>
+				)
+			})
+		}, [body.bones])
+		
+		const context: BodyContext = { body, updateBody }
 
 		const baseURL = `body/${encodeURIComponent(name)}`
 		const navigation: Navigation = [
@@ -99,8 +108,10 @@ export function BodyLayout() {
 }
 
 export function BodyHome() {
-	const { body } = useContext(BodyContextProvider) ?? { body: null };
-	if (!body) throw new Error('BodyHome must be used within a BodyContextProvider')
+	const bodyContext = useContext(BodyContextProvider);
+	if (!bodyContext) throw new Error('BodyHome must be used within a BodyContextProvider')
+
+	const { body } = bodyContext;
 
 	return (
 		<Box sx={{ padding: '2em 4em' }}>

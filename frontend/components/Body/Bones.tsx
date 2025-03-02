@@ -1,6 +1,6 @@
 import './Bones.css'
 
-import { ChangeEvent, ChangeEventHandler, useContext, useEffect } from 'react'
+import { useContext, useEffect, useMemo, useState } from 'react'
 import { Updater, useImmer } from 'use-immer'
 import { Bone, BoneData } from '../../models/AnatomStruct'
 import { EditModeContext, Form } from '../Form/Form'
@@ -56,23 +56,6 @@ export function BonesView({ bones }: { bones: Bone[] }) {
 	const { body, updateBody } = bodyContext
 	const updateBodyBones = generateChildUpdater(updateBody, 'bones')
 
-	const saveChanges = async () => {
-		const resp = await fetch(`/api/body/${body.generals.name}/bones`, {
-			method: 'PUT',
-			body: JSON.stringify(body.bones),
-			headers: {
-				'Content-Type': 'application/json'
-			}
-		})
-		if (!resp.ok) {
-			//showMessage(await resp.text(), setOverlay)
-		}
-	}
-
-	useEffect(() => {
-		saveChanges()
-	}, [body.bones])
-
 	return (
 		<Container className="bones">
 			<Breadcrumbs separator="›" aria-label="breadcrumb">
@@ -108,66 +91,52 @@ function SelectBonesSection({ bones, bonesData, updateBonesData }: SelectBonesSe
 		updateSelectedBones(Object.values(bonesData))
 	}, [bonesData])
 
-	const selectBone = (idx: number, checked: boolean) => {
-		const bone = bones[idx]
-
-		if (!checked) {
-			//showMessage(`Non puoi deselezionare ${bone.name} perchè sono registrati dei dati. Eliminali prima nella sezione sotto`, setOverlay);
-			return;
-		}
-
-		updateBonesData(data => {
-			data[bone.name] = {
-				type: bone.type,
-				name: bone.name,
-				form: {
-					templ: bone.form
-				}
-			}
-		})
-	}
+	const [search, setSearch] = useState('')
+	const searchResults = useMemo(() => {
+		return bones.filter(bone => {
+			return !selectedBones.some(selectedBone => selectedBone.name === bone.name) &&
+				bone.name.toLowerCase().includes(search)
+		}).sort((a, b) => a.name.localeCompare(b.name))
+	}, [bones, selectedBones, search])
 
 	return (
 		<div className="select-bones">
-			<p>Seleziona le ossa presenti:</p>
-			{bones.length > 0 ? (
-				<ul>
-					{bones.map((bone, boneIdx) => {
-						const checked = selectedBones.filter(selectedBone => selectedBone.name == bone.name).length != 0
-
-						const setBoneChecked = (ev: ChangeEvent<HTMLInputElement>) => {
-							selectBone(boneIdx, ev.target.checked)
+			<div className="search">
+				<p>Aggiungi ossa:</p>
+				<input type="text" placeholder="Cerca ..."
+					onChange={(e) => {
+						setSearch(e.target.value.toLowerCase())
+					}}
+				/>
+			</div>
+			<div className="options">
+				{searchResults.length > 0 ? (
+					searchResults.map((bone) => {
+						const addBone = () => {
+							updateBonesData(data => {
+								data[bone.name] = {
+									type: bone.type,
+									name: bone.name,
+									form: {
+										templ: bone.form
+									}
+								}
+							})
 						}
 
 						return (
-							<SelectBone key={bone.name}
-								bone={bone} checked={checked}
-								onChange={setBoneChecked} />
+							<button key={bone.name} className="select-bone" onClick={addBone}>
+								{bone.name}
+								<div className="show-on-hover">
+									<i className="fa-solid fa-plus"></i>
+								</div>
+							</button>
 						)
-					})}
-				</ul>
-			) : (
-				<div>Nessuna</div>
-			)}
-
+					})
+				) : 'Nessuna'}
+			</div>
 		</div>
 	)
-}
-
-type SelectBoneProps = {
-	bone: Bone
-	checked: boolean
-	onChange: ChangeEventHandler<HTMLInputElement>
-}
-
-function SelectBone({ bone, checked, onChange }: SelectBoneProps) {
-	return <li className="select-bone">
-		<input
-			type="checkbox" name={bone.name}
-			checked={checked}
-			onChange={onChange} />
-		<label htmlFor={bone.name}>{bone.name}</label>
-	</li>
 }
 
 type EditBonesSection = {
@@ -178,21 +147,33 @@ type EditBonesSection = {
 function EditBonesSection({ bonesData, updateBonesData }: EditBonesSection) {
 	const bones = Object.values(bonesData)
 
+	const [search, setSearch] = useState('')
+	const searchResults = useMemo(() => {
+		return bones.filter(bone => {
+			return bone.name.toLowerCase().includes(search)
+		}).sort((a, b) => a.name.localeCompare(b.name))
+	}, [bones, search])
+
 	return (
 		<div className="edit-bones">
-			<p>Gestisci ossa registrate:</p>
-			{bones.length > 0 ? (
-				<ul>
-					{bones.map(bone => (
+			<div className="search">
+				<p>Ossa presenti:</p>
+				<input type="text" placeholder="Cerca ..."
+					onChange={(e) => {
+						setSearch(e.target.value.toLowerCase())
+					}}
+				/>
+			</div>
+			<div className="options">
+				{searchResults.length > 0 ? (
+					searchResults.map((bone) => (
 						<EditBone key={bone.name}
 							bone={bone}
 							updateBonesData={updateBonesData}
 						/>
-					))}
-				</ul>
-			) : (
-				<div>Nessuna registrata</div>
-			)}
+					))
+				) : 'Nessuna'}
+			</div>
 		</div>
 	)
 }
@@ -202,18 +183,11 @@ type EditBoneProps = {
 	updateBonesData: Updater<Record<string, BoneData>>
 }
 
-function EditBone({ bone/* , updateBonesData */ }: EditBoneProps) {
+function EditBone({ bone, updateBonesData }: EditBoneProps) {
 	const deleteBone = () => {
-		/* setOverlay((
-			<DeleteBonePopup className="delete-bone-popup"
-				boneName={bone.name} updateBonesData={updateBonesData}
-				setOverlay={setOverlay}
-			>
-				<div>
-					Sei sicuro di voler eliminare <span className="bone-name">{bone.name}</span>?
-				</div>
-			</DeleteBonePopup>
-		)) */
+		updateBonesData(bonesData => {
+			delete bonesData[bone.name]
+		})
 	}
 
 	return (
@@ -278,32 +252,3 @@ export function BoneView() {
 		</Container>
 	)
 }
-
-/* type DeleteBonePopupProps = {
-	boneName: string
-	updateBonesData: Updater<Record<string, BoneData>>
-	setOverlay: SetOverlayFunc
-	confirmLabel?: string
-	cancelLabel?: string
-} & DetailedHTMLProps<HTMLAttributes<HTMLDivElement>, HTMLDivElement>
-
-function DeleteBonePopup({ boneName, updateBonesData, setOverlay, children, ...props }: DeleteBonePopupProps) {
-	const deleteBone = () => {
-		updateBonesData(bonesData => {
-			delete bonesData[boneName]
-		})
-		closeOverlay()
-	}
-
-	const closeOverlay = () => {
-		setOverlay(undefined);
-	}
-
-	return (
-		<ConfirmPopup {...props}
-			onConfirm={deleteBone} onCancel={closeOverlay}
-			confirmLabel='Conferma' cancelLabel='Annulla' >
-			{children}
-		</ConfirmPopup>
-	)
-} */

@@ -296,9 +296,9 @@ function MultiSelectField({ field, data, update, disabled, breadcrumb, hideHeade
 	}, [selectRef.current, data])
 
 	const styles: StylesConfig<SelectOption, true> = {
-		container: (base, _) => {
+		/* container: (base, _) => {
 			return disabled ? { ...base, display: 'none' } : base;
-		},
+		}, */
 		multiValueLabel: (base, _) => {
 			return { ...base, fontWeight: 'bold', paddingRight: 6 };
 		},
@@ -338,7 +338,7 @@ function MultiSelectField({ field, data, update, disabled, breadcrumb, hideHeade
 	return <div className="field multi-select-field">
 		<div className="select-input">
 			{!hideHeader && field.header && <p className="field-header">{field.header}</p>}
-			<button className="select-all" onClick={selectAll}>SELEZIONA TUTTO</button>
+			{!disabled && <button className="select-all" onClick={selectAll}>SELEZIONA TUTTO</button>}
 			<Select options={options} isMulti isClearable={false} isDisabled={disabled}
 				ref={selectRef}
 				placeholder={field.header}
@@ -371,9 +371,9 @@ function MultiSelectField({ field, data, update, disabled, breadcrumb, hideHeade
 					<div className='arg-display'>{selectedArg.display}</div>
 					<MultiSelectNextFields selected={sel.value} arg={selectedArg}
 						data={data} update={update} breadcrumb={[...breadcrumb, sel.value]} />
-					<button className="delete-row" onClick={deleteSelection}>
+					{!disabled && <button className="delete-row" onClick={deleteSelection}>
 						<i className="fa-solid fa-trash"></i>
-					</button>
+					</button>}
 				</div>
 			})}
 		</div>
@@ -547,9 +547,9 @@ function ExpansionField({ field, data, update, disabled, breadcrumb, hideHeader 
 							breadcrumb={[...breadcrumb, 'additional', rowIdx.toString()]}
 						/>
 					})()}
-					<button className="delete-row" onClick={deleteAdditional}>
+					{!disabled && <button className="delete-row" onClick={deleteAdditional}>
 						<i className="fa-solid fa-trash"></i>
-					</button>
+					</button>}
 				</div>
 			})}
 		</div>
@@ -576,9 +576,9 @@ function ExpansionField({ field, data, update, disabled, breadcrumb, hideHeader 
 					/>
 				})}
 			</div>
-			<button className='add-row' onClick={addRow} disabled={disabled}>
+			{!disabled && <button className='add-row' onClick={addRow} disabled={disabled}>
 				Aggiungi <i className="fa-solid fa-plus"></i>
-			</button>
+			</button>}
 		</div>
 	</div>
 }
