@@ -3,14 +3,14 @@
 }
 
 .field-header {
-	background-color: rgba(var(--primary-color), .4);
+	background-color: rgba(var(--primary-color), .3);
 	border-radius: .2em;
 	margin-bottom: 1em;
 	padding: 0 .4em;
 	text-align: center;
 }
 
-.field.fixed-field > .fixed-value,
+.field .fixed-value,
 .field.deduction-field .deduction-result {
 	padding: .2em .4em;
 	background-color: rgba(255, 255, 255, .6);
@@ -49,9 +49,7 @@
 }
 
 .field .multi-select {
-	padding: 1em;
-	background-color: rgba(var(--primary-color), .1);
-	border-radius: .2em;
+	padding: .4em 1em;
 	margin-top: .6em;
 }
 .field .multi-select:not(:has(>*)) {
@@ -104,10 +102,6 @@
 	margin-bottom: auto;
 }
 
-.field.expansion-field > .field-header {
-	text-align: left;
-}
-
 .field.expansion-field .additional {
 	width: fit-content;
 	padding: 1em 2em;
@@ -134,6 +128,10 @@
 	padding: 1em;
 	background-color: rgba(var(--primary-color), .1);
 	border-radius: .2em;
+}
+
+.field p.no-value {
+	text-align: center;
 }
 
 .field.expansion-field .fixed-data > div,

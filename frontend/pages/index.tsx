@@ -1,4 +1,4 @@
-import { StrictMode } from 'react'
+import { StrictMode, useEffect } from 'react'
 import { createRoot } from 'react-dom/client'
 import { BrowserRouter, Route, useNavigate } from "react-router";
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
@@ -42,9 +42,11 @@ function App() {
 function Index() {
     const navigate = useNavigate();
 
-    setTimeout(() => {
-        navigate('/body/Test body/ossa');
-    }, 3000)
+    useEffect(() => {
+        setTimeout(() => {
+            navigate('/body/Test body/ossa');
+        }, 3000)
+    }, [])
 
     return (
         <Container>

@@ -202,25 +202,33 @@ function SelectField({ field, data, update, disabled, breadcrumb, hideHeader }: 
 		})
 	}
 
+	const selectedOption: SelectOption | undefined = options.filter(option => option.value == data?.value?.selection)[0];
+
 	return <div className="field select-field">
 		<div className="select-input">
 			{!hideHeader && field.header && <p className="field-header">{field.header}</p>}
-			{!disabled && <Select options={options} isClearable={true} isDisabled={disabled}
-				ref={selectRef}
-				placeholder={field.header}
-				styles={styles}
-				value={options.filter(option => option.value == data?.value?.selection)[0]}
-				onChange={onChange}
-			/>}
+			{!disabled ? (
+				<Select options={options} isClearable={true} isDisabled={disabled}
+					ref={selectRef}
+					placeholder={field.header}
+					styles={styles}
+					value={selectedOption}
+					onChange={onChange}
+				/>
+			) : (
+				selectedOption ? (
+					<Typography className="fixed-value">{selectedOption.label}</Typography>
+				) : (
+					<Typography className="no-value">Nessuna selezione</Typography>
+				)
+			)}
 		</div>
 		{data && data.value && (
 			<SelectNextFields arg={selectArgs[data.value.selection]}
 				data={data} update={update}
 				breadcrumb={[...breadcrumb, data.value.selection]}
 			/>
-		) || (disabled && (
-			<Typography className="no-value">Nessun valore</Typography>
-		))}
+		)}
 	</div>
 }
 
@@ -233,6 +241,9 @@ function SelectNextFields({ arg, data, update, breadcrumb }: {
 		{arg.next?.map((next, nextIdx) => {
 			const updateNext: Updater<FormFieldData> = (updater) => {
 				update(selectData => {
+					if (arg.next == undefined)
+						return
+
 					if (selectData == undefined || selectData.value == undefined)
 						throw new Error('select is undefined after the first stage')
 
@@ -243,6 +254,9 @@ function SelectNextFields({ arg, data, update, breadcrumb }: {
 						selectData.value.next[nextIdx] = updater
 						return
 					}
+
+					if (selectData.value.next[nextIdx] == undefined)
+						selectData.value.next[nextIdx] = { type: arg.next[nextIdx].type }
 
 					updater(selectData.value.next[nextIdx])
 				})
@@ -300,9 +314,6 @@ function MultiSelectField({ field, data, update, disabled, breadcrumb, hideHeade
 	}, [selectRef.current, data])
 
 	const styles: StylesConfig<SelectOption, true> = {
-		container: (base, _) => {
-			return disabled ? { ...base, display: 'none' } : base;
-		},
 		multiValueLabel: (base, _) => {
 			return { ...base, fontWeight: 'bold', paddingRight: 6 };
 		},
@@ -343,13 +354,13 @@ function MultiSelectField({ field, data, update, disabled, breadcrumb, hideHeade
 		<div className="select-input">
 			{!hideHeader && field.header && <p className="field-header">{field.header}</p>}
 			{!disabled && <button className="select-all" onClick={selectAll}>SELEZIONA TUTTO</button>}
-			<Select options={options} isMulti isClearable={false} isDisabled={disabled}
+			{!disabled && <Select options={options} isMulti isClearable={false} isDisabled={disabled}
 				ref={selectRef}
 				placeholder={field.header}
 				styles={styles}
 				value={selectedOptions}
 				onChange={onChange}
-			/>
+			/>}
 		</div>
 		<div className='multi-select'>
 			{selectedOptions.length > 0 ? (

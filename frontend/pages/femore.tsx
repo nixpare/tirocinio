@@ -17,7 +17,7 @@ createRoot(document.getElementById('root')!).render(
     <StrictMode>
         <BrowserRouter>
             <Routes>
-                <Route path="/deduzione" element={(
+                <Route path="/femore" element={(
                     <CustomSnackbarProvider>
                         <App />
                     </CustomSnackbarProvider>
