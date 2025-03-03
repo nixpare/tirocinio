@@ -43,7 +43,7 @@ function Index() {
     const navigate = useNavigate();
 
     setTimeout(() => {
-        navigate('/body/Test body');
+        navigate('/body/Test body/ossa');
     }, 3000)
 
     return (
