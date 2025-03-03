@@ -5,7 +5,7 @@
 .field .field-header {
 	background-color: rgba(var(--primary-color), .4);
 	border-radius: .2em;
-	margin-bottom: .2em;
+	margin-bottom: 1em;
 	padding: 0 .4em;
 	text-align: center;
 }
@@ -43,6 +43,9 @@
 .field .select-input {
 	width: fit-content;
 	min-width: 30ch;
+}
+.field .select-input:not(:has(>*)) {
+	display: none;
 }
 
 .field .multi-select {
@@ -126,8 +129,8 @@
 }
 
 .field.expansion-field .fixed-data:has(>*),
-.field.expansion-field .expansion-data:has(>*) {
-	margin: 1em;
+.field.expansion-field .expansion-data:has(>*),
+.field .no-value {
 	padding: 1em;
 	background-color: rgba(var(--primary-color), .1);
 	border-radius: .2em;
@@ -139,7 +142,7 @@
 	gap: 1em;
 	margin: .8em;
 	padding: .8em;
-	background-color: rgba(var(--primary-color), .1);
+	background-color: rgba(255, 255, 255, .5);
 	border-radius: .2em;
 }
 
@@ -210,8 +213,4 @@
 
 .field.deduction-field .deduction-hint table tbody tr:last-child td:last-child {
 	border-bottom-right-radius: .2em;
-}
-
-.react-tabs__tab:focus:after {
-	content: unset;
 }

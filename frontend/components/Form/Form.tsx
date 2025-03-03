@@ -6,7 +6,7 @@ import { FormSectionTemplate, FormData, FormSectionData } from '../../models/For
 import { Field, UpdateFieldFunc } from './Field'
 import { Carousel } from '../UI/Carousel'
 import { Paper, Stack, Switch, Tab, Tabs, Typography } from '@mui/material';
-import { useLocation, useNavigate } from 'react-router'
+import { useSearchParams } from 'react-router'
 
 export const EditModeContext = createContext(false)
 
@@ -29,18 +29,23 @@ export const EditModeContext = createContext(false)
  * @return ReactNode
  */
 export function Form({ data, updateData, initialEditMode }: { data: FormData, updateData: Updater<FormData>, initialEditMode: boolean }) {
-	const navigate = useNavigate();
-	const location = useLocation();
+	const [ searchParams, setSearchParams ] = useSearchParams();
 	
 	const [editMode, setEditMode] = useState(initialEditMode);
 	const handleEditModeChange = () => {
 		setEditMode(!editMode)
-		navigate(`${location.pathname}${editMode ? '' : '?edit'}`)
+		
+		!editMode ? searchParams.set('edit', '') : searchParams.delete('edit')
+		setSearchParams(searchParams)
 	}
 	
-	const [tabIdx, setTabIdx] = useState(0)
+	const tabIdxParam = searchParams.get('tab')
+	const [tabIdx, setTabIdx] = useState(tabIdxParam ? parseInt(tabIdxParam) : 0)
 	const handleTabChange = (_: SyntheticEvent, newValue: number) => {
 		setTabIdx(newValue)
+
+		searchParams.set('tab', newValue.toString())
+		setSearchParams(searchParams)
 	}
 
 	return (

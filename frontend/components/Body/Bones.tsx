@@ -82,8 +82,10 @@ export function BonesView({ bones }: { bones: Bone[] }) {
 	return (
 		<div className="bones">
 			<Breadcrumbs separator="›" aria-label="breadcrumb">
-				<Link to={`/body/${body.generals.name}`} underline="hover"
-					component={RouterLink}>
+				<Link to={`/body/${body.generals.name}`}
+					underline="hover"
+					component={RouterLink}
+				>
 					{body.generals.name}
 				</Link>
 				<Typography sx={{ color: 'text.primary' }}>Ossa</Typography>
@@ -226,12 +228,14 @@ function EditBone({ bone, updateBonesData }: EditBoneProps) {
 		<li className="edit-bone">
 			{bone.name}
 			<div>
-				<Link to={bone.name} component={RouterLink}
+				<Link to={bone.name}
+					component={RouterLink}
 					className="button icon-button"
 				>
 					<i className="fa-solid fa-eye"></i>
 				</Link>
-				<Link to={`${bone.name}?edit`} component={RouterLink}
+				<Link to={`${bone.name}?edit`}
+					component={RouterLink}
 					className="button icon-button"
 				>
 					<i className="fa-solid fa-pen-to-square"></i>
@@ -266,12 +270,16 @@ export function BoneView() {
 	return (
 		<div className="bone">
 			<Breadcrumbs separator="›" aria-label="breadcrumb">
-				<Link to={baseURL} underline="hover"
-					component={RouterLink}>
+				<Link to={baseURL}
+					underline="hover"
+					component={RouterLink}
+				>
 					{body.generals.name}
 				</Link>
-				<Link to={baseURL + '/ossa'} underline="hover"
-					component={RouterLink}>
+				<Link to={baseURL + '/ossa'}
+					underline="hover"
+					component={RouterLink}
+				>
 					Ossa
 				</Link>
 				<Typography sx={{ color: 'text.primary' }}>{bone.name}</Typography>

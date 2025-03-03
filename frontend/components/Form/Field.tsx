@@ -2,12 +2,13 @@ import './Field.css'
 
 import { ChangeEvent, MouseEvent, useContext, useEffect, useRef, useState } from "react";
 import { Updater, useImmer } from "use-immer";
-import Select, { ActionMeta, MultiValue, SelectInstance, StylesConfig } from 'react-select'
+import Select, { ActionMeta, MultiValue, SelectInstance, SingleValue, StylesConfig } from 'react-select'
 import { FormFieldData, FormFieldTemplate, formFieldIsFixed, formFieldIsText, formFieldDataIsText, formFieldIsNumber, formFieldDataIsNumber, formFieldIsSelect, formFieldDataIsSelect, FormSelectFieldTemplate, FormSelectFieldData, formFieldIsDeduction, formFieldIsMultiSelect, FormMultiSelectFieldData, FormMultiSelectFieldTemplate, formFieldDataIsMultiSelect, FormFieldSelectArg, formFieldIsExpansion, formFieldDataIsExpansion, FormExpansionFieldData, FormExpansionFieldTemplate, FormFieldSelectArgs } from "../../models/Form";
 import { EditModeContext } from "./Form";
 import { deductionFunctionMap, DeductionTable, selectArgsFunctionMap } from '../../models/Programmable';
 import { AnatomStructDataContext } from '../../models/AnatomStruct';
 import { BodyContextProvider } from '../../models/Body';
+import { Paper, Typography } from '@mui/material';
 
 export type UpdateFieldFunc = Updater<FormFieldData>
 type UpdateSelectFieldFunc = Updater<FormSelectFieldData>
@@ -169,7 +170,7 @@ function SelectField({ field, data, update, disabled, breadcrumb, hideHeader }: 
 		label: arg.display
 	}))
 
-	const styles: StylesConfig<SelectOption, true> = {
+	const styles: StylesConfig<SelectOption> = {
 		multiValueLabel: (base, _) => {
 			return { ...base, fontWeight: 'bold', paddingRight: 6 };
 		},
@@ -186,7 +187,7 @@ function SelectField({ field, data, update, disabled, breadcrumb, hideHeader }: 
 		}
 	}, [selectRef.current, data])
 
-	const onChange = (newValue: SelectOption, _: ActionMeta<SelectOption>) => {
+	const onChange = (newValue: SingleValue<SelectOption>, _: ActionMeta<SelectOption>) => {
 		update(selectData => {
 			if (newValue == undefined) {
 				selectData.value = undefined
@@ -204,19 +205,22 @@ function SelectField({ field, data, update, disabled, breadcrumb, hideHeader }: 
 	return <div className="field select-field">
 		<div className="select-input">
 			{!hideHeader && field.header && <p className="field-header">{field.header}</p>}
-			<Select options={options} isClearable={true} isDisabled={disabled}
-				// @ts-ignore
+			{!disabled && <Select options={options} isClearable={true} isDisabled={disabled}
 				ref={selectRef}
 				placeholder={field.header}
 				styles={styles}
 				value={options.filter(option => option.value == data?.value?.selection)[0]}
-				// @ts-ignore
-				onChange={onChange} />
+				onChange={onChange}
+			/>}
 		</div>
-		{data && data.value &&
+		{data && data.value && (
 			<SelectNextFields arg={selectArgs[data.value.selection]}
 				data={data} update={update}
-				breadcrumb={[...breadcrumb, data.value.selection]} />}
+				breadcrumb={[...breadcrumb, data.value.selection]}
+			/>
+		) || (disabled && (
+			<Typography className="no-value">Nessun valore</Typography>
+		))}
 	</div>
 }
 
@@ -296,9 +300,9 @@ function MultiSelectField({ field, data, update, disabled, breadcrumb, hideHeade
 	}, [selectRef.current, data])
 
 	const styles: StylesConfig<SelectOption, true> = {
-		/* container: (base, _) => {
+		container: (base, _) => {
 			return disabled ? { ...base, display: 'none' } : base;
-		}, */
+		},
 		multiValueLabel: (base, _) => {
 			return { ...base, fontWeight: 'bold', paddingRight: 6 };
 		},
@@ -344,38 +348,43 @@ function MultiSelectField({ field, data, update, disabled, breadcrumb, hideHeade
 				placeholder={field.header}
 				styles={styles}
 				value={selectedOptions}
-				onChange={onChange} />
+				onChange={onChange}
+			/>
 		</div>
 		<div className='multi-select'>
-			{selectedOptions.map((sel) => {
-				const selectedArg = selectArgs[sel.value]
-				if (selectedArg == undefined)
-					return undefined
+			{selectedOptions.length > 0 ? (
+				selectedOptions.map((sel) => {
+					const selectedArg = selectArgs[sel.value]
+					if (selectedArg == undefined)
+						return undefined
 
-				const deleteSelection = (ev: MouseEvent<HTMLButtonElement, PointerEvent>) => {
-					ev.preventDefault()
-					selectRef?.current?.removeValue(sel)
+					const deleteSelection = (ev: MouseEvent<HTMLButtonElement, PointerEvent>) => {
+						ev.preventDefault()
+						selectRef?.current?.removeValue(sel)
 
-					update(selectData => {
-						if (selectData.value) {
-							selectData.value.selections = selectData.value.selections.filter((selection) => {
-								return selection !== sel.value
-							})
+						update(selectData => {
+							if (selectData.value) {
+								selectData.value.selections = selectData.value.selections.filter((selection) => {
+									return selection !== sel.value
+								})
 
-							delete selectData.value.next?.[sel.value]
-						}
-					})
-				}
+								delete selectData.value.next?.[sel.value]
+							}
+						})
+					}
 
-				return <div className='container container-horiz multi-select-arg' key={sel.value}>
-					<div className='arg-display'>{selectedArg.display}</div>
-					<MultiSelectNextFields selected={sel.value} arg={selectedArg}
-						data={data} update={update} breadcrumb={[...breadcrumb, sel.value]} />
-					{!disabled && <button className="delete-row" onClick={deleteSelection}>
-						<i className="fa-solid fa-trash"></i>
-					</button>}
-				</div>
-			})}
+					return <div className='container container-horiz multi-select-arg' key={sel.value}>
+						<div className='arg-display'>{selectedArg.display}</div>
+						<MultiSelectNextFields selected={sel.value} arg={selectedArg}
+							data={data} update={update} breadcrumb={[...breadcrumb, sel.value]} />
+						{!disabled && <button className="delete-row" onClick={deleteSelection}>
+							<i className="fa-solid fa-trash"></i>
+						</button>}
+					</div>
+				})
+			) : (
+				disabled && <Typography>Nessuna selezione</Typography>
+			)}
 		</div>
 	</div>
 }
@@ -495,7 +504,7 @@ function ExpansionField({ field, data, update, disabled, breadcrumb, hideHeader 
 					})
 				}
 
-				return <div key={rowIdx}>
+				return <Paper key={rowIdx}>
 					{field.incremental && <div className="row-counter">
 						<p>{field.prefix ?? '# '}{rowIdx + 1}</p>
 					</div>}
@@ -550,10 +559,12 @@ function ExpansionField({ field, data, update, disabled, breadcrumb, hideHeader 
 					{!disabled && <button className="delete-row" onClick={deleteAdditional}>
 						<i className="fa-solid fa-trash"></i>
 					</button>}
-				</div>
-			})}
+				</Paper>
+			}) || (disabled && (
+				<Typography>Nessun valore</Typography>
+			))}
 		</div>
-		<div className="additional">
+		{!disabled && <div className="additional">
 			<div className="input-fields">
 				{field.expansionArgs?.map((arg, argIdx) => {
 					const updateField: Updater<FormFieldData> = (updater) => {
@@ -579,7 +590,7 @@ function ExpansionField({ field, data, update, disabled, breadcrumb, hideHeader 
 			{!disabled && <button className='add-row' onClick={addRow} disabled={disabled}>
 				Aggiungi <i className="fa-solid fa-plus"></i>
 			</button>}
-		</div>
+		</div>}
 	</div>
 }
 

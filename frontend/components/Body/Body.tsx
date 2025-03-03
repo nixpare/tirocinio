@@ -52,52 +52,57 @@ export function BodyLayout() {
 		)
 	}
 
-	const Content = ({ body, updateBody }: { body: BodyData, updateBody: Updater<BodyData> }) => {
-		const context: BodyContext = { body, updateBody }
+	return (
+		<BodyContent body={body} updateBody={updateBody as Updater<BodyData>} />
+	);
+}
 
-		const baseURL = `body/${encodeURIComponent(name)}`
-		const navigation: Navigation = [
-			{
-				segment: baseURL,
-				title: name,
-				icon: <i className="fa-solid fa-house"></i>,
-			},
-			{
-				segment: baseURL + '/ossa',
-				title: 'Ossa',
-				icon: <i className="fa-solid fa-bone"></i>
-			}
-		]
+function BodyContent({ body, updateBody }: { body: BodyData, updateBody: Updater<BodyData> }) {
+	const context: BodyContext = { body, updateBody }
 
-		return (
-			<BodyContextProvider.Provider value={context}>
-				<ReactRouterAppProvider
-					navigation={navigation}
-					theme={theme}
-					branding={{
-						title: 'Tirocinio',
-						logo: <img
-							src="/favicon.ico" alt="Logo"
-							style={{ height: '100%', padding: '.6em' }}
-						/>,
-						homeUrl: '/'
-					}}
-				>
-					<div className="body">
-						<DashboardLayout defaultSidebarCollapsed>
-							<div className="body-content">
-								<Outlet />
-							</div>
-						</DashboardLayout>
-					</div>
-				</ReactRouterAppProvider>
-			</BodyContextProvider.Provider>
-		)
-	}
+	const baseURL = `body/${encodeURIComponent(body.generals.name)}`
+	const navigation: Navigation = [
+		{
+			segment: '',
+			title: body.generals.name,
+			icon: <i className="fa-solid fa-house"></i>
+		},
+		{
+			segment: baseURL,
+			title: body.generals.name,
+			icon: <i className="fa-solid fa-user"></i>
+		},
+		{
+			segment: baseURL + '/ossa',
+			title: 'Ossa',
+			icon: <i className="fa-solid fa-bone"></i>
+		}
+	]
 
 	return (
-		<Content body={body} updateBody={updateBody as Updater<BodyData>} />
-	);
+		<BodyContextProvider.Provider value={context}>
+			<ReactRouterAppProvider
+				navigation={navigation}
+				theme={theme}
+				branding={{
+					title: 'Tirocinio',
+					logo: <img
+						src="/favicon.ico" alt="Logo"
+						style={{ height: '100%', padding: '.6em' }}
+					/>,
+					homeUrl: '/'
+				}}
+			>
+				<div className="body">
+					<DashboardLayout defaultSidebarCollapsed>
+						<div className="body-content">
+							<Outlet />
+						</div>
+					</DashboardLayout>
+				</div>
+			</ReactRouterAppProvider>
+		</BodyContextProvider.Provider>
+	)
 }
 
 export function BodyHome() {
@@ -120,14 +125,5 @@ const theme = createTheme({
 	cssVariables: {
 		colorSchemeSelector: 'data-toolpad-color-scheme',
 	},
-	colorSchemes: { light: true, dark: true },
-	breakpoints: {
-		values: {
-			xs: 0,
-			sm: 600,
-			md: 600,
-			lg: 1200,
-			xl: 1536,
-		},
-	},
+	colorSchemes: { light: true/* , dark: true */ },
 });
