@@ -1,15 +1,14 @@
-import 'react-tabs/style/react-tabs.css';
 import './Form.css'
 
-import { createContext, useContext } from 'react'
+import { createContext, SyntheticEvent, useState } from 'react'
 import { Updater } from 'use-immer'
-import { Tab, Tabs, TabList, TabPanel } from 'react-tabs'
 import { FormSectionTemplate, FormData, FormSectionData } from '../../models/Form'
 import { Field, UpdateFieldFunc } from './Field'
 import { Carousel } from '../UI/Carousel'
+import { Paper, Stack, Switch, Tab, Tabs, Typography } from '@mui/material';
+import { useLocation, useNavigate } from 'react-router'
 
 export const EditModeContext = createContext(false)
-export const VerticalSplitContext = createContext(false)
 
 /**
  * AnatomStruct è il macro elemento che gestisce la visualizzazione e la modifica / inserimento
@@ -29,51 +28,91 @@ export const VerticalSplitContext = createContext(false)
  * @param state stato utilizzato per la creazione del componente
  * @return ReactNode
  */
-export function Form({ data, updateData }: { data: FormData, updateData: Updater<FormData> }) {
-	const sections = data.templ.sections.map(section => {
-		// updatePage è la funzione di produzione sullo stato per la pagina specifica
-		const updateSection: Updater<FormSectionData> = (updater) => {
-			updateData(formData => {
-				if (formData.sections == undefined)
-					formData.sections = {}
+export function Form({ data, updateData, initialEditMode }: { data: FormData, updateData: Updater<FormData>, initialEditMode: boolean }) {
+	const navigate = useNavigate();
+	const location = useLocation();
+	
+	const [editMode, setEditMode] = useState(initialEditMode);
+	const handleEditModeChange = () => {
+		setEditMode(!editMode)
+		navigate(`${location.pathname}${editMode ? '' : '?edit'}`)
+	}
+	
+	const [tabIdx, setTabIdx] = useState(0)
+	const handleTabChange = (_: SyntheticEvent, newValue: number) => {
+		setTabIdx(newValue)
+	}
 
-				if (typeof updater !== 'function') {
-					formData.sections[section.id] = updater
-					return
-				}
+	return (
+		<EditModeContext.Provider value={editMode}>
+			<div className="form">
+				<Stack direction="row" spacing={2} sx={{ justifyContent: 'space-between' }}>
+					<h1 className="title">{data.templ.title}</h1>
+					<Stack direction="row" spacing={1} sx={{ alignItems: 'center' }}>
+						<Typography><i className="fa-solid fa-eye"></i></Typography>
+						<Switch
+							checked={editMode}
+							onClick={handleEditModeChange}
+						/>
+						<Typography><i className="fa-solid fa-pen-to-square"></i></Typography>
+					</Stack>
+				</Stack>
+				<div className="form-sections">
+					<div>
+						<Paper elevation={6}>
+							<Tabs
+								value={tabIdx}
+								onChange={handleTabChange}
+								variant="scrollable"
+								scrollButtons="auto"
+							>
+								{data.templ.sections.map(section => {
+									return <Tab label={section.title} key={section.title}
+										sx={{ fontSize: '.8em', maxWidth: '30ch' }}
+									/>
+								})}
+							</Tabs>
+						</Paper>
+						
+						<Paper elevation={2} sx={{ marginTop: 2 }}>
+							{data.templ.sections.map((section, sectionIdx) => {
+								const updateSection: Updater<FormSectionData> = (updater) => {
+									updateData(formData => {
+										if (formData.sections == undefined)
+											formData.sections = {}
 
-				if (formData.sections[section.id] == undefined)
-					formData.sections[section.id] = {}
+										if (typeof updater !== 'function') {
+											formData.sections[section.id] = updater
+											return
+										}
 
-				updater(formData.sections[section.id])
-			})
-		}
+										if (formData.sections[section.id] == undefined)
+											formData.sections[section.id] = {}
 
-		return <VerticalSplitContext.Provider value={false} key={section.title}>
-			<FormSection section={section} data={data.sections?.[section.id]} update={updateSection} />
-		</VerticalSplitContext.Provider>
-	})
+										updater(formData.sections[section.id])
+									})
+								}
 
-	return <div className="container form">
-		<h4 className="title">{data.templ.title}</h4>
-		<div className="form-sections">
-			<Tabs>
-				<TabList>
-					{data.templ.sections.map(section => {
-						return <Tab key={section.title}>
-							{section.title}
-						</Tab>
-					})}
-				</TabList>
-
-				{sections.map((section, sectionIdx) => {
-					return <TabPanel key={sectionIdx}>
-						{section}
-					</TabPanel>
-				})}
-			</Tabs>
-		</div>
-	</div>
+								return (
+									<div key={sectionIdx}
+										role="tabpanel"
+										hidden={tabIdx !== sectionIdx}
+										style={{ display: tabIdx !== sectionIdx ? 'none' : undefined }}
+									>
+										<FormSection
+											section={section}
+											data={data.sections?.[section.id]}
+											update={updateSection}
+										/>
+									</div>
+								)
+							})}
+						</Paper>
+					</div>
+				</div>
+			</div>
+		</EditModeContext.Provider>
+	)
 }
 
 /**
@@ -89,8 +128,6 @@ export function FormSection({ section, data, update }: {
 	section: FormSectionTemplate, data: FormSectionData,
 	update: Updater<FormSectionData>
 }) {
-	const verticalSplit = useContext(VerticalSplitContext)
-
 	const starters = section.starters.map((starter) => {
 		// updateSection è la funzione di produzione sullo stato per la sezione specifica della pagina
 		const updateStarter: UpdateFieldFunc = (updater) => {
@@ -122,17 +159,15 @@ export function FormSection({ section, data, update }: {
 	})
 
 	if (!section.images) {
-		return <div className="container form-section">
+		return <div className="form-section">
 			<h3>{section.title}</h3>
 			{starters}
 		</div>
 	}
 
-	const splitClassName = verticalSplit ? undefined : 'split'
-
-	return <div className="container form-section">
+	return <div className="form-section">
 		<h3>{section.title}</h3>
-		<div className={splitClassName}>
+		<div className="split">
 			<div className="container container-start container-align-start">
 				{starters}
 			</div>

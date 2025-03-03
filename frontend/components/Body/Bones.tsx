@@ -3,11 +3,11 @@ import './Bones.css'
 import { useContext, useEffect, useMemo, useState } from 'react'
 import { Updater, useImmer } from 'use-immer'
 import { Bone, BoneData } from '../../models/AnatomStruct'
-import { EditModeContext, Form } from '../Form/Form'
+import { Form } from '../Form/Form'
 import { useQuery } from '@tanstack/react-query'
 import { BodyContextProvider } from '../../models/Body'
 import { AnatomStructDataContext } from '../../models/AnatomStruct'
-import { Alert, Breadcrumbs, Container, Link, Typography } from '@mui/material'
+import { Accordion, AccordionDetails, AccordionSummary, Alert, Breadcrumbs, Divider, Link, Paper, Typography } from '@mui/material'
 import { Outlet, Link as RouterLink, useParams, useSearchParams } from 'react-router'
 import { generateChildUpdater } from '../../utils/updater'
 import { saveBones } from '../../utils/api'
@@ -80,7 +80,7 @@ export function BonesView({ bones }: { bones: Bone[] }) {
 	const updateBodyBones = generateChildUpdater(updateBody, 'bones')
 
 	return (
-		<Container className="bones">
+		<div className="bones">
 			<Breadcrumbs separator="›" aria-label="breadcrumb">
 				<Link to={`/body/${body.generals.name}`} underline="hover"
 					component={RouterLink}>
@@ -94,11 +94,12 @@ export function BonesView({ bones }: { bones: Bone[] }) {
 				bonesData={body.bones}
 				updateBonesData={updateBodyBones}
 			/>
+			<Divider variant="middle" sx={{ marginTop: '1em', marginBottom: '1em' }} />
 			<EditBonesSection
 				bonesData={body.bones}
 				updateBonesData={updateBodyBones}
 			/>
-		</Container >
+		</div>
 	)
 }
 
@@ -123,42 +124,50 @@ function SelectBonesSection({ bones, bonesData, updateBonesData }: SelectBonesSe
 	}, [bones, selectedBones, search])
 
 	return (
-		<div className="select-bones">
-			<div className="search">
-				<p>Aggiungi ossa:</p>
-				<input type="text" placeholder="Cerca ..."
-					onChange={(e) => {
-						setSearch(e.target.value.toLowerCase())
-					}}
-				/>
-			</div>
-			<div className="options">
-				{searchResults.length > 0 ? (
-					searchResults.map((bone) => {
-						const addBone = () => {
-							updateBonesData(data => {
-								data[bone.name] = {
-									type: bone.type,
-									name: bone.name,
-									form: {
-										templ: bone.form
-									}
+			<Accordion className="select-bones" elevation={2}>
+				<AccordionSummary
+					expandIcon={<i className="fa-solid fa-circle-plus"></i>}
+					sx={{ flexDirection: 'row-reverse', gap: 2 }}
+				>
+					<p>Aggiungi ossa</p>
+				</AccordionSummary>
+				<AccordionDetails>
+					<div className="search">
+						<p>Cerca: </p>
+						<input type="text" placeholder="Cerca ..."
+							onChange={(e) => {
+								setSearch(e.target.value.toLowerCase())
+							}}
+						/>
+					</div>
+					<div className="options">
+						{searchResults.length > 0 ? (
+							searchResults.map((bone) => {
+								const addBone = () => {
+									updateBonesData(data => {
+										data[bone.name] = {
+											type: bone.type,
+											name: bone.name,
+											form: {
+												templ: bone.form
+											}
+										}
+									})
 								}
-							})
-						}
 
-						return (
-							<button key={bone.name} className="select-bone" onClick={addBone}>
-								{bone.name}
-								<div className="show-on-hover">
-									<i className="fa-solid fa-plus"></i>
-								</div>
-							</button>
-						)
-					})
-				) : 'Nessuna'}
-			</div>
-		</div>
+								return (
+									<button key={bone.name} className="select-bone" onClick={addBone}>
+										{bone.name}
+										<div className="show-on-hover">
+											<i className="fa-solid fa-plus"></i>
+										</div>
+									</button>
+								)
+							})
+						) : 'Nessuna'}
+					</div>
+				</AccordionDetails>
+			</Accordion>
 	)
 }
 
@@ -178,7 +187,7 @@ function EditBonesSection({ bonesData, updateBonesData }: EditBonesSection) {
 	}, [bones, search])
 
 	return (
-		<div className="edit-bones">
+		<Paper className="edit-bones" elevation={2}>
 			<div className="search">
 				<p>Ossa presenti:</p>
 				<input type="text" placeholder="Cerca ..."
@@ -197,7 +206,7 @@ function EditBonesSection({ bonesData, updateBonesData }: EditBonesSection) {
 					))
 				) : 'Nessuna'}
 			</div>
-		</div>
+		</Paper>
 	)
 }
 
@@ -255,7 +264,7 @@ export function BoneView() {
 	const editMode = searchParams.get('edit') !== null;
 	
 	return (
-		<Container>
+		<div className="bone">
 			<Breadcrumbs separator="›" aria-label="breadcrumb">
 				<Link to={baseURL} underline="hover"
 					component={RouterLink}>
@@ -268,10 +277,12 @@ export function BoneView() {
 				<Typography sx={{ color: 'text.primary' }}>{bone.name}</Typography>
 			</Breadcrumbs>
 			<AnatomStructDataContext.Provider value={bone}>
-				<EditModeContext.Provider value={editMode}>
-					<Form data={bone.form} updateData={updateBodyBoneData} />
-				</EditModeContext.Provider>
+					<Form
+						data={bone.form}
+						updateData={updateBodyBoneData}
+						initialEditMode={editMode}
+					/>
 			</AnatomStructDataContext.Provider>
-		</Container>
+		</div>
 	)
 }

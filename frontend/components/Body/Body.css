@@ -1,0 +1,6 @@
+.body-content {
+	background-color: rgb(var(--background-color));
+	height: 100%;
+	overflow-y: auto;
+	font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+}

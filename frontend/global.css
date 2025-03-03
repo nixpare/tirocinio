@@ -1,21 +1,8 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap');
 
 :root {
-  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
-  font-optical-sizing: auto;
-  line-height: 1.5;
-  font-weight: 400;
-
-  color-scheme: light dark;
-  color: #213547;
-  background-color: #ffffff;
-
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-
-  --primary-color: 100, 108, 255;
+  --primary-color: 25, 118, 210;
+  --background-color: 247, 247, 247;
 }
 
 * {
@@ -82,43 +69,6 @@ input::-webkit-inner-spin-button {
 input[type=number] {
   appearance: none;
   -moz-appearance: textfield;
-}
-
-input[type=checkbox] {
-  font-size: 1.2em;
-  appearance: none;
-  background: white;
-  width: 1.2em;
-  height: 1.2em;
-  padding: .1em;
-  position: relative;
-  cursor: pointer;
-}
-
-input[type=checkbox]::after {
-  content: '\f00c';
-  font-family: "Font Awesome 6 Free";
-  font-weight: 900;
-  position: absolute;
-  top: .1em;
-  right: 0;
-  bottom: 0;
-  left: 0;
-  color: #0faa0f;
-  opacity: 0;
-  transform: scale(.5);
-  transition: all ease-in-out .2s;
-  text-align: center;
-  vertical-align: middle;
-}
-input[type=checkbox]:checked::after {
-  opacity: 1;
-  transform: scale(1);
-}
-
-input[type=checkbox]:checked:disabled::after,
-input[type=checkbox]:checked.disabled::after {
-  color: #737373;
 }
 
 input.invalid {

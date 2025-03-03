@@ -1,7 +1,7 @@
 import { StrictMode } from 'react'
 import { useImmer } from 'use-immer'
 import { createRoot } from 'react-dom/client'
-import { Form, EditModeContext } from '../components/Form/Form'
+import { Form } from '../components/Form/Form'
 import { coccige } from '../storage/coccige'
 import { loadProgrammableFunctions } from '../models/Programmable'
 import { BodyContextProvider } from '../models/Body'
@@ -37,11 +37,7 @@ function App() {
             <div className="container app">
                 <BodyContextProvider.Provider value={{ body, updateBody }}>
                 <AnatomStructDataContext.Provider value={state}>
-                    <EditModeContext.Provider value={true}>
-
-                        <Form data={state.form} updateData={updateForm} />
-
-                    </EditModeContext.Provider>
+                    <Form data={state.form} updateData={updateForm} initialEditMode={true} />
                 </AnatomStructDataContext.Provider>
             </BodyContextProvider.Provider>
 

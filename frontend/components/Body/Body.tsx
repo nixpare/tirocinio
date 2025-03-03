@@ -85,7 +85,9 @@ export function BodyLayout() {
 				>
 					<div className="body">
 						<DashboardLayout defaultSidebarCollapsed>
-							<Outlet />
+							<div className="body-content">
+								<Outlet />
+							</div>
 						</DashboardLayout>
 					</div>
 				</ReactRouterAppProvider>
