@@ -2,12 +2,11 @@
 	min-width: 30ch;
 }
 
-.field .field-header {
+.field-header {
 	background-color: rgba(var(--primary-color), .4);
 	border-radius: .2em;
 	margin-bottom: 1em;
 	padding: 0 .4em;
-	text-align: center;
 }
 
 .field.fixed-field > .fixed-value,

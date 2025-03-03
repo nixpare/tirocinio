@@ -7,11 +7,12 @@ import { Form } from '../Form/Form'
 import { useQuery } from '@tanstack/react-query'
 import { BodyContextProvider } from '../../models/Body'
 import { AnatomStructDataContext } from '../../models/AnatomStruct'
-import { Accordion, AccordionDetails, AccordionSummary, Alert, Breadcrumbs, Divider, Link, Paper, Typography } from '@mui/material'
+import { Accordion, AccordionDetails, Alert, Breadcrumbs, Divider, Link, Paper, Typography } from '@mui/material'
 import { Outlet, Link as RouterLink, useParams, useSearchParams } from 'react-router'
 import { generateChildUpdater } from '../../utils/updater'
 import { saveBones } from '../../utils/api'
 import { enqueueSnackbar } from 'notistack'
+import { AccordionSummaryLeft } from '../UI/Accordion'
 
 export function BonesLayout() {
 	const bodyContext = useContext(BodyContextProvider);
@@ -127,12 +128,12 @@ function SelectBonesSection({ bones, bonesData, updateBonesData }: SelectBonesSe
 
 	return (
 			<Accordion className="select-bones" elevation={2}>
-				<AccordionSummary
+				<AccordionSummaryLeft
 					expandIcon={<i className="fa-solid fa-circle-plus"></i>}
 					sx={{ flexDirection: 'row-reverse', gap: 2 }}
 				>
 					<p>Aggiungi ossa</p>
-				</AccordionSummary>
+				</AccordionSummaryLeft>
 				<AccordionDetails>
 					<div className="search">
 						<p>Cerca: </p>

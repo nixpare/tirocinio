@@ -5,8 +5,9 @@ import { Updater } from 'use-immer'
 import { FormSectionTemplate, FormData, FormSectionData } from '../../models/Form'
 import { Field, UpdateFieldFunc } from './Field'
 import { Carousel } from '../UI/Carousel'
-import { Paper, Stack, Switch, Tab, Tabs, Typography } from '@mui/material';
+import { Accordion, AccordionDetails, Paper, Stack, Switch, Tab, Tabs, Typography } from '@mui/material';
 import { useSearchParams } from 'react-router'
+import { AccordionSummaryLeft } from '../UI/Accordion'
 
 export const EditModeContext = createContext(false)
 
@@ -155,12 +156,37 @@ export function FormSection({ section, data, update }: {
 			})
 		}
 
-		return <div className="starter-field" key={`${section.title}-${starter.starterID}`}>
-			<Field field={starter}
-				data={data?.[starter.starterID]} update={updateStarter}
-				breadcrumb={[section.id, starter.starterID]}
-			/>
-		</div>
+		if (!starter.header) {
+			return (
+				<div className="starter-field">
+					<Field field={starter}
+						data={data?.[starter.starterID]} update={updateStarter}
+						breadcrumb={[section.id, starter.starterID]}
+						hideHeader
+					/>
+				</div>
+			)
+		}
+
+		return (
+			<Accordion key={`${section.title}-${starter.starterID}`}
+				className="starter-field"
+				elevation={4}
+			>
+				<AccordionSummaryLeft>
+					<Typography className="field-header">
+						{starter.header}
+					</Typography>
+				</AccordionSummaryLeft>
+				<AccordionDetails>
+					<Field field={starter}
+						data={data?.[starter.starterID]} update={updateStarter}
+						breadcrumb={[section.id, starter.starterID]}
+						hideHeader
+					/>
+				</AccordionDetails>
+			</Accordion>
+		)
 	})
 
 	if (!section.images) {
