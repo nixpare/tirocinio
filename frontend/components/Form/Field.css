@@ -19,6 +19,12 @@
 	text-align: center;
 }
 
+.field .no-value {
+	padding: 1em;
+	background-color: rgba(var(--primary-color), .1);
+	border-radius: .2em;
+}
+
 .field.text-field input,
 .field.text-field textarea,
 .field.number-field input {
@@ -120,14 +126,6 @@
 	padding: .2em;
 	border-radius: .4em;
 	background-color: rgba(var(--primary-color), .6);
-}
-
-.field.expansion-field .fixed-data:has(>*),
-.field.expansion-field .expansion-data:has(>*),
-.field .no-value {
-	padding: 1em;
-	background-color: rgba(var(--primary-color), .1);
-	border-radius: .2em;
 }
 
 .field p.no-value {
