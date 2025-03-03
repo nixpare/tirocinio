@@ -249,8 +249,12 @@ function EditBone({ bone, updateBonesData }: EditBoneProps) {
 	)
 }
 
-export function BoneView() {
-	const { id } = useParams<{ id: string }>();
+// TODO: remove optinal fallback 'id' parameter from BoneView component
+export function BoneView({ fallbackId }: { fallbackId?: string }) {
+	let { id } = useParams<{ id: string }>();
+	if (!id && fallbackId) {
+		id = fallbackId
+	}
 	if (!id) throw new Error('BoneView must be used with an id parameter')
 
 	const bodyContext = useContext(BodyContextProvider);
@@ -286,11 +290,11 @@ export function BoneView() {
 				<Typography sx={{ color: 'text.primary' }}>{bone.name}</Typography>
 			</Breadcrumbs>
 			<AnatomStructDataContext.Provider value={bone}>
-					<Form
-						data={bone.form}
-						updateData={updateBodyBoneData}
-						initialEditMode={editMode}
-					/>
+				<Form
+					data={bone.form}
+					updateData={updateBodyBoneData}
+					initialEditMode={editMode}
+				/>
 			</AnatomStructDataContext.Provider>
 		</div>
 	)

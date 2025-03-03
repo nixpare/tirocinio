@@ -1,19 +1,29 @@
 import { StrictMode } from 'react'
 import { useImmer } from 'use-immer'
 import { createRoot } from 'react-dom/client'
-import { Form } from '../components/Form/Form'
 import { femore } from '../storage/femore'
 import { loadProgrammableFunctions } from '../models/Programmable'
-import { BodyContextProvider } from '../models/Body'
+import { BodyContextProvider, BodyData } from '../models/Body'
 import { testBody } from '../storage/body'
-import { AnatomStructDataContext, BoneData } from '../models/AnatomStruct'
-import { generateChildUpdater } from '../utils/updater'
+import { BoneData } from '../models/AnatomStruct'
+import { Container } from '@mui/material'
+import { BoneView } from '../components/Body/Bones'
+import { BrowserRouter, Route, Routes } from 'react-router'
+import { CustomSnackbarProvider } from '../components/UI/Snackbar'
 
 loadProgrammableFunctions()
 
 createRoot(document.getElementById('root')!).render(
     <StrictMode>
-        <App />
+        <BrowserRouter>
+            <Routes>
+                <Route path="/deduzione" element={(
+                    <CustomSnackbarProvider>
+                        <App />
+                    </CustomSnackbarProvider>
+                )} />
+            </Routes>
+        </BrowserRouter>
     </StrictMode>,
 )
 
@@ -28,20 +38,21 @@ const boneState: BoneData = {
 console.log(femore)
 
 function App() {
-     const [body, updateBody] = useImmer(testBody);
-        
-        const [state, updateState] = useImmer(boneState)
-        const updateForm = generateChildUpdater(updateState, 'form')
-    
-        return (
-            <div className="container app">
-                <BodyContextProvider.Provider value={{ body, updateBody }}>
-                <AnatomStructDataContext.Provider value={state}>
-                    <Form data={state.form} updateData={updateForm} initialEditMode={true} />
-                </AnatomStructDataContext.Provider>
+    let bones: Record<string, BoneData> = {}
+    bones[boneState.name] = boneState;
+
+    const [body, updateBody] = useImmer<BodyData>({
+        ...testBody,
+        bones
+    });
+
+    return (
+        <Container sx={{ fontFamily: 'Inter, system-ui, Avenir, Helvetica, Arial, sans-serif' }}>
+            <BodyContextProvider.Provider value={{ body, updateBody }}>
+                <BoneView fallbackId={boneState.name} />
             </BodyContextProvider.Provider>
 
-            <button onClick={() => { console.log(femore, state) }}>LOG in Console</button>
-        </div>
+            <button onClick={() => { console.log(femore, body.bones[boneState.name]) }}>LOG in Console</button>
+        </Container>
     )
 }

@@ -158,7 +158,7 @@ export function FormSection({ section, data, update }: {
 
 		if (!starter.header) {
 			return (
-				<div className="starter-field">
+				<div className="starter-field" key={starter.starterID}>
 					<Field field={starter}
 						data={data?.[starter.starterID]} update={updateStarter}
 						breadcrumb={[section.id, starter.starterID]}
@@ -169,7 +169,7 @@ export function FormSection({ section, data, update }: {
 		}
 
 		return (
-			<Accordion key={`${section.title}-${starter.starterID}`}
+			<Accordion key={starter.starterID}
 				className="starter-field"
 				elevation={4}
 			>
