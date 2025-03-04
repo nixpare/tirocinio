@@ -6,7 +6,7 @@ import { loadProgrammableFunctions } from '../models/Programmable'
 import { BodyHome, BodyLayout } from '../components/Body/Body'
 import { Routes } from 'react-router';
 import { Bones, BonesLayout, BoneView } from '../components/Body/Bones';
-import { Container } from '@mui/material';
+import Container from '@mui/material/Container'
 import { NotificationsProvider } from '@toolpad/core/useNotifications';
 
 const queryClient = new QueryClient()

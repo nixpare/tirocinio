@@ -8,7 +8,7 @@ import { testBody } from '../storage/body'
 import { BoneData } from '../models/AnatomStruct'
 import { BrowserRouter, Route, Routes } from 'react-router'
 import { NotificationsProvider } from '@toolpad/core/useNotifications';
-import { Container } from '@mui/material'
+import Container from '@mui/material/Container'
 import { BoneView } from '../components/Body/Bones'
 
 loadProgrammableFunctions()

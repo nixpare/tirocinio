@@ -5,7 +5,14 @@ import { Updater } from 'use-immer'
 import { FormSectionTemplate, FormData, FormSectionData } from '../../models/Form'
 import { Field, UpdateFieldFunc } from './Field'
 import { Carousel } from '../UI/Carousel'
-import { Accordion, AccordionDetails, Paper, Stack, Switch, Tab, Tabs, Typography } from '@mui/material';
+import Accordion from '@mui/material/Accordion';
+import AccordionDetails from '@mui/material/AccordionDetails';
+import Paper from '@mui/material/Paper';
+import Stack from '@mui/material/Stack';
+import Switch from '@mui/material/Switch';
+import Tab from '@mui/material/Tab';
+import Tabs from '@mui/material/Tabs';
+import Typography from '@mui/material/Typography';
 import { useSearchParams } from 'react-router'
 import { AccordionSummaryLeft } from '../UI/Accordion'
 

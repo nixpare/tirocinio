@@ -9,7 +9,7 @@ import { BoneData } from '../models/AnatomStruct'
 import { BrowserRouter, Route, Routes } from 'react-router'
 import { NotificationsProvider } from '@toolpad/core/useNotifications';
 import { BoneView } from '../components/Body/Bones'
-import { Container } from '@mui/material'
+import Container from '@mui/material/Container'
 
 loadProgrammableFunctions()
 

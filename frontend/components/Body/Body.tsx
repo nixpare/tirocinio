@@ -4,11 +4,13 @@ import { useQuery } from '@tanstack/react-query'
 import { BodyData, BodyContextProvider, BodyContext } from '../../models/Body'
 import { Outlet, useParams } from 'react-router';
 import { createTheme } from '@mui/material/styles';
-import { Navigation } from '@toolpad/core/AppProvider';
+import { type Navigation } from '@toolpad/core/AppProvider';
 import { ReactRouterAppProvider } from '@toolpad/core/react-router';
 import { DashboardLayout } from '@toolpad/core/DashboardLayout';
 import { useNotifications } from '@toolpad/core/useNotifications';
-import { Box, Breadcrumbs, Typography } from '@mui/material';
+import Box from '@mui/material/Box';
+import Breadcrumbs from '@mui/material/Breadcrumbs';
+import Typography from '@mui/material/Typography';
 import { useContext, useEffect } from 'react';
 import { Updater, useImmer } from 'use-immer';
 
