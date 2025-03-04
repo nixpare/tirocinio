@@ -15,6 +15,7 @@ import Tabs from '@mui/material/Tabs';
 import Typography from '@mui/material/Typography';
 import { useSearchParams } from 'react-router'
 import { AccordionSummaryLeft } from '../UI/Accordion'
+import { DeepUpdater } from '../../utils/updater'
 
 export const EditModeContext = createContext(false)
 
@@ -36,7 +37,7 @@ export const EditModeContext = createContext(false)
  * @param state stato utilizzato per la creazione del componente
  * @return ReactNode
  */
-export function Form({ data, updateData, initialEditMode }: { data: FormData, updateData: Updater<FormData>, initialEditMode: boolean }) {
+export function Form({ data, updateData, initialEditMode }: { data: FormData, updateData: DeepUpdater<FormData>, initialEditMode: boolean }) {
 	const [ searchParams, setSearchParams ] = useSearchParams();
 	
 	const [editMode, setEditMode] = useState(initialEditMode);
@@ -90,7 +91,7 @@ export function Form({ data, updateData, initialEditMode }: { data: FormData, up
 						<Paper elevation={2} sx={{ marginTop: 2 }}>
 							{data.templ.sections.map((section, sectionIdx) => {
 								const updateSection: Updater<FormSectionData> = (updater) => {
-									updateData(formData => {
+									updateData((formData) => {
 										if (formData.sections == undefined)
 											formData.sections = {}
 
@@ -103,7 +104,7 @@ export function Form({ data, updateData, initialEditMode }: { data: FormData, up
 											formData.sections[section.id] = {}
 
 										updater(formData.sections[section.id])
-									})
+									}, 'set', ['form'])
 								}
 
 								return (

@@ -1,7 +1,7 @@
 import './Bones.css'
 
 import { useContext, useEffect, useMemo, useState } from 'react'
-import { Updater, useImmer } from 'use-immer'
+import { useImmer } from 'use-immer'
 import { Bone, BoneData } from '../../models/AnatomStruct'
 import { Form } from '../Form/Form'
 import { useQuery } from '@tanstack/react-query'
@@ -15,7 +15,7 @@ import Link from '@mui/material/Link'
 import Paper from '@mui/material/Paper'
 import Typography from '@mui/material/Typography'
 import { Link as RouterLink, useParams, useSearchParams } from 'react-router'
-import { generateChildUpdater } from '../../utils/updater'
+import { childDeepUpdater, childUpdater, DeepUpdater, prependDeepUpdater, rootDeepUpdater } from '../../utils/updater'
 import { saveBone, saveBones } from '../../utils/api'
 import { AccordionSummaryLeft } from '../UI/Accordion'
 import Alert from '@mui/material/Alert'
@@ -64,7 +64,10 @@ export function BonesView({ bones }: { bones: Bone[] }) {
 	if (!bodyContext) throw new Error('BonesView must be used within a BodyContext')
 
 	const { body, updateBody } = bodyContext
-	const updateBodyBones = generateChildUpdater(updateBody, 'bones')
+	const updateBodyDeep = rootDeepUpdater(updateBody, (body, action, breadcrumb) => {
+		console.log(breadcrumb, action, body)
+	})
+	const updateBodyBones = childDeepUpdater(updateBodyDeep, 'bones')
 
 	useEffect(() => {
 		saveBones(body.generals.name, body.bones).catch((err: Error) => {
@@ -103,7 +106,7 @@ export function BonesView({ bones }: { bones: Bone[] }) {
 type SelectBonesSectionProps = {
 	bones: Bone[]
 	bonesData: Record<string, BoneData>
-	updateBonesData: Updater<Record<string, BoneData>>
+	updateBonesData: DeepUpdater<Record<string, BoneData>>
 }
 
 function SelectBonesSection({ bones, bonesData, updateBonesData }: SelectBonesSectionProps) {
@@ -121,56 +124,56 @@ function SelectBonesSection({ bones, bonesData, updateBonesData }: SelectBonesSe
 	}, [bones, selectedBones, search])
 
 	return (
-			<Accordion className="select-bones" elevation={2}>
-				<AccordionSummaryLeft
-					expandIcon={<i className="fa-solid fa-circle-plus"></i>}
-					sx={{ flexDirection: 'row-reverse', gap: 2 }}
-				>
-					<p>Aggiungi ossa</p>
-				</AccordionSummaryLeft>
-				<AccordionDetails>
-					<div className="search">
-						<p>Cerca: </p>
-						<input type="text" placeholder="Cerca ..."
-							onChange={(e) => {
-								setSearch(e.target.value.toLowerCase())
-							}}
-						/>
-					</div>
-					<div className="options">
-						{searchResults.length > 0 ? (
-							searchResults.map((bone) => {
-								const addBone = () => {
-									updateBonesData(data => {
-										data[bone.name] = {
-											type: bone.type,
-											name: bone.name,
-											form: {
-												templ: bone.form
-											}
+		<Accordion className="select-bones" elevation={2}>
+			<AccordionSummaryLeft
+				expandIcon={<i className="fa-solid fa-circle-plus"></i>}
+				sx={{ flexDirection: 'row-reverse', gap: 2 }}
+			>
+				<p>Aggiungi ossa</p>
+			</AccordionSummaryLeft>
+			<AccordionDetails>
+				<div className="search">
+					<p>Cerca: </p>
+					<input type="text" placeholder="Cerca ..."
+						onChange={(e) => {
+							setSearch(e.target.value.toLowerCase())
+						}}
+					/>
+				</div>
+				<div className="options">
+					{searchResults.length > 0 ? (
+						searchResults.map((bone) => {
+							const addBone = () => {
+								updateBonesData(data => {
+									data[bone.name] = {
+										type: bone.type,
+										name: bone.name,
+										form: {
+											templ: bone.form
 										}
-									})
-								}
+									}
+								}, 'add', [bone.name])
+							}
 
-								return (
-									<button key={bone.name} className="select-bone" onClick={addBone}>
-										{bone.name}
-										<div className="show-on-hover">
-											<i className="fa-solid fa-plus"></i>
-										</div>
-									</button>
-								)
-							})
-						) : 'Nessuna'}
-					</div>
-				</AccordionDetails>
-			</Accordion>
+							return (
+								<button key={bone.name} className="select-bone" onClick={addBone}>
+									{bone.name}
+									<div className="show-on-hover">
+										<i className="fa-solid fa-plus"></i>
+									</div>
+								</button>
+							)
+						})
+					) : 'Nessuna'}
+				</div>
+			</AccordionDetails>
+		</Accordion>
 	)
 }
 
 type EditBonesSection = {
 	bonesData: Record<string, BoneData>
-	updateBonesData: Updater<Record<string, BoneData>>
+	updateBonesData: DeepUpdater<Record<string, BoneData>>
 }
 
 function EditBonesSection({ bonesData, updateBonesData }: EditBonesSection) {
@@ -207,16 +210,11 @@ function EditBonesSection({ bonesData, updateBonesData }: EditBonesSection) {
 	)
 }
 
-type EditBoneProps = {
-	bone: BoneData
-	updateBonesData: Updater<Record<string, BoneData>>
-}
-
-function EditBone({ bone, updateBonesData }: EditBoneProps) {
+function EditBone({ bone, updateBonesData }: { bone: BoneData, updateBonesData: DeepUpdater<Record<string, BoneData>> }) {
 	const deleteBone = () => {
 		updateBonesData(bonesData => {
 			delete bonesData[bone.name]
-		})
+		}, 'delete', [bone.name])
 	}
 
 	return (
@@ -268,15 +266,19 @@ export function BoneView({ fallbackId }: { fallbackId?: string }) {
 		), { key: 'bone-loading', preventDuplicate: true })
 	}, [])
 
-	const updateBodyBones = generateChildUpdater(updateBody, 'bones')
-	const updateBodyBone = generateChildUpdater(updateBodyBones, id)
-	const updateBodyBoneData = generateChildUpdater(updateBodyBone, 'form')
+	const updateBodyBones = childUpdater(updateBody, 'bones')
+	const updateBodyBone = childUpdater(updateBodyBones, id)
+	const updateBodyBoneData = childUpdater(updateBodyBone, 'form')
+	let updateBodyBoneDataDeep = rootDeepUpdater(updateBodyBoneData, (bone, action, breadcrumb) => {
+		console.log(breadcrumb, action, bone)
+	})
+	updateBodyBoneDataDeep = prependDeepUpdater(updateBodyBoneDataDeep, [bone.name])
 
 	const baseURL = `/body/${body.generals.name}`;
-	
+
 	const [searchParams] = useSearchParams();
 	const editMode = searchParams.get('edit') !== null;
-	
+
 	return (
 		<div className="bone">
 			<Breadcrumbs separator="›" aria-label="breadcrumb">
@@ -297,7 +299,7 @@ export function BoneView({ fallbackId }: { fallbackId?: string }) {
 			<AnatomStructDataContext.Provider value={bone}>
 				<Form
 					data={bone.form}
-					updateData={updateBodyBoneData}
+					updateData={updateBodyBoneDataDeep}
 					initialEditMode={editMode}
 				/>
 			</AnatomStructDataContext.Provider>
