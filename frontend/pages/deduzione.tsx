@@ -7,7 +7,7 @@ import { BodyContextProvider, BodyData } from '../models/Body'
 import { testBody } from '../storage/body'
 import { BoneData } from '../models/AnatomStruct'
 import { BrowserRouter, Route, Routes } from 'react-router'
-import { CustomSnackbarProvider } from '../components/UI/Snackbar'
+import { NotificationsProvider } from '@toolpad/core/useNotifications';
 import { BoneView } from '../components/Body/Bones'
 import { Container } from '@mui/material'
 
@@ -18,9 +18,9 @@ createRoot(document.getElementById('root')!).render(
         <BrowserRouter>
             <Routes>
                 <Route path="/deduzione" element={(
-                    <CustomSnackbarProvider>
+                    <NotificationsProvider>
                         <App />
-                    </CustomSnackbarProvider>
+                    </NotificationsProvider>
                 )} />
             </Routes>
         </BrowserRouter>

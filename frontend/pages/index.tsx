@@ -7,7 +7,7 @@ import { BodyHome, BodyLayout } from '../components/Body/Body'
 import { Routes } from 'react-router';
 import { Bones, BonesLayout, BoneView } from '../components/Body/Bones';
 import { Container } from '@mui/material';
-import { CustomSnackbarProvider } from '../components/UI/Snackbar';
+import { NotificationsProvider } from '@toolpad/core/useNotifications';
 
 const queryClient = new QueryClient()
 loadProgrammableFunctions()
@@ -16,9 +16,9 @@ createRoot(document.getElementById('root')!).render(
     <StrictMode>
         <BrowserRouter>
             <QueryClientProvider client={queryClient}>
-                <CustomSnackbarProvider>
+                <NotificationsProvider>
                     <App />
-                </CustomSnackbarProvider>
+                </NotificationsProvider>
             </QueryClientProvider>
         </BrowserRouter>
     </StrictMode>,

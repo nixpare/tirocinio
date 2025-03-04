@@ -7,14 +7,16 @@ import { Form } from '../Form/Form'
 import { useQuery } from '@tanstack/react-query'
 import { BodyContextProvider } from '../../models/Body'
 import { AnatomStructDataContext } from '../../models/AnatomStruct'
-import { Accordion, AccordionDetails, Alert, Breadcrumbs, Divider, Link, Paper, Typography } from '@mui/material'
+import { Accordion, AccordionDetails, Breadcrumbs, Divider, Link, Paper, Typography } from '@mui/material'
 import { Outlet, Link as RouterLink, useParams, useSearchParams } from 'react-router'
 import { generateChildUpdater } from '../../utils/updater'
 import { saveBones } from '../../utils/api'
-import { enqueueSnackbar } from 'notistack'
+import { useNotifications } from '@toolpad/core/useNotifications'
 import { AccordionSummaryLeft } from '../UI/Accordion'
 
 export function BonesLayout() {
+	const notifications = useNotifications()
+
 	const bodyContext = useContext(BodyContextProvider);
 	if (!bodyContext) throw new Error('BonesLayout must be used within a BodyContext')
 
@@ -22,11 +24,10 @@ export function BonesLayout() {
 
 	useEffect(() => {
 		saveBones(body.generals.name, body.bones).catch((err: Error) => {
-			enqueueSnackbar(
-				<Alert severity='error'>
-					{err.message}
-				</Alert>
-			)
+			notifications.show(err.message, {
+				severity: 'error',
+				autoHideDuration: 5000,
+			})
 		})
 	}, [body.bones])
 

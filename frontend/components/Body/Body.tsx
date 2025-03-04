@@ -7,13 +7,13 @@ import { createTheme } from '@mui/material/styles';
 import { Navigation } from '@toolpad/core/AppProvider';
 import { ReactRouterAppProvider } from '@toolpad/core/react-router';
 import { DashboardLayout } from '@toolpad/core/DashboardLayout';
+import { useNotifications } from '@toolpad/core/useNotifications';
 import { Box, Breadcrumbs, Typography } from '@mui/material';
-import { useContext } from 'react';
+import { useContext, useEffect } from 'react';
 import { Updater, useImmer } from 'use-immer';
 
 export function BodyLayout() {
 	const [body, updateBody] = useImmer<BodyData | null>(null);
-
 	const { name } = useParams();
 	if (!name) {
 		return <h3>Nome non specificato</h3>;
@@ -58,6 +58,14 @@ export function BodyLayout() {
 }
 
 function BodyContent({ body, updateBody }: { body: BodyData, updateBody: Updater<BodyData> }) {
+	const notifications = useNotifications();
+	useEffect(() => {
+		notifications.show('Body caricato', {
+			severity: 'success',
+			autoHideDuration: 3000
+		})
+	}, [])
+
 	const context: BodyContext = { body, updateBody }
 
 	const baseURL = `body/${encodeURIComponent(body.generals.name)}`
