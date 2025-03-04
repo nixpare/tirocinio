@@ -9,7 +9,7 @@ import { BoneData } from '../models/AnatomStruct'
 import Container from '@mui/material/Container'
 import { BoneView } from '../components/Body/Bones'
 import { BrowserRouter, Route, Routes } from 'react-router'
-import { NotificationsProvider } from '@toolpad/core/useNotifications';
+import { CustomSnackbarProvider } from '../components/UI/Snackbar'
 
 loadProgrammableFunctions()
 
@@ -18,9 +18,9 @@ createRoot(document.getElementById('root')!).render(
         <BrowserRouter>
             <Routes>
                 <Route path="/femore" element={(
-                    <NotificationsProvider>
+                    <CustomSnackbarProvider>
                         <App />
-                    </NotificationsProvider>
+                    </CustomSnackbarProvider>
                 )} />
             </Routes>
         </BrowserRouter>

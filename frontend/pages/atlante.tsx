@@ -7,7 +7,7 @@ import { BodyContextProvider, BodyData } from '../models/Body'
 import { testBody } from '../storage/body'
 import { BoneData } from '../models/AnatomStruct'
 import { BrowserRouter, Route, Routes } from 'react-router'
-import { NotificationsProvider } from '@toolpad/core/useNotifications';
+import { CustomSnackbarProvider } from '../components/UI/Snackbar'
 import Container from '@mui/material/Container';
 import { BoneView } from '../components/Body/Bones'
 
@@ -18,9 +18,9 @@ createRoot(document.getElementById('root')!).render(
         <BrowserRouter>
             <Routes>
                 <Route path="/atlante" element={(
-                    <NotificationsProvider>
+                    <CustomSnackbarProvider>
                         <App />
-                    </NotificationsProvider>
+                    </CustomSnackbarProvider>
                 )} />
             </Routes>
         </BrowserRouter>

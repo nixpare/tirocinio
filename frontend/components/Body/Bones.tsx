@@ -17,12 +17,11 @@ import Typography from '@mui/material/Typography'
 import { Outlet, Link as RouterLink, useParams, useSearchParams } from 'react-router'
 import { generateChildUpdater } from '../../utils/updater'
 import { saveBones } from '../../utils/api'
-import { useNotifications } from '@toolpad/core/useNotifications'
 import { AccordionSummaryLeft } from '../UI/Accordion'
+import Alert from '@mui/material/Alert'
+import { enqueueSnackbar } from 'notistack'
 
 export function BonesLayout() {
-	const notifications = useNotifications()
-
 	const bodyContext = useContext(BodyContextProvider);
 	if (!bodyContext) throw new Error('BonesLayout must be used within a BodyContext')
 
@@ -30,10 +29,9 @@ export function BonesLayout() {
 
 	useEffect(() => {
 		saveBones(body.generals.name, body.bones).catch((err: Error) => {
-			notifications.show(err.message, {
-				severity: 'error',
-				autoHideDuration: 5000,
-			})
+			enqueueSnackbar((
+				<Alert severity='error'>{err.message}</Alert>
+			), { key: 'bone-loading', preventDuplicate: true })
 		})
 	}, [body.bones])
 
@@ -268,7 +266,15 @@ export function BoneView({ fallbackId }: { fallbackId?: string }) {
 	if (!bodyContext) throw new Error('BoneView must be used within a BodyContext')
 
 	const { body, updateBody } = bodyContext;
-	const bone = body.bones[id];
+	const bone: BoneData | undefined = body.bones[id];
+
+	if (!bone) throw new Error(`Bone with id ${id} not found`)
+
+	useEffect(() => {
+		enqueueSnackbar((
+			<Alert severity='info'>Osso {bone.name} caricato</Alert>
+		), { key: 'bone-loading', preventDuplicate: true })
+	}, [])
 
 	const updateBodyBones = generateChildUpdater(updateBody, 'bones')
 	const updateBodyBone = generateChildUpdater(updateBodyBones, id)

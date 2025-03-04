@@ -7,12 +7,13 @@ import { createTheme } from '@mui/material/styles';
 import { type Navigation } from '@toolpad/core/AppProvider';
 import { ReactRouterAppProvider } from '@toolpad/core/react-router';
 import { DashboardLayout } from '@toolpad/core/DashboardLayout';
-import { useNotifications } from '@toolpad/core/useNotifications';
 import Box from '@mui/material/Box';
 import Breadcrumbs from '@mui/material/Breadcrumbs';
 import Typography from '@mui/material/Typography';
 import { useContext, useEffect } from 'react';
 import { Updater, useImmer } from 'use-immer';
+import { enqueueSnackbar } from 'notistack';
+import Alert from '@mui/material/Alert';
 
 export function BodyLayout() {
 	const [body, updateBody] = useImmer<BodyData | null>(null);
@@ -60,12 +61,10 @@ export function BodyLayout() {
 }
 
 function BodyContent({ body, updateBody }: { body: BodyData, updateBody: Updater<BodyData> }) {
-	const notifications = useNotifications();
 	useEffect(() => {
-		notifications.show('Body caricato', {
-			severity: 'success',
-			autoHideDuration: 3000
-		})
+		enqueueSnackbar((
+			<Alert severity='info'>Corpo {body.generals.name} caricato</Alert>
+		), { key: 'body-loading', preventDuplicate: true })
 	}, [])
 
 	const context: BodyContext = { body, updateBody }
