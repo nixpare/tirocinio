@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
+	"strings"
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -129,6 +130,72 @@ func (db *Database) updateBodyBones(w http.ResponseWriter, r *http.Request) {
 		bson.M{
 			"$set": bson.M{
 				"bones": bones,
+			},
+		},
+	)
+	if err != nil {
+		handleDatabaseError(w, r, err)
+		return
+	}
+
+	if result.ModifiedCount != 1 {
+		log.Printf("update body bones: %s: no data was modified\n", bodyName)
+		return
+	}
+}
+
+func (db *Database) updateBodyBone(w http.ResponseWriter, r *http.Request) {
+	bodyName := r.PathValue("bodyName")
+	boneName := r.PathValue("boneName")
+
+	if bodyName == "" {
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte("body name can't be empty"))
+		return
+	}
+
+	if boneName == "" {
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte("bone name can't be empty"))
+		return
+	}
+
+	if r.Header.Get("Content-Type") != "application/json" {
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte("you must provide a JSON document"))
+		return
+	}
+
+	var boneUpdate bson.M
+	err := json.NewDecoder(r.Body).Decode(&boneUpdate)
+	if err != nil {
+		handleDatabaseError(w, r, err)
+		return
+	}
+
+	bone := boneUpdate["bone"]
+	breadcrumbJSON := boneUpdate["breadcrumb"]
+	
+	var breadcrumb []string
+	if breadcrumbJSON != nil {
+		for _, a := range breadcrumbJSON.([]any) {
+			breadcrumb = append(breadcrumb, a.(string))
+		}
+	}
+	log.Println(breadcrumb)
+
+	breadcrumbQuery := strings.Join(breadcrumb, ".")
+
+	coll := db.Mongo().Collection("body")
+	ctx := r.Context()
+
+	result, err := coll.UpdateOne(ctx,
+		bson.M{
+			"generals.name": bodyName,
+		},
+		bson.M{
+			"$set": bson.M{
+				"bones." + breadcrumbQuery: bone,
 			},
 		},
 	)

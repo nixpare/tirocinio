@@ -14,31 +14,12 @@ import Divider from '@mui/material/Divider'
 import Link from '@mui/material/Link'
 import Paper from '@mui/material/Paper'
 import Typography from '@mui/material/Typography'
-import { Outlet, Link as RouterLink, useParams, useSearchParams } from 'react-router'
+import { Link as RouterLink, useParams, useSearchParams } from 'react-router'
 import { generateChildUpdater } from '../../utils/updater'
-import { saveBones } from '../../utils/api'
+import { saveBone, saveBones } from '../../utils/api'
 import { AccordionSummaryLeft } from '../UI/Accordion'
 import Alert from '@mui/material/Alert'
 import { enqueueSnackbar } from 'notistack'
-
-export function BonesLayout() {
-	const bodyContext = useContext(BodyContextProvider);
-	if (!bodyContext) throw new Error('BonesLayout must be used within a BodyContext')
-
-	const { body } = bodyContext
-
-	useEffect(() => {
-		saveBones(body.generals.name, body.bones).catch((err: Error) => {
-			enqueueSnackbar((
-				<Alert severity='error'>{err.message}</Alert>
-			), { key: 'bone-loading', preventDuplicate: true })
-		})
-	}, [body.bones])
-
-	return (
-		<Outlet />
-	)
-}
 
 export function Bones() {
 	const bones_url = '/api/bones'
@@ -84,6 +65,14 @@ export function BonesView({ bones }: { bones: Bone[] }) {
 
 	const { body, updateBody } = bodyContext
 	const updateBodyBones = generateChildUpdater(updateBody, 'bones')
+
+	useEffect(() => {
+		saveBones(body.generals.name, body.bones).catch((err: Error) => {
+			enqueueSnackbar((
+				<Alert severity='error'>{err.message}</Alert>
+			), { key: 'bone-loading', preventDuplicate: true })
+		})
+	}, [body.bones])
 
 	return (
 		<div className="bones">
@@ -269,6 +258,9 @@ export function BoneView({ fallbackId }: { fallbackId?: string }) {
 	const bone: BoneData | undefined = body.bones[id];
 
 	if (!bone) throw new Error(`Bone with id ${id} not found`)
+	useEffect(() => {
+		saveBone(body.generals.name, bone, [bone.name])
+	}, [bone])
 
 	useEffect(() => {
 		enqueueSnackbar((
