@@ -1,15 +1,18 @@
 import express from 'express';
 import path from 'path';
+import { devMode } from './main';
+import ProxyServer from 'http-proxy';
+import morgan from 'morgan';
 
-const devMode = process.argv.includes('dev');
-
-export function setupRoutes(app: express.Express) {
+export function setupRoutes(app: express.Express, proxy: ProxyServer) {
 	setupCommonRoutes(app);
-    devMode ? setupDevRoutes(app) : setupProdRoutes(app);
+    devMode ? setupDevRoutes(app, proxy) : setupProdRoutes(app);
 }
 
-function setupDevRoutes(app: express.Express) {
-	app.get('*', /* proxy('http://localhost:3000') */);
+function setupDevRoutes(app: express.Express, proxy: ProxyServer) {
+	app.get('*', (req, res) => {
+		proxy.web(req, res, {});
+	});
 }
 
 function setupProdRoutes(app: express.Express) {
@@ -17,5 +20,5 @@ function setupProdRoutes(app: express.Express) {
 }
 
 function setupCommonRoutes(app: express.Express) {
-
+	app.use(morgan('combined'));
 }

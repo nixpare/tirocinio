@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
-    "backend-dev": "nodemon backend/main.ts dev",
+    "backend-dev": "tsx watch backend/main.ts dev",
     "conv": "node ./backend/conversion/conversion.js",
     "lint": "eslint .",
     "preview": "vite preview"
@@ -18,10 +18,11 @@
     "@mui/material": "^6.4.6",
     "@tanstack/react-query": "^5.62.7",
     "@toolpad/core": "^0.12.1",
-    "@types/express": "^5.0.0",
     "dotenv": "^16.4.7",
     "express": "^4.21.2",
+    "http-proxy": "^1.18.1",
     "immer": "^10.1.1",
+    "morgan": "^1.10.0",
     "notistack": "^3.0.2",
     "qs": "^6.14.0",
     "react": "^18.3.1",
@@ -32,6 +33,9 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.11.1",
+    "@types/express": "^5.0.0",
+    "@types/http-proxy": "^1.17.16",
+    "@types/morgan": "^1.9.9",
     "@types/node": "^22.9.0",
     "@types/react": "^18.3.10",
     "@types/react-dom": "^18.3.0",
@@ -41,10 +45,8 @@
     "eslint-plugin-react-hooks": "^5.1.0-rc.0",
     "eslint-plugin-react-refresh": "^0.4.12",
     "globals": "^15.9.0",
-    "i": "^0.3.7",
-    "nodemon": "^3.1.9",
     "npm": "^11.1.0",
-    "ts-node": "^10.9.2",
+    "tsx": "^4.19.3",
     "typescript": "^5.5.3",
     "typescript-eslint": "^8.7.0",
     "vite": "^6.1.1"
