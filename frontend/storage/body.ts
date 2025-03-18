@@ -1,6 +1,6 @@
-import { BodyData } from "../models/Body";
+import { Body } from "../../models/Body";
 
-export const testBody: BodyData = {
+export const testBody: Body = {
 	generals: {
 		name: "Test body",
 		age: 100

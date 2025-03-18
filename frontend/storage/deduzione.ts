@@ -1,7 +1,7 @@
-import { BodyData } from "../models/Body";
-import { DeductionElement, DeductionResult, DeductionTable, walkBreadcrumb } from "../models/Programmable";
-import { AnatomStructData, Bone } from "../models/AnatomStruct";
-import { FormFieldTemplate } from "../models/Form";
+import { Body } from "../../models/Body";
+import { DeductionElement, DeductionResult, DeductionTable, walkBreadcrumb } from "../../models/Programmable";
+import { AnatomStructData, Bone } from "../../models/AnatomStruct";
+import { FormFieldTemplate } from "../../models/Form";
 
 const farekasTable: DeductionTable = {
 	headers: ['Lunghezza massima (mm)', 'Età prenatale (settimane)'],
@@ -38,7 +38,7 @@ export const farekasAtlante2: DeductionElement = {
 	hint: farekasTable
 }
 
-function FarekasAtlante(struct: AnatomStructData, body: BodyData, breadcrumb: string[], breadcrumbQuery: string): DeductionResult {
+function FarekasAtlante(struct: AnatomStructData, body: Body, breadcrumb: string[], breadcrumbQuery: string): DeductionResult {
 	const name = walkObject<string>(body, 'generals.name')
 	const age = walkObject<number>(body, 'generals.age')
 

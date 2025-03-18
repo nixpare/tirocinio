@@ -1,4 +1,5 @@
 import { createContext } from "react"
+import { ObjectId } from "mongodb";
 import { BoneData, ExteriorData, VisceraData } from "./AnatomStruct"
 import { Updater } from "use-immer"
 
@@ -7,7 +8,8 @@ export type GeneralInfo = {
 	age: number
 }
 
-export type BodyData = {
+export type Body = {
+	_id?: ObjectId
 	generals: GeneralInfo
 	bones: Record<string, BoneData>
 	viscus: Record<string, VisceraData>
@@ -15,8 +17,8 @@ export type BodyData = {
 }
 
 export type BodyContext = {
-	body: BodyData
-	updateBody: Updater<BodyData>
+	body: Body
+	updateBody: Updater<Body>
 }
 
 export const BodyContextProvider = createContext<BodyContext | null>(null)

@@ -1,4 +1,5 @@
 import { createContext } from "react"
+import { ObjectId } from "mongodb";
 import { FormTemplate, FormData } from "./Form"
 
 export type AnatomStructType = 'bone' | 'viscera' | 'exterior'
@@ -6,6 +7,7 @@ export type AnatomStructType = 'bone' | 'viscera' | 'exterior'
 export type AnatomStruct = Bone | Viscera | Exterior
 
 type AnatomStructBase = {
+	_id?: ObjectId
 	type: AnatomStructType
 	name: string
 	form: FormTemplate

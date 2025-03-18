@@ -1,7 +1,7 @@
-import { BoneData } from "../models/AnatomStruct";
+import { BoneData } from "../../models/AnatomStruct";
 
 export async function saveBones(bodyId: string, bones: Record<string, BoneData>): Promise<void> {
-	const resp = await fetch(`/api/body/${bodyId}/bones`, {
+	const resp = await fetch(`/api/bodies/${bodyId}/bones`, {
 		method: 'PUT',
 		body: JSON.stringify(bones),
 		headers: {
@@ -15,8 +15,8 @@ export async function saveBones(bodyId: string, bones: Record<string, BoneData>)
 
 export async function saveBone(bodyId: string, bone: BoneData, breadcrumb: string[]): Promise<void> {
 	console.log(breadcrumb)
-	
-	const resp = await fetch(`/api/body/${bodyId}/bones/${bone.name}`, {
+
+	const resp = await fetch(`/api/bodies/${bodyId}/bones/${bone.name}`, {
 		method: 'PUT',
 		body: JSON.stringify({
 			bone,

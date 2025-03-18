@@ -1,12 +1,12 @@
-import { coccigeRinaldo2019, coccigeScheuerBlack2000 } from '../storage/coccige';
-import { atlanteFusioneFazekas1978, atlanteProfiloFazekas1978, atlanteScheuerBlack2000, atlanteFordisc, atlantePatternLesivitàSegni } from '../storage/atlante';
-import { femoreFusioneFazekas1978, femoreProfiloFazekas1978, femoreScheuerBlack2000, femoreFordisc, femorePurkait2003, femoreWilson2010 } from '../storage/femore';
+import { coccigeRinaldo2019, coccigeScheuerBlack2000 } from '../frontend/storage/coccige';
+import { atlanteFusioneFazekas1978, atlanteProfiloFazekas1978, atlanteScheuerBlack2000, atlanteFordisc, atlantePatternLesivitàSegni } from '../frontend/storage/atlante';
+import { femoreFusioneFazekas1978, femoreProfiloFazekas1978, femoreScheuerBlack2000, femoreFordisc, femorePurkait2003, femoreWilson2010 } from '../frontend/storage/femore';
 import { AnatomStructData } from './AnatomStruct';
-import { BodyData } from './Body';
-import { farekasAtlante1, farekasAtlante2 } from '../storage/deduzione';
+import { Body } from './Body';
+import { farekasAtlante1, farekasAtlante2 } from '../frontend/storage/deduzione';
 import { FormFieldSelectArgs } from './Form';
 
-export type Programmable<T = Object> = (struct: AnatomStructData, body: BodyData, breadcrum: string[]) => T
+export type Programmable<T = Object> = (struct: AnatomStructData, body: Body, breadcrum: string[]) => T
 export type ProgrammableElement<T = Object> = {
 	id: string
 	fn: Programmable<T>

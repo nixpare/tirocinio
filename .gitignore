@@ -25,7 +25,7 @@ dist-ssr
 *.sw?
 
 # config files
-
 .env
-backend_config.json
+
+# test files
 *.rest

@@ -6,8 +6,9 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
+    "backend": "tsx backend/main.ts",
     "backend-dev": "tsx watch backend/main.ts dev",
-    "conv": "node ./backend/conversion/conversion.js",
+    "conv": "node conversion/conversion.js",
     "lint": "eslint .",
     "preview": "vite preview"
   },
@@ -22,6 +23,7 @@
     "express": "^4.21.2",
     "http-proxy": "^1.18.1",
     "immer": "^10.1.1",
+    "mongodb": "^6.14.2",
     "morgan": "^1.10.0",
     "notistack": "^3.0.2",
     "qs": "^6.14.0",

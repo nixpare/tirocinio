@@ -1,6 +1,6 @@
-import { DeductionElement, DeductionResult, SelectArgsElement, walkObject } from "../models/Programmable";
-import { FormExpansionFieldTemplate, FormFieldSelectArg, FormFieldSelectArgs, FormFieldTemplate, FormSelectFieldTemplate } from "../models/Form";
-import { AnatomStructData, Bone } from "../models/AnatomStruct";
+import { DeductionElement, DeductionResult, SelectArgsElement, walkObject } from "../../models/Programmable";
+import { FormExpansionFieldTemplate, FormFieldSelectArg, FormFieldSelectArgs, FormFieldTemplate, FormSelectFieldTemplate } from "../../models/Form";
+import { AnatomStructData, Bone } from "../../models/AnatomStruct";
 
 const atlanteImg = '/images/atlante.png';
 const atlanteCentriImg = '/images/atlante_centri.png';

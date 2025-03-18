@@ -1,9 +1,8 @@
 {
 	"compilerOptions": {
 		"module": "ESNext",
-		"target": "ESNext",
+		"target": "ES2022",
 		"moduleResolution": "node",
-		"allowImportingTsExtensions": true,
 		"noEmit": true,
 		"strict": true,
 		"noUnusedLocals": true,
@@ -13,11 +12,7 @@
 		"skipLibCheck": true,
 		"noImplicitAny": true,
 		"removeComments": true,
-		"preserveConstEnums": true,
-		"outDir": "backend/main.js",
-		"sourceMap": true
+		"preserveConstEnums": true
 	},
-	"include": [
-		"backend/**/*"
-	]
+	"include": ["backend"]
 }

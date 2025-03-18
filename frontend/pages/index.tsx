@@ -2,7 +2,7 @@ import { StrictMode, useEffect } from 'react'
 import { createRoot } from 'react-dom/client'
 import { BrowserRouter, Route, useNavigate } from "react-router";
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { loadProgrammableFunctions } from '../models/Programmable'
+import { loadProgrammableFunctions } from '../../models/Programmable'
 import { BodyHome, BodyLayout } from '../components/Body/Body'
 import { Routes } from 'react-router';
 import { Bones, BoneView } from '../components/Body/Bones';

@@ -1,7 +1,7 @@
 import './Body.css'
 
 import { useQuery } from '@tanstack/react-query'
-import { BodyData, BodyContextProvider, BodyContext } from '../../models/Body'
+import { Body, BodyContextProvider, BodyContext } from '../../../models/Body'
 import { Outlet, useParams } from 'react-router';
 import { createTheme } from '@mui/material/styles';
 import { type Navigation } from '@toolpad/core/AppProvider';
@@ -16,13 +16,13 @@ import { enqueueSnackbar } from 'notistack';
 import Alert from '@mui/material/Alert';
 
 export function BodyLayout() {
-	const [body, updateBody] = useImmer<BodyData | null>(null);
+	const [body, updateBody] = useImmer<Body | null>(null);
 	const { name } = useParams();
 	if (!name) {
 		return <h3>Nome non specificato</h3>;
 	}
 
-	const url = `/api/body/${name}`
+	const url = `/api/bodies/${name}`
 	const { isLoading, error } = useQuery({
 		queryKey: [url],
 		queryFn: async () => {
@@ -30,7 +30,7 @@ export function BodyLayout() {
 			if (!res.ok)
 				throw new Error(await res.text())
 
-			const data: BodyData = await res.json();
+			const data: Body = await res.json();
 			updateBody(data);
 			return data;
 		},
@@ -56,11 +56,11 @@ export function BodyLayout() {
 	}
 
 	return (
-		<BodyContent body={body} updateBody={updateBody as Updater<BodyData>} />
+		<BodyContent body={body} updateBody={updateBody as Updater<Body>} />
 	);
 }
 
-function BodyContent({ body, updateBody }: { body: BodyData, updateBody: Updater<BodyData> }) {
+function BodyContent({ body, updateBody }: { body: Body, updateBody: Updater<Body> }) {
 	useEffect(() => {
 		enqueueSnackbar((
 			<Alert severity='info'>Corpo {body.generals.name} caricato</Alert>
