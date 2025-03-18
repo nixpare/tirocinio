@@ -8,7 +8,7 @@
     "build": "tsc -b && vite build",
     "backend": "tsx backend/main.ts",
     "backend-dev": "tsx watch backend/main.ts dev",
-    "conv": "node conversion/conversion.js",
+    "conv": "tsx cms/conversion.ts",
     "lint": "eslint .",
     "preview": "vite preview"
   },
