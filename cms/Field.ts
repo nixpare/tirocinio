@@ -1,12 +1,12 @@
-import { Component } from "./Strapi";
+import { StrapiComponent } from "./Strapi";
 
-export type Campo = Component & {
+export type StrapiCampo = StrapiComponent & {
 	NomeCampo: string
-	TipoCampo: TipoCampo
-	ListaElementi: Elemento[]
+	TipoCampo: StrapiTipoCampo
+	ListaElementi: StrapiElemento[]
 }
 
-enum TipoCampo {
+enum StrapiTipoCampo {
 	Text = 'text',
 	Number = 'number',
 	Select = 'select',
@@ -17,6 +17,6 @@ enum TipoCampo {
 	// TODO: implementare il campo 'method'
 }
 
-type Elemento = Component & {
+type StrapiElemento = StrapiComponent & {
 	NomeCampo: string
 }
