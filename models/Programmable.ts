@@ -90,3 +90,14 @@ export function walkBreadcrumb(breadcrumb: string[], query: string, split: strin
 
 	return [breadcrumb[i], breadcrumb.slice(i + 1)]
 }
+
+export function walkSetObject<T>(obj: T, set: any, query: string, split: string = '.'): T {
+	const steps = query.split(split)
+
+	const value = steps.slice(0, -1).reduce<any>((prev, curr) => {
+		return prev[curr]
+	}, obj)
+	value[steps[steps.length-1]] = set
+
+	return obj
+}
