@@ -1,7 +1,7 @@
 import 'dotenv/config';
 import qs from 'qs';
 import util from 'util';
-import { AnatomStructType, fetchAnatomStruct } from './AnatomStruct';
+import { AnatomStructType, fetchStrapiDocument } from './AnatomStruct';
 
 const apiToken = process.env['STRAPI_API_KEY'];
 const baseURL = 'http://labanof-backoffice.islab.di.unimi.it/api';
@@ -14,7 +14,7 @@ export async function fetchQuery<T = any>(url: string, populate: any): Promise<T
 		populate: populate
 	}, { encodeValuesOnly: true });
 
-	const queryUrl = url + `?${compiledQuery}`
+	const queryUrl = url + `?${compiledQuery}`;
 	const response = await fetch(queryUrl, { headers });
 	if (!response.ok) throw new Error(`Error fetching ${queryUrl}: ${await response.text()}`);
 
@@ -23,13 +23,8 @@ export async function fetchQuery<T = any>(url: string, populate: any): Promise<T
 }
 
 export function deeplog(a: any) {
-	console.log(util.inspect(a, {showHidden: false, depth: null, colors: true}))
+	console.log(util.inspect(a, {showHidden: false, depth: null, colors: true}));
 }
 
-fetchAnatomStruct(baseURL, AnatomStructType.Osso, 'Femore destro')
-	.catch(err => {
-		console.error(err)
-	})
-	.then(data => {
-		deeplog(data)
-	});
+const anatomStruct = await fetchStrapiDocument(baseURL, AnatomStructType.Osso, 'Femore destro');
+deeplog(anatomStruct);
