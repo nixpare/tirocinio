@@ -9,13 +9,13 @@ export async function connectToMongoDB(): Promise<{
 	anatomStructs: mongoDB.Collection<AnatomStruct>
 	bodies: mongoDB.Collection<Body>
 }> {
-	if (!process.env.DB_CONN_STRING) throw new Error("DB_CONN_STRING env variable not found");
-	if (!process.env.DB_CONN_STRING) throw new Error("DB_CONN_STRING env variable not found");
+	if (!process.env.MONGO_URL) throw new Error("MONGO_URL env variable not found");
+	if (!process.env.MONGO_DB_NAME) throw new Error("MONGO_DB_NAME env variable not found");
 
-	const client = new mongoDB.MongoClient(process.env.DB_CONN_STRING);
+	const client = new mongoDB.MongoClient(process.env.MONGO_URL);
 	await client.connect();
 
-	const db = client.db(process.env.DB_NAME);
+	const db = client.db(process.env.MONGO_DB_NAME);
 
 	console.log('Successfully connected to MongoDB');
 	return {
@@ -27,11 +27,11 @@ export async function connectToMongoDB(): Promise<{
 
 export async function getAllBones(_: Request, res: Response) {
 	try {
-		const games = await services.anatomStructs.find({
+		const bones = await services.anatomStructs.find({
 			type: 'bone'
 		}).toArray();
 
-		res.status(200).send(games);
+		res.status(200).send(bones);
 	} catch (err: any) {
 		res.status(500).send(err.message);
 	}
@@ -41,13 +41,13 @@ export async function getBone(req: Request, res: Response) {
 	const id = req?.params.id;
 
 	try {
-		const game = await services.anatomStructs.findOne({
+		const bone = await services.anatomStructs.findOne({
 			_id: new ObjectId(id),
 			type: 'bone'
 		});
 
-		if (!game) throw new Error("not found");
-		res.status(200).send(game);
+		if (!bone) throw new Error("not found");
+		res.status(200).send(bone);
 	} catch (err: any) {
 		res.status(404).send(`Unable to find matching document with id "${req.params.id}": ${err.message}`);
 	}
@@ -55,9 +55,9 @@ export async function getBone(req: Request, res: Response) {
 
 export async function getAllBodies(_: Request, res: Response) {
 	try {
-		const games = await services.bodies.find({}).toArray();
+		const bodies = await services.bodies.find({}).toArray();
 
-		res.status(200).send(games);
+		res.status(200).send(bodies);
 	} catch (err: any) {
 		res.status(500).send(err.message);
 	}
@@ -67,16 +67,14 @@ export async function getBody(req: Request, res: Response) {
 	const id = req?.params.id;
 
 	try {
-		// TODO: discuss about "_id" or "name"-like primary keys usage
-		/* const game = await services.bodies.findOne({
-			_id: new ObjectId(id)
-		}); */
-		const game = await services.bodies.findOne({
+		const body = await services.bodies.findOne({
+			// TODO: discuss about "_id" or "name"-like primary keys usage
+			// _id: new ObjectId(id)
 			"generals.name": id
 		});
 
-		if (!game) throw new Error("not found");
-		res.status(200).send(game);
+		if (!body) throw new Error("not found");
+		res.status(200).send(body);
 	} catch (err: any) {
 		res.status(404).send(`Unable to find matching document with id "${req.params.id}": ${err.message}`);
 	}
@@ -88,20 +86,15 @@ export async function updateBodyBones(req: Request, res: Response) {
 	try {
 		const bones = req.body as Record<string, BoneData>;
 		
-		// TODO: discuss about "_id" or "name"-like primary keys usage
-		/* const game = await services.bodies.findOne({
-			_id: new ObjectId(id)
-		}); */
-		const result = await services.bodies.updateOne(
-			{
-				"generals.name": id
-			},
-			{
-				$set: {
-					"bones": bones
-				}
+		const result = await services.bodies.updateOne({
+			// TODO: discuss about "_id" or "name"-like primary keys usage
+			// _id: new ObjectId(id)
+			"generals.name": id
+		}, {
+			$set: {
+				"bones": bones
 			}
-		);
+		});
 
 		result
 			? res.status(200).send(`Successfully updated body ${id}`)
@@ -124,20 +117,15 @@ export async function updateBodyBone(req: Request, res: Response) {
 
 		console.log(breadcrumb)
 
-		// TODO: discuss about "_id" or "name"-like primary keys usage
-		/* const game = await services.bodies.findOne({
-			_id: new ObjectId(id)
-		}); */
-		const result = await services.bodies.updateOne(
-			{
-				"generals.name": id
-			},
-			{
-				$set: {
-					[`bones.${boneId}`]: bone
-				}
+		const result = await services.bodies.updateOne({
+			// TODO: discuss about "_id" or "name"-like primary keys usage
+			// _id: new ObjectId(id)
+			"generals.name": id
+		}, {
+			$set: {
+				[`bones.${boneId}`]: bone
 			}
-		);
+		});
 
 		result
 			? res.status(200).send(`Successfully updated body ${id}`)
