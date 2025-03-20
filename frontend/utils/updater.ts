@@ -38,7 +38,7 @@ export function childUpdater<T extends object, K extends NonFunctionChilds<T>>(u
 	return childUpdater
 }
 
-export function childDeepUpdater<T extends object, K extends NonFunctionChilds<T>>(updateParent: DeepUpdater<T>, child: K): DeepUpdater<T[K]> {
+export function childDeepUpdater<T extends object, K extends NonFunctionChilds<T>>(updateParent: DeepUpdater<T>, child: K, ...prefix: string[]): DeepUpdater<T[K]> {
 	const childUpdater: DeepUpdater<T[K]> = (updater, ...breadcrumb) => {
 		updateParent(parent => {
 			if (typeof updater !== 'function') {
@@ -48,7 +48,7 @@ export function childDeepUpdater<T extends object, K extends NonFunctionChilds<T
 
 			// @ts-ignore
 			updater(parent[child])
-		}, ...breadcrumb)
+		}, ...prefix, ...breadcrumb)
 	}
 
 	return childUpdater

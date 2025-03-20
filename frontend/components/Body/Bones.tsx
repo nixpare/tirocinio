@@ -251,6 +251,7 @@ export function BoneView({ fallbackId }: { fallbackId?: string }) {
 
 	const { body, updateBody } = bodyContext;
 	const bone: BoneData | undefined = body.bones[id];
+	console.log(bone)
 
 	if (!bone) throw new Error(`Bone with id ${id} not found`)
 
@@ -264,14 +265,14 @@ export function BoneView({ fallbackId }: { fallbackId?: string }) {
 	const updateBodyBone = childUpdater(updateBodyBones, id)
 	const updateBodyBoneDataDeep = rootDeepUpdater(updateBodyBone, (bone, ...breadcrumb) => {
 		const payload = walkObject<any>(bone, breadcrumb.join('.'))
-		console.log({breadcrumb, payload})
 
 		// TODO: remove optinal fallback 'id' parameter from BoneView component
 		if (fallbackId) return;
-		
+
+		console.log(breadcrumb, payload)
 		updateBoneData(body.generals.name, bone.name, payload, breadcrumb)
 	})
-	const updateBodyBoneData = childDeepUpdater(updateBodyBoneDataDeep, 'form')
+	const updateBodyBoneData = childDeepUpdater(updateBodyBoneDataDeep, 'form', 'form')
 
 	const baseURL = `/body/${body.generals.name}`;
 
@@ -297,8 +298,8 @@ export function BoneView({ fallbackId }: { fallbackId?: string }) {
 			</Breadcrumbs>
 			<AnatomStructDataContext.Provider value={bone}>
 				<Form
-					data={bone.form}
-					updateData={updateBodyBoneData}
+					form={bone.form}
+					update={updateBodyBoneData}
 					initialEditMode={editMode}
 				/>
 			</AnatomStructDataContext.Provider>

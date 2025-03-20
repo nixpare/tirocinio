@@ -1,7 +1,7 @@
 import './Field.css'
 
 import { ChangeEvent, MouseEvent, useContext, useEffect, useRef, useState } from "react";
-import { Updater, useImmer } from "use-immer";
+import { useImmer } from "use-immer";
 import Select, { ActionMeta, MultiValue, SelectInstance, SingleValue, StylesConfig } from 'react-select'
 import {
 	FormFieldData,
@@ -31,13 +31,15 @@ import { EditModeContext } from "./Form";
 import { deductionFunctionMap, DeductionTable, selectArgsFunctionMap } from '../../../models/Programmable';
 import { AnatomStructDataContext } from '../../../models/AnatomStruct';
 import { BodyContextProvider } from '../../../models/Body';
-import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
+import { DeepUpdater } from '../../utils/updater';
+import { enqueueSnackbar } from 'notistack';
+import Alert from '@mui/material/Alert';
 
-export type UpdateFieldFunc = Updater<FormFieldData>
-type UpdateSelectFieldFunc = Updater<FormSelectFieldData>
-type UpdateMultiSelectFieldFunc = Updater<FormMultiSelectFieldData>
-type UpdateExpansionFieldFunc = Updater<FormExpansionFieldData>
+export type UpdateFieldFunc = DeepUpdater<FormFieldData>
+type UpdateSelectFieldFunc = DeepUpdater<FormSelectFieldData>
+type UpdateMultiSelectFieldFunc = DeepUpdater<FormMultiSelectFieldData>
+type UpdateExpansionFieldFunc = DeepUpdater<FormExpansionFieldData>
 
 export function Field({ field, data, update, breadcrumb, hideHeader }: {
 	field: FormFieldTemplate,
@@ -263,7 +265,7 @@ function SelectNextFields({ arg, data, update, breadcrumb }: {
 }) {
 	return <div className='next-fields'>
 		{arg.next?.map((next, nextIdx) => {
-			const updateNext: Updater<FormFieldData> = (updater) => {
+			const updateNext: UpdateFieldFunc = (updater, ...breadcrumb) => {
 				update(selectData => {
 					if (arg.next == undefined)
 						return
@@ -283,7 +285,7 @@ function SelectNextFields({ arg, data, update, breadcrumb }: {
 						selectData.value.next[nextIdx] = { type: arg.next[nextIdx].type }
 
 					updater(selectData.value.next[nextIdx])
-				})
+				}, 'value', 'next', nextIdx.toString(), ...breadcrumb)
 			}
 
 			return <Field field={next} key={nextIdx}
@@ -432,7 +434,7 @@ function MultiSelectNextFields({ selected, arg, data, update, breadcrumb }: {
 }) {
 	return <div className='next-fields'>
 		{arg.next?.map((next, nextIdx) => {
-			const updateNext: Updater<FormFieldData> = (updater) => {
+			const updateNext: UpdateFieldFunc = (updater, ...breadcrumb) => {
 				update(selectData => {
 					if (arg.next == undefined)
 						return
@@ -455,7 +457,7 @@ function MultiSelectNextFields({ selected, arg, data, update, breadcrumb }: {
 						selectData.value.next[selected][nextIdx] = { type: arg.next[nextIdx].type }
 
 					updater(selectData.value.next[selected][nextIdx])
-				})
+				}, 'value', 'next', selected, nextIdx.toString(), ...breadcrumb)
 			}
 
 			return <Field field={next} key={nextIdx}
@@ -465,6 +467,7 @@ function MultiSelectNextFields({ selected, arg, data, update, breadcrumb }: {
 	</div>
 }
 
+// TODO: optimize update logic
 function ExpansionField({ field, data, update, disabled, breadcrumb, hideHeader }: {
 	field: FormExpansionFieldTemplate,
 	data?: FormExpansionFieldData, update: UpdateExpansionFieldFunc,
@@ -472,8 +475,32 @@ function ExpansionField({ field, data, update, disabled, breadcrumb, hideHeader 
 }) {
 	const [additionalTempData, updateAdditionalTempData] = useImmer<FormFieldData[]>([])
 
+	const additionalRowCount = data?.value?.additional?.length ?? -1;
 	const addRow = (ev: MouseEvent<HTMLButtonElement, PointerEvent>) => {
 		ev.preventDefault()
+
+		if (additionalTempData.length != field.expansionArgs?.length) {
+			enqueueSnackbar((
+				<Alert severity='error'>Inserire tutti i campi prima di aggiungere la riga</Alert>
+			), { key: 'add-expansion-row', preventDuplicate: false })
+			return
+		}
+
+		let allFieldsFilled = true
+		for (let i = 0; i < additionalTempData.length; i++) {
+			const additionalFieldData: FormFieldData | undefined = additionalTempData[i]
+			if (!additionalFieldData || additionalFieldData.value == undefined) {
+				allFieldsFilled = false
+				break;
+			}
+		}
+		if (!allFieldsFilled) {
+			enqueueSnackbar((
+				<Alert severity='error'>Inserire tutti i campi prima di aggiungere la riga</Alert>
+			), { key: 'add-expansion-row', preventDuplicate: false })
+			return
+		}
+
 		update(data => {
 			if (data.value == undefined)
 				data.value = {}
@@ -482,7 +509,7 @@ function ExpansionField({ field, data, update, disabled, breadcrumb, hideHeader 
 				data.value.additional = []
 
 			data.value.additional.push(additionalTempData)
-		})
+		}/* , 'value', 'additional', (additionalRowCount + 1).toString() */)
 		updateAdditionalTempData([])
 	}
 
@@ -492,7 +519,7 @@ function ExpansionField({ field, data, update, disabled, breadcrumb, hideHeader 
 			{field.fixed?.map((fixedRow, rowIdx) => {
 				return <div key={rowIdx}>
 					{fixedRow.map((field, fieldIdx) => {
-						const updateField: Updater<FormFieldData> = (updater) => {
+						const updateField: UpdateFieldFunc = (updater, ...breadcrumb) => {
 							update(expansionData => {
 								if (expansionData == undefined)
 									throw new Error('expansion is undefined after the first stage')
@@ -515,7 +542,7 @@ function ExpansionField({ field, data, update, disabled, breadcrumb, hideHeader 
 									expansionData.value.fixed[rowIdx][fieldIdx] = { type: field.type }
 
 								updater(expansionData.value.fixed[rowIdx][fieldIdx])
-							})
+							}/* , 'value', 'fixed', rowIdx.toString(), fieldIdx.toString(), ...breadcrumb */)
 						}
 
 						return <Field field={field} key={fieldIdx}
@@ -537,15 +564,15 @@ function ExpansionField({ field, data, update, disabled, breadcrumb, hideHeader 
 								return idx != rowIdx
 							})
 						}
-					})
+					}/* , 'value', 'additional' */)
 				}
 
-				return <Paper key={rowIdx}>
+				return <div key={rowIdx}>
 					{field.incremental && <div className="row-counter">
 						<p>{field.prefix ?? '# '}{rowIdx + 1}</p>
 					</div>}
 					{field.expansionArgs?.map((arg, argIdx) => {
-						const updateField: Updater<FormFieldData> = (updater) => {
+						const updateField: UpdateFieldFunc = (updater, ...breadcrumb) => {
 							update(expansionData => {
 								if (expansionData == undefined || expansionData.value == undefined || expansionData.value.additional == undefined)
 									throw new Error('expansion is undefined after the first stage')
@@ -562,7 +589,7 @@ function ExpansionField({ field, data, update, disabled, breadcrumb, hideHeader 
 									expansionData.value.additional[rowIdx][argIdx] = { type: arg.type }
 
 								updater(expansionData.value.additional[rowIdx][argIdx])
-							})
+							}/* , 'value', 'additional', rowIdx.toString(), argIdx.toString(), ...breadcrumb */)
 						}
 
 						return <Field field={arg} key={argIdx}
@@ -571,7 +598,7 @@ function ExpansionField({ field, data, update, disabled, breadcrumb, hideHeader 
 						/>
 					})}
 					{data?.value?.additional?.[rowIdx] && field.next && (() => {
-						const updateNextFields: Updater<FormFieldData[]> = (updater) => {
+						const updateNextFields: DeepUpdater<FormFieldData[]> = (updater, ...breadcrumb) => {
 							update(expansionData => {
 								if (expansionData == undefined || expansionData.value == undefined ||
 									expansionData.value.additional == undefined || expansionData.value.additional[rowIdx] == undefined) {
@@ -584,7 +611,7 @@ function ExpansionField({ field, data, update, disabled, breadcrumb, hideHeader 
 								}
 
 								updater(expansionData.value.additional[rowIdx])
-							})
+							}/* , 'value', 'additional', rowIdx.toString(), ...breadcrumb */)
 						}
 
 						return <ExpansionNextFields next={field.next} dataOffset={field.expansionArgs?.length ?? 0}
@@ -595,7 +622,7 @@ function ExpansionField({ field, data, update, disabled, breadcrumb, hideHeader 
 					{!disabled && <button className="delete-row" onClick={deleteAdditional}>
 						<i className="fa-solid fa-trash"></i>
 					</button>}
-				</Paper>
+				</div>
 			}) || (disabled && (
 				<Typography>Nessun valore</Typography>
 			))}
@@ -603,7 +630,7 @@ function ExpansionField({ field, data, update, disabled, breadcrumb, hideHeader 
 		{!disabled && <div className="additional">
 			<div className="input-fields">
 				{field.expansionArgs?.map((arg, argIdx) => {
-					const updateField: Updater<FormFieldData> = (updater) => {
+					const updateField: UpdateFieldFunc = (updater, ...breadcrumb) => {
 						updateAdditionalTempData(data => {
 							if (typeof updater !== 'function') {
 								data[argIdx] = updater
@@ -614,7 +641,7 @@ function ExpansionField({ field, data, update, disabled, breadcrumb, hideHeader 
 								data[argIdx] = { type: arg.type }
 
 							updater(data[argIdx])
-						})
+						}/*  */)
 					}
 
 					return <Field field={arg} key={argIdx}
@@ -632,32 +659,34 @@ function ExpansionField({ field, data, update, disabled, breadcrumb, hideHeader 
 
 function ExpansionNextFields({ next, dataOffset, data, update, breadcrumb }: {
 	next: FormFieldTemplate[], dataOffset: number,
-	data?: FormFieldData[], update: Updater<FormFieldData[]>,
+	data?: FormFieldData[], update: DeepUpdater<FormFieldData[]>,
 	breadcrumb: string[]
 }) {
 	return <div className='next-fields'>
 		{next.map((field, nextIdx) => {
-			const updateNext: Updater<FormFieldData> = (updater) => {
+			const offset = dataOffset + nextIdx
+
+			const updateNext: UpdateFieldFunc = (updater, ...breadcrumb) => {
 				update(nextData => {
 					if (nextData == undefined)
 						throw new Error('select is undefined after the first stage')
 
 					if (typeof updater !== 'function') {
-						nextData[dataOffset + nextIdx] = updater
+						nextData[offset] = updater
 						return
 					}
 
-					if (nextData[dataOffset + nextIdx] == undefined)
-						nextData[dataOffset + nextIdx] = { type: field.type }
+					if (nextData[offset] == undefined)
+						nextData[offset] = { type: field.type }
 
-					updater(nextData[dataOffset + nextIdx])
-				})
+					updater(nextData[offset])
+				}, offset.toString(), ...breadcrumb)
 			}
 
-			return <Field field={field} key={nextIdx}
-				data={data?.[dataOffset + nextIdx]}
+			return <Field field={field} key={offset}
+				data={data?.[offset]}
 				update={updateNext}
-				breadcrumb={[...breadcrumb, (dataOffset + nextIdx).toString()]} />
+				breadcrumb={[...breadcrumb, offset.toString()]} />
 		})}
 	</div>
 }

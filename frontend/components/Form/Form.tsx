@@ -36,17 +36,20 @@ export const EditModeContext = createContext(false)
  * @param state stato utilizzato per la creazione del componente
  * @return ReactNode
  */
-export function Form({ data, updateData, initialEditMode }: { data: FormData, updateData: DeepUpdater<FormData>, initialEditMode: boolean }) {
-	const [ searchParams, setSearchParams ] = useSearchParams();
-	
+export function Form({ form, update, initialEditMode }: {
+	form: FormData, update: DeepUpdater<FormData>,
+	initialEditMode: boolean
+}) {
+	const [searchParams, setSearchParams] = useSearchParams();
+
 	const [editMode, setEditMode] = useState(initialEditMode);
 	const handleEditModeChange = () => {
 		setEditMode(!editMode)
-		
+
 		!editMode ? searchParams.set('edit', '') : searchParams.delete('edit')
 		setSearchParams(searchParams)
 	}
-	
+
 	const tabIdxParam = searchParams.get('tab')
 	const [tabIdx, setTabIdx] = useState(tabIdxParam ? parseInt(tabIdxParam) : 0)
 	const handleTabChange = (_: SyntheticEvent, newValue: number) => {
@@ -60,7 +63,7 @@ export function Form({ data, updateData, initialEditMode }: { data: FormData, up
 		<EditModeContext.Provider value={editMode}>
 			<div className="form">
 				<Stack direction="row" spacing={2} sx={{ justifyContent: 'space-between' }}>
-					<h1 className="title">{data.templ.title}</h1>
+					<h1 className="title">{form.templ.title}</h1>
 					<Stack direction="row" spacing={1} sx={{ alignItems: 'center' }}>
 						<Typography><i className="fa-solid fa-eye"></i></Typography>
 						<Switch
@@ -79,18 +82,18 @@ export function Form({ data, updateData, initialEditMode }: { data: FormData, up
 								variant="scrollable"
 								scrollButtons="auto"
 							>
-								{data.templ.sections.map(section => {
+								{form.templ.sections.map(section => {
 									return <Tab label={section.title} key={section.title}
 										sx={{ fontSize: '.8em', maxWidth: '30ch' }}
 									/>
 								})}
 							</Tabs>
 						</Paper>
-						
+
 						<Paper elevation={2} sx={{ marginTop: 2 }}>
-							{data.templ.sections.map((section, sectionIdx) => {
+							{form.templ.sections.map((section, sectionIdx) => {
 								const updateSection: DeepUpdater<FormSectionData> = (updater, ...breadcrumb) => {
-									updateData((formData) => {
+									update((formData) => {
 										if (formData.sections == undefined)
 											formData.sections = {}
 
@@ -103,7 +106,7 @@ export function Form({ data, updateData, initialEditMode }: { data: FormData, up
 											formData.sections[section.id] = {}
 
 										updater(formData.sections[section.id])
-									}, 'form', 'sections', ...breadcrumb)
+									}, 'sections', section.id, ...breadcrumb)
 								}
 
 								return (
@@ -114,7 +117,7 @@ export function Form({ data, updateData, initialEditMode }: { data: FormData, up
 									>
 										<FormSection
 											section={section}
-											data={data.sections?.[section.id]}
+											data={form.sections?.[section.id]}
 											update={updateSection}
 										/>
 									</div>
@@ -143,7 +146,7 @@ export function FormSection({ section, data, update }: {
 }) {
 	const starters = section.starters.map((starter) => {
 		// updateSection è la funzione di produzione sullo stato per la sezione specifica della pagina
-		const updateStarter: UpdateFieldFunc = (updater) => {
+		const updateStarter: UpdateFieldFunc = (updater, ...breadcrumb) => {
 			update(sectionData => {
 				if (!sectionData)
 					throw new Error('updating state of non-existing form section data')
@@ -160,7 +163,7 @@ export function FormSection({ section, data, update }: {
 				}
 
 				updater(sectionData[starter.starterID])
-			}, section.id)
+			}, starter.starterID, ...breadcrumb)
 		}
 
 		if (!starter.header) {
