@@ -1,7 +1,7 @@
 import './Bones.css'
 
 import { useContext, useEffect, useMemo, useState } from 'react'
-import { useImmer } from 'use-immer'
+import { Updater, useImmer } from 'use-immer'
 import { Bone, BoneData, AnatomStructDataContext } from '../../../models/AnatomStruct'
 import { Form } from '../Form/Form'
 import { useQuery } from '@tanstack/react-query'
@@ -14,11 +14,12 @@ import Link from '@mui/material/Link'
 import Paper from '@mui/material/Paper'
 import Typography from '@mui/material/Typography'
 import { Link as RouterLink, useParams, useSearchParams } from 'react-router'
-import { childDeepUpdater, childUpdater, DeepUpdater, prependDeepUpdater, rootDeepUpdater } from '../../utils/updater'
-import { saveBone, saveBones } from '../../utils/api'
+import { childDeepUpdater, childUpdater, rootDeepUpdater } from '../../utils/updater'
+import { updateBoneData, saveBones } from '../../utils/api'
 import { AccordionSummaryLeft } from '../UI/Accordion'
 import Alert from '@mui/material/Alert'
 import { enqueueSnackbar } from 'notistack'
+import { walkObject } from '../../../models/Programmable'
 
 export function Bones() {
 	const bones_url = '/api/bones'
@@ -63,10 +64,7 @@ export function BonesView({ bones }: { bones: Bone[] }) {
 	if (!bodyContext) throw new Error('BonesView must be used within a BodyContext')
 
 	const { body, updateBody } = bodyContext
-	const updateBodyDeep = rootDeepUpdater(updateBody, (body, action, breadcrumb) => {
-		console.log(breadcrumb, action, body)
-	})
-	const updateBodyBones = childDeepUpdater(updateBodyDeep, 'bones')
+	const updateBodyBones = childUpdater(updateBody, 'bones')
 
 	useEffect(() => {
 		saveBones(body.generals.name, body.bones).catch((err: Error) => {
@@ -105,7 +103,7 @@ export function BonesView({ bones }: { bones: Bone[] }) {
 type SelectBonesSectionProps = {
 	bones: Bone[]
 	bonesData: Record<string, BoneData>
-	updateBonesData: DeepUpdater<Record<string, BoneData>>
+	updateBonesData: Updater<Record<string, BoneData>>
 }
 
 function SelectBonesSection({ bones, bonesData, updateBonesData }: SelectBonesSectionProps) {
@@ -151,7 +149,7 @@ function SelectBonesSection({ bones, bonesData, updateBonesData }: SelectBonesSe
 											templ: bone.form
 										}
 									}
-								}, 'add', [bone.name])
+								})
 							}
 
 							return (
@@ -172,7 +170,7 @@ function SelectBonesSection({ bones, bonesData, updateBonesData }: SelectBonesSe
 
 type EditBonesSection = {
 	bonesData: Record<string, BoneData>
-	updateBonesData: DeepUpdater<Record<string, BoneData>>
+	updateBonesData: Updater<Record<string, BoneData>>
 }
 
 function EditBonesSection({ bonesData, updateBonesData }: EditBonesSection) {
@@ -209,11 +207,11 @@ function EditBonesSection({ bonesData, updateBonesData }: EditBonesSection) {
 	)
 }
 
-function EditBone({ bone, updateBonesData }: { bone: BoneData, updateBonesData: DeepUpdater<Record<string, BoneData>> }) {
+function EditBone({ bone, updateBonesData }: { bone: BoneData, updateBonesData: Updater<Record<string, BoneData>> }) {
 	const deleteBone = () => {
 		updateBonesData(bonesData => {
 			delete bonesData[bone.name]
-		}, 'delete', [bone.name])
+		})
 	}
 
 	return (
@@ -255,9 +253,6 @@ export function BoneView({ fallbackId }: { fallbackId?: string }) {
 	const bone: BoneData | undefined = body.bones[id];
 
 	if (!bone) throw new Error(`Bone with id ${id} not found`)
-	useEffect(() => {
-		saveBone(body.generals.name, bone, [bone.name])
-	}, [bone])
 
 	useEffect(() => {
 		enqueueSnackbar((
@@ -267,11 +262,16 @@ export function BoneView({ fallbackId }: { fallbackId?: string }) {
 
 	const updateBodyBones = childUpdater(updateBody, 'bones')
 	const updateBodyBone = childUpdater(updateBodyBones, id)
-	const updateBodyBoneData = childUpdater(updateBodyBone, 'form')
-	let updateBodyBoneDataDeep = rootDeepUpdater(updateBodyBoneData, (bone, action, breadcrumb) => {
-		console.log(breadcrumb, action, bone)
+	const updateBodyBoneDataDeep = rootDeepUpdater(updateBodyBone, (bone, ...breadcrumb) => {
+		const payload = walkObject<any>(bone, breadcrumb.join('.'))
+		console.log({breadcrumb, payload})
+
+		// TODO: remove optinal fallback 'id' parameter from BoneView component
+		if (fallbackId) return;
+		
+		updateBoneData(body.generals.name, bone.name, payload, breadcrumb)
 	})
-	updateBodyBoneDataDeep = prependDeepUpdater(updateBodyBoneDataDeep, [bone.name])
+	const updateBodyBoneData = childDeepUpdater(updateBodyBoneDataDeep, 'form')
 
 	const baseURL = `/body/${body.generals.name}`;
 
@@ -298,7 +298,7 @@ export function BoneView({ fallbackId }: { fallbackId?: string }) {
 			<AnatomStructDataContext.Provider value={bone}>
 				<Form
 					data={bone.form}
-					updateData={updateBodyBoneDataDeep}
+					updateData={updateBodyBoneData}
 					initialEditMode={editMode}
 				/>
 			</AnatomStructDataContext.Provider>

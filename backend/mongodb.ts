@@ -1,6 +1,6 @@
 import mongoDB, { ObjectId } from "mongodb";
 import { Request, Response } from "express";
-import { AnatomStruct, Bone, BoneData } from "../models/AnatomStruct";
+import { AnatomStruct, BoneData } from "../models/AnatomStruct";
 import { Body } from "../models/Body";
 import { services } from "./main";
 
@@ -109,13 +109,13 @@ export async function updateBodyBone(req: Request, res: Response) {
 	const boneId = req.params.boneId;
 
 	try {
-		const { bone, breadcrumb } = req.body as {
-			bone: Bone,
+		const { payload, breadcrumb } = req.body as {
+			payload: any,
 			breadcrumb: string[]
 		};
-		if (!bone || !breadcrumb) throw new Error("invalid payload provided")
+		if (!payload || !breadcrumb) throw new Error("invalid payload provided")
 
-		console.log(breadcrumb)
+		const query = ['bones', boneId, ...breadcrumb].join('.');
 
 		const result = await services.bodies.updateOne({
 			// TODO: discuss about "_id" or "name"-like primary keys usage
@@ -123,7 +123,7 @@ export async function updateBodyBone(req: Request, res: Response) {
 			"generals.name": id
 		}, {
 			$set: {
-				[`bones.${boneId}`]: bone
+				[query]: payload
 			}
 		});
 

@@ -200,9 +200,11 @@ function SelectField({ field, data, update, disabled, breadcrumb, hideHeader }: 
 		},
 	};
 
+	const selectedOption: SelectOption | undefined = options.filter(option => option.value == data?.value?.selection)[0];
+
 	const selectRef = useRef<SelectInstance<SelectOption> | null>(null);
 	useEffect(() => {
-		if (selectRef.current == null)
+		if (selectRef.current == null || !selectedOption)
 			return
 
 		if (data == undefined || data.value == undefined) {
@@ -225,8 +227,6 @@ function SelectField({ field, data, update, disabled, breadcrumb, hideHeader }: 
 			}
 		})
 	}
-
-	const selectedOption: SelectOption | undefined = options.filter(option => option.value == data?.value?.selection)[0];
 
 	return <div className="field select-field">
 		<div className="select-input">
@@ -300,6 +300,7 @@ function MultiSelectField({ field, data, update, disabled, breadcrumb, hideHeade
 }) {
 	let selectArgs: FormFieldSelectArgs = {}
 
+	// TODO: rivedere questa parte degli argomenti programmabili
 	if (typeof field.selectArgs === 'string') {
 		try {
 			const struct = useContext(AnatomStructDataContext)
@@ -328,7 +329,7 @@ function MultiSelectField({ field, data, update, disabled, breadcrumb, hideHeade
 
 	const selectRef = useRef<SelectInstance<SelectOption, true> | null>(null);
 	useEffect(() => {
-		if (selectRef.current == null)
+		if (selectRef.current == null || selectedOptions.length == 0)
 			return
 
 		if (data == undefined || data.value == undefined) {

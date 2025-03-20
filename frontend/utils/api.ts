@@ -13,13 +13,11 @@ export async function saveBones(bodyId: string, bones: Record<string, BoneData>)
 	}
 }
 
-export async function saveBone(bodyId: string, bone: BoneData, breadcrumb: string[]): Promise<void> {
-	console.log(breadcrumb)
-
-	const resp = await fetch(`/api/bodies/${bodyId}/bones/${bone.name}`, {
+export async function updateBoneData(body: string, bone: string, payload: any, breadcrumb: string[]): Promise<void> {
+	const resp = await fetch(`/api/bodies/${body}/bones/${bone}`, {
 		method: 'PUT',
 		body: JSON.stringify({
-			bone,
+			payload,
 			breadcrumb
 		}),
 		headers: {
@@ -27,6 +25,6 @@ export async function saveBone(bodyId: string, bone: BoneData, breadcrumb: strin
 		}
 	})
 	if (!resp.ok) {
-		throw new Error(`Errore salvataggio osso ${bone.name}: ${await resp.text()}`);
+		throw new Error(`Errore salvataggio osso ${name}: ${await resp.text()}`);
 	}
 }

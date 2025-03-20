@@ -1,7 +1,6 @@
 import './Form.css'
 
 import { createContext, SyntheticEvent, useState } from 'react'
-import { Updater } from 'use-immer'
 import { FormSectionTemplate, FormData, FormSectionData } from '../../../models/Form'
 import { Field, UpdateFieldFunc } from './Field'
 import { Carousel } from '../UI/Carousel'
@@ -90,7 +89,7 @@ export function Form({ data, updateData, initialEditMode }: { data: FormData, up
 						
 						<Paper elevation={2} sx={{ marginTop: 2 }}>
 							{data.templ.sections.map((section, sectionIdx) => {
-								const updateSection: Updater<FormSectionData> = (updater) => {
+								const updateSection: DeepUpdater<FormSectionData> = (updater, ...breadcrumb) => {
 									updateData((formData) => {
 										if (formData.sections == undefined)
 											formData.sections = {}
@@ -104,7 +103,7 @@ export function Form({ data, updateData, initialEditMode }: { data: FormData, up
 											formData.sections[section.id] = {}
 
 										updater(formData.sections[section.id])
-									}, 'set', ['form'])
+									}, 'form', 'sections', ...breadcrumb)
 								}
 
 								return (
@@ -140,7 +139,7 @@ export function Form({ data, updateData, initialEditMode }: { data: FormData, up
  */
 export function FormSection({ section, data, update }: {
 	section: FormSectionTemplate, data: FormSectionData,
-	update: Updater<FormSectionData>
+	update: DeepUpdater<FormSectionData>
 }) {
 	const starters = section.starters.map((starter) => {
 		// updateSection è la funzione di produzione sullo stato per la sezione specifica della pagina
@@ -161,7 +160,7 @@ export function FormSection({ section, data, update }: {
 				}
 
 				updater(sectionData[starter.starterID])
-			})
+			}, section.id)
 		}
 
 		if (!starter.header) {
