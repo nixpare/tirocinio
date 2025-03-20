@@ -1,7 +1,8 @@
 import { convertLabelToID, StrapiComponent, validateObject, ValidateObjectResult } from "./Strapi"
-import { StrapiCampo } from "./Field";
-import { FormSectionTemplate, FormTemplate } from "../models/Form";
+import { rebuildStrapiCampoTree, StrapiCampo } from "./Field";
+import { FormSectionStarterTemplate, FormSectionTemplate, FormTemplate } from "../models/Form";
 import { StrapiAnatomStruct } from "./AnatomStruct";
+import { deeplog } from "./main";
 
 export type StrapiSezione = StrapiComponent & {
 	Nome: string
@@ -16,7 +17,7 @@ export function convertForm(doc: StrapiAnatomStruct): ValidateObjectResult<FormT
 	form.sections = doc.Sezioni.map<FormSectionTemplate>(sezione => {
 		const [formSection, err] = convertFormSection(sezione);
 		if (err) throw err;
-		if (!formSection) throw new Error("an unexpected error has occurred at formSection");
+		if (!formSection) throw new Error("an unexpected error has occurred at FormSectionTemplate");
 		return formSection;
 	})
 
@@ -35,7 +36,13 @@ export function convertFormSection(doc: StrapiSezione): ValidateObjectResult<For
 
 	section.id = convertLabelToID(doc.Nome);
 	section.title = doc.Nome;
-	// TODO: section.starters
+	
+	/* const [starters, err] = convertFormSectionStarters(doc.Campo);
+	if (err) throw err;
+	if (!starters) throw new Error("an unexpected error has occurred at FormSectionStarterTemplate[]");
+	section.starters = starters; */
+	section.starters = [];
+
 	// TODO: section.images
 
 	return validateObject(section, validateFormSection);
@@ -44,8 +51,16 @@ export function convertFormSection(doc: StrapiSezione): ValidateObjectResult<For
 function validateFormSection(section: Partial<FormSectionTemplate>): section is FormSectionTemplate {
 	if (section.id == undefined) throw new Error('id in FormSectionTemplate is not defined');
 	if (section.title == undefined) throw new Error('title in FormSectionTemplate is not defined');
-
-	// TODO: check section.starters
+	if (section.starters == undefined) throw new Error('starters in FormSectionTemplate are not defined');
 
 	return true;
+}
+
+export function convertFormSectionStarters(doc: StrapiCampo[]): ValidateObjectResult<FormSectionStarterTemplate[]> {
+	const starters: Partial<FormSectionStarterTemplate>[] = [];
+
+	const nodes = rebuildStrapiCampoTree(doc);
+	deeplog(nodes);
+
+	return [[], undefined];
 }

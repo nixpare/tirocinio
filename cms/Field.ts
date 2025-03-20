@@ -1,4 +1,5 @@
-import { StrapiComponent } from "./Strapi";
+import { FormFieldTemplate } from "../models/Form";
+import { StrapiComponent, validateObject, ValidateObjectResult } from "./Strapi";
 
 export type StrapiCampo = StrapiComponent & {
 	NomeCampo: string
@@ -19,4 +20,19 @@ enum StrapiTipoCampo {
 
 type StrapiElemento = StrapiComponent & {
 	NomeCampo: string
+}
+
+type StrapiCampoNode = StrapiCampo & {
+	path: string[]
+}
+
+export function rebuildStrapiCampoTree(doc: StrapiCampo[]): StrapiCampoNode[] {
+	return doc.map<StrapiCampoNode>(campo => {
+		const path = campo.NomeCampo.split('//');
+
+		return {
+			...campo,
+			path: path
+		}
+	})
 }

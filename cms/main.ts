@@ -2,6 +2,7 @@ import 'dotenv/config';
 import qs from 'qs';
 import util from 'util';
 import { StrapiAnatomStructType, convertStrapi, fetchStrapiDocument } from './AnatomStruct';
+import { convertFormSectionStarters } from './Form';
 
 const apiToken = process.env['STRAPI_API_KEY'];
 const baseURL = 'http://labanof-backoffice.islab.di.unimi.it/api';
@@ -40,5 +41,14 @@ if (!anatom) {
 	process.exit(1);
 }
 
-anatom.name += ' (Strapi decoded)'
+anatom.name += ' (Strapi decoded)';
 deeplog(anatom);
+
+console.log('\n------------------------\n');
+
+const strapiSec = strapiDoc.Sezioni[0];
+deeplog(strapiSec);
+
+console.log('\n------------------------\n');
+
+convertFormSectionStarters(strapiSec.Campo);

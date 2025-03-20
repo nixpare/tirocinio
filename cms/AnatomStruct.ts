@@ -57,7 +57,7 @@ export function convertStrapi(doc: StrapiAnatomStruct, typ: StrapiAnatomStructTy
 
 	const [ form, err ] = convertForm(doc);
 	if (err) throw err;
-	if (!form) throw new Error("an unexpected error has occurred at form");
+	if (!form) throw new Error("an unexpected error has occurred at FormTemplate");
 	anatomStruct.form = form;
 
 	return validateObject(anatomStruct, validateAnatomStruct);
