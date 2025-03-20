@@ -475,7 +475,7 @@ function ExpansionField({ field, data, update, disabled, breadcrumb, hideHeader 
 }) {
 	const [additionalTempData, updateAdditionalTempData] = useImmer<FormFieldData[]>([])
 
-	const additionalRowCount = data?.value?.additional?.length ?? -1;
+	//const additionalRowCount = data?.value?.additional?.length ?? -1;
 	const addRow = (ev: MouseEvent<HTMLButtonElement, PointerEvent>) => {
 		ev.preventDefault()
 
@@ -519,7 +519,7 @@ function ExpansionField({ field, data, update, disabled, breadcrumb, hideHeader 
 			{field.fixed?.map((fixedRow, rowIdx) => {
 				return <div key={rowIdx}>
 					{fixedRow.map((field, fieldIdx) => {
-						const updateField: UpdateFieldFunc = (updater, ...breadcrumb) => {
+						const updateField: UpdateFieldFunc = (updater/* , ...breadcrumb */) => {
 							update(expansionData => {
 								if (expansionData == undefined)
 									throw new Error('expansion is undefined after the first stage')
@@ -572,7 +572,7 @@ function ExpansionField({ field, data, update, disabled, breadcrumb, hideHeader 
 						<p>{field.prefix ?? '# '}{rowIdx + 1}</p>
 					</div>}
 					{field.expansionArgs?.map((arg, argIdx) => {
-						const updateField: UpdateFieldFunc = (updater, ...breadcrumb) => {
+						const updateField: UpdateFieldFunc = (updater/* , ...breadcrumb */) => {
 							update(expansionData => {
 								if (expansionData == undefined || expansionData.value == undefined || expansionData.value.additional == undefined)
 									throw new Error('expansion is undefined after the first stage')
@@ -598,7 +598,7 @@ function ExpansionField({ field, data, update, disabled, breadcrumb, hideHeader 
 						/>
 					})}
 					{data?.value?.additional?.[rowIdx] && field.next && (() => {
-						const updateNextFields: DeepUpdater<FormFieldData[]> = (updater, ...breadcrumb) => {
+						const updateNextFields: DeepUpdater<FormFieldData[]> = (updater/* , ...breadcrumb */) => {
 							update(expansionData => {
 								if (expansionData == undefined || expansionData.value == undefined ||
 									expansionData.value.additional == undefined || expansionData.value.additional[rowIdx] == undefined) {
@@ -630,7 +630,7 @@ function ExpansionField({ field, data, update, disabled, breadcrumb, hideHeader 
 		{!disabled && <div className="additional">
 			<div className="input-fields">
 				{field.expansionArgs?.map((arg, argIdx) => {
-					const updateField: UpdateFieldFunc = (updater, ...breadcrumb) => {
+					const updateField: UpdateFieldFunc = (updater/* , ...breadcrumb */) => {
 						updateAdditionalTempData(data => {
 							if (typeof updater !== 'function') {
 								data[argIdx] = updater

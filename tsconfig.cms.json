@@ -5,6 +5,7 @@
 		"moduleResolution": "node",
 		"noEmit": true,
 		"strict": true,
+		// TODO: uncomment lines
 		//"noUnusedLocals": true,
 		//"noUnusedParameters": true,
 		"noFallthroughCasesInSwitch": true,
