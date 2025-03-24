@@ -6,10 +6,10 @@ import { loadProgrammableFunctions } from '../../models/Programmable'
 import { BodyContextProvider, Body } from '../../models/Body'
 import { testBody } from '../storage/body'
 import { BoneData } from '../../models/AnatomStruct'
-import Container from '@mui/material/Container'
 import { BoneView } from '../components/Body/Bones'
 import { BrowserRouter, Route, Routes } from 'react-router'
 import { CustomSnackbarProvider } from '../components/UI/Snackbar'
+import Box from '@mui/material/Box'
 
 loadProgrammableFunctions()
 
@@ -47,12 +47,12 @@ function App() {
     });
 
     return (
-        <Container sx={{ fontFamily: 'Inter, system-ui, Avenir, Helvetica, Arial, sans-serif' }}>
+        <Box sx={{ fontFamily: 'Inter, system-ui, Avenir, Helvetica, Arial, sans-serif' }}>
             <BodyContextProvider.Provider value={{ body, updateBody }}>
                 <BoneView fallbackId={boneState.name} />
             </BodyContextProvider.Provider>
 
             <button onClick={() => { console.log(femore, body.bones[boneState.name]) }}>LOG in Console</button>
-        </Container>
+        </Box>
     )
 }

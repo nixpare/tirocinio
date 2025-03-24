@@ -51,8 +51,10 @@ export function rebuildStrapiCampoTree(doc: StrapiCampo[]): Record<string, Strap
 				}
 
 				const key = convertLabelToID(elemento.NomeCampo)
+				// @ts-ignore
 				node.selectArgs[key] = {
-					display: elemento.NomeCampo
+					value: key,
+					display: elemento.NomeCampo,
 				} as FormFieldSelectArg
 			})
 		}
@@ -97,6 +99,7 @@ function rebuildTree(node: StrapiCampoNode, prev: Record<string, StrapiCampoNode
 			});
 		} else {
 			const selectionKey = convertLabelToID(selection);
+			// @ts-ignore
 			const arg = parent.selectArgs[selectionKey];
 			// @ts-ignore
 			rebuildTree(node, arg.next);

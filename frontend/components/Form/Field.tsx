@@ -191,8 +191,8 @@ function SelectField({ field, data, update, disabled, breadcrumb, hideHeader }: 
 		selectArgs = field.selectArgs
 	}
 
-	const options: SelectOption[] | undefined = Object.entries(selectArgs).map(([value, arg]) => ({
-		value: value,
+	const options: SelectOption[] | undefined = Object.values(selectArgs).map(arg => ({
+		value: arg.value,
 		label: arg.display
 	}))
 
@@ -264,7 +264,7 @@ function SelectNextFields({ arg, data, update, breadcrumb }: {
 	breadcrumb: string[]
 }) {
 	return <div className='next-fields'>
-		{arg.next?.map((next, nextIdx) => {
+		{arg.next && Object.values(arg.next).map(next => {
 			const updateNext: UpdateFieldFunc = (updater, ...breadcrumb) => {
 				update(selectData => {
 					if (arg.next == undefined)
@@ -274,23 +274,23 @@ function SelectNextFields({ arg, data, update, breadcrumb }: {
 						throw new Error('select is undefined after the first stage')
 
 					if (selectData.value.next == undefined)
-						selectData.value.next = []
+						selectData.value.next = {}
 
 					if (typeof updater !== 'function') {
-						selectData.value.next[nextIdx] = updater
+						selectData.value.next[next.id] = updater
 						return
 					}
 
-					if (selectData.value.next[nextIdx] == undefined)
-						selectData.value.next[nextIdx] = { type: arg.next[nextIdx].type }
+					if (selectData.value.next[next.id] == undefined)
+						selectData.value.next[next.id] = { type: arg.next[next.id].type }
 
-					updater(selectData.value.next[nextIdx])
-				}, 'value', 'next', nextIdx.toString(), ...breadcrumb)
+					updater(selectData.value.next[next.id])
+				}, 'value', 'next', next.id, ...breadcrumb)
 			}
 
-			return <Field field={next} key={nextIdx}
-				data={data?.value?.next?.[nextIdx]}
-				update={updateNext} breadcrumb={[...breadcrumb, nextIdx.toString()]} />
+			return <Field field={next} key={next.id}
+				data={data?.value?.next?.[next.id]}
+				update={updateNext} breadcrumb={[...breadcrumb, next.id]} />
 		})}
 	</div>
 }
@@ -433,7 +433,7 @@ function MultiSelectNextFields({ selected, arg, data, update, breadcrumb }: {
 	breadcrumb: string[],
 }) {
 	return <div className='next-fields'>
-		{arg.next?.map((next, nextIdx) => {
+		{arg.next && Object.values(arg.next).map(next => {
 			const updateNext: UpdateFieldFunc = (updater, ...breadcrumb) => {
 				update(selectData => {
 					if (arg.next == undefined)
@@ -446,23 +446,23 @@ function MultiSelectNextFields({ selected, arg, data, update, breadcrumb }: {
 						selectData.value.next = {}
 
 					if (selectData.value.next[selected] == undefined)
-						selectData.value.next[selected] = []
+						selectData.value.next[selected] = {}
 
 					if (typeof updater !== 'function') {
-						selectData.value.next[selected][nextIdx] = updater
+						selectData.value.next[selected][next.id] = updater
 						return
 					}
 
-					if (selectData.value.next[selected][nextIdx] == undefined)
-						selectData.value.next[selected][nextIdx] = { type: arg.next[nextIdx].type }
+					if (selectData.value.next[selected][next.id] == undefined)
+						selectData.value.next[selected][next.id] = { type: arg.next[next.id].type }
 
-					updater(selectData.value.next[selected][nextIdx])
-				}, 'value', 'next', selected, nextIdx.toString(), ...breadcrumb)
+					updater(selectData.value.next[selected][next.id])
+				}, 'value', 'next', selected, next.id, ...breadcrumb)
 			}
 
-			return <Field field={next} key={nextIdx}
-				data={data?.value?.next?.[selected]?.[nextIdx]}
-				update={updateNext} breadcrumb={[...breadcrumb, nextIdx.toString()]} />
+			return <Field field={next} key={next.id}
+				data={data?.value?.next?.[selected]?.[next.id]}
+				update={updateNext} breadcrumb={[...breadcrumb, next.id]} />
 		})}
 	</div>
 }

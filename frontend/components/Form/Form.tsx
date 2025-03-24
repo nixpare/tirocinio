@@ -144,7 +144,7 @@ export function FormSection({ section, data, update }: {
 	section: FormSectionTemplate, data: FormSectionData,
 	update: DeepUpdater<FormSectionData>
 }) {
-	const starters = section.starters.map((starter) => {
+	const starters = section.starters.map(starter => {
 		// updateSection è la funzione di produzione sullo stato per la sezione specifica della pagina
 		const updateStarter: UpdateFieldFunc = (updater, ...breadcrumb) => {
 			update(sectionData => {
@@ -152,26 +152,26 @@ export function FormSection({ section, data, update }: {
 					throw new Error('updating state of non-existing form section data')
 
 				if (typeof updater !== 'function') {
-					sectionData[starter.starterID] = updater
+					sectionData[starter.id] = updater
 					return
 				}
 
-				if (!sectionData[starter.starterID]) {
-					sectionData[starter.starterID] = {
+				if (!sectionData[starter.id]) {
+					sectionData[starter.id] = {
 						type: starter.type
 					}
 				}
 
-				updater(sectionData[starter.starterID])
-			}, starter.starterID, ...breadcrumb)
+				updater(sectionData[starter.id])
+			}, starter.id, ...breadcrumb)
 		}
 
 		if (!starter.header) {
 			return (
-				<div className="starter-field" key={starter.starterID}>
+				<div className="starter-field" key={starter.id}>
 					<Field field={starter}
-						data={data?.[starter.starterID]} update={updateStarter}
-						breadcrumb={[section.id, starter.starterID]}
+						data={data?.[starter.id]} update={updateStarter}
+						breadcrumb={[section.id, starter.id]}
 						hideHeader
 					/>
 				</div>
@@ -179,7 +179,7 @@ export function FormSection({ section, data, update }: {
 		}
 
 		return (
-			<Accordion key={starter.starterID}
+			<Accordion key={starter.id}
 				className="starter-field"
 				elevation={4}
 			>
@@ -190,8 +190,8 @@ export function FormSection({ section, data, update }: {
 				</AccordionSummaryLeft>
 				<AccordionDetails>
 					<Field field={starter}
-						data={data?.[starter.starterID]} update={updateStarter}
-						breadcrumb={[section.id, starter.starterID]}
+						data={data?.[starter.id]} update={updateStarter}
+						breadcrumb={[section.id, starter.id]}
 						hideHeader
 					/>
 				</AccordionDetails>

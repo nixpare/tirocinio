@@ -27,7 +27,7 @@ export type FormSectionTemplate = {
 	/** titolo della pagina */
 	title: string
 	/** le proprietà iniziali */
-	starters: Record<string, FormFieldTemplate>
+	starters: FormFieldTemplate[]
 	/** immagini da affiancare alle tabelle delle proprietà */
 	images?: string[]
 }
@@ -80,11 +80,11 @@ export type FormNumberFieldTemplate = FormFieldBaseTemplate & {
 }
 export type FormSelectFieldTemplate = FormFieldBaseTemplate & {
 	type: 'select'
-	selectArgs: FormFieldSelectArgs
+	selectArgs: FormFieldSelectArgs | string
 }
 export type FormMultiSelectFieldTemplate = FormFieldBaseTemplate & {
 	type: 'multi-select'
-	selectArgs: FormFieldSelectArgs
+	selectArgs: FormFieldSelectArgs | string
 }
 export type FormExpansionFieldTemplate = FormFieldBaseTemplate & {
 	type: 'expansion'
@@ -125,6 +125,7 @@ export type FormFieldSelectArgs = Record<string, FormFieldSelectArg>
 
 /** FormFieldSelectArg rappresenta un'opzione di un campo Select */
 export type FormFieldSelectArg = {
+	value: string
 	/** il valore mostrato in grafica */
 	display: string
 	/** i template dei campi della tabella generati alla selezione del valore sopra */
@@ -201,7 +202,7 @@ export type FormSelectFieldValue = {
 	/** il valore selezionato dal menu a tendina */
 	selection: string
 	/** le `AnatomStructProperty` innestate, opzionale, indica i valori della proprietà derivate dalla selezione corrente */
-	next?: FormFieldData[]
+	next?: Record<string, FormFieldData>
 }
 
 /** FormMultiSelectFieldValue contiene lo stato di una proprietà `Multi-Select` */
@@ -209,7 +210,7 @@ export type FormMultiSelectFieldValue = {
 	/** il valore selezionato dal menu a tendina */
 	selections: string[]
 	/** le `AnatomStructProperty` innestate, opzionale, indica i valori della proprietà derivate dalla selezione corrente */
-	next?: Record<string, FormFieldData[] | undefined>
+	next?: Record<string, Record<string, FormFieldData> | undefined>
 }
 
 export type FormExpansionFieldValue = {
