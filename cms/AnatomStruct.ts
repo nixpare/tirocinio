@@ -23,7 +23,7 @@ const anatomStructQuery = {
 				}
 			},
 			Immagine: {
-				populate: '*'
+				fields: ['url']
 			}
 		}
 	}

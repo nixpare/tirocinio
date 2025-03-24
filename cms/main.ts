@@ -3,6 +3,7 @@ import qs from 'qs';
 import util from 'util';
 import { StrapiAnatomStructType, convertStrapi, fetchStrapiDocument } from './AnatomStruct';
 import { convertFormSectionStarters } from './Form';
+import { rebuildStrapiCampoTree, StrapiCampo, StrapiTipoCampo } from './Field';
 
 const apiToken = process.env['STRAPI_API_KEY'];
 const baseURL = 'http://labanof-backoffice.islab.di.unimi.it/api';
@@ -12,7 +13,8 @@ export const headers = {
 
 export async function fetchQuery<T = any>(url: string, populate: any): Promise<T> {
 	const compiledQuery = qs.stringify({
-		populate: populate
+		populate: populate,
+		status: 'draft'
 	}, { encodeValuesOnly: true });
 
 	const queryUrl = url + `?${compiledQuery}`;
@@ -28,9 +30,6 @@ export function deeplog(a: any) {
 }
 
 const strapiDoc = await fetchStrapiDocument(baseURL, StrapiAnatomStructType.Osso, 'Femore destro');
-deeplog(strapiDoc);
-
-console.log('\n------------------------\n');
 
 const [ anatom, err ] = convertStrapi(strapiDoc, StrapiAnatomStructType.Osso);
 if (err) {
@@ -42,13 +41,14 @@ if (!anatom) {
 }
 
 anatom.name += ' (Strapi decoded)';
-deeplog(anatom);
 
-console.log('\n------------------------\n');
+/* deeplog(anatom);
+console.log('\n------------------------\n'); */
 
 const strapiSec = strapiDoc.Sezioni[0];
-deeplog(strapiSec);
 
-console.log('\n------------------------\n');
+/* deeplog(strapiSec);
+console.log('\n------------------------\n'); */
 
-convertFormSectionStarters(strapiSec.Campo);
+const nodes = rebuildStrapiCampoTree(strapiSec.Campo);
+deeplog(nodes);

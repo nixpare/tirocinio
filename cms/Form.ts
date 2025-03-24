@@ -1,12 +1,12 @@
-import { convertLabelToID, StrapiComponent, validateObject, ValidateObjectResult } from "./Strapi"
+import { convertLabelToID, StrapiComponent, StrapiImage, validateObject, ValidateObjectResult } from "./Strapi"
 import { rebuildStrapiCampoTree, StrapiCampo } from "./Field";
-import { FormSectionStarterTemplate, FormSectionTemplate, FormTemplate } from "../models/Form";
+import { FormFieldTemplate, FormSectionTemplate, FormTemplate } from "../models/Form";
 import { StrapiAnatomStruct } from "./AnatomStruct";
 import { deeplog } from "./main";
 
 export type StrapiSezione = StrapiComponent & {
 	Nome: string
-	Immagine: Object | null
+	Immagine: StrapiImage | null
 	Campo: StrapiCampo[]
 }
 
@@ -41,9 +41,9 @@ export function convertFormSection(doc: StrapiSezione): ValidateObjectResult<For
 	if (err) throw err;
 	if (!starters) throw new Error("an unexpected error has occurred at FormSectionStarterTemplate[]");
 	section.starters = starters; */
-	section.starters = [];
+	section.starters = {};
 
-	// TODO: section.images
+	section.images = doc.Immagine ? [doc.Immagine.url] : undefined
 
 	return validateObject(section, validateFormSection);
 }
@@ -56,11 +56,11 @@ function validateFormSection(section: Partial<FormSectionTemplate>): section is 
 	return true;
 }
 
-export function convertFormSectionStarters(doc: StrapiCampo[]): ValidateObjectResult<FormSectionStarterTemplate[]> {
-	const starters: Partial<FormSectionStarterTemplate>[] = [];
+export function convertFormSectionStarters(doc: StrapiCampo[]): ValidateObjectResult<Record<string, FormFieldTemplate>> {
+	const starters: Record<string, Partial<FormFieldTemplate>> = {};
 
 	const nodes = rebuildStrapiCampoTree(doc);
 	deeplog(nodes);
 
-	return [[], undefined];
+	return [{}, undefined];
 }

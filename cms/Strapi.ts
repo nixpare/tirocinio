@@ -9,6 +9,11 @@ export type StrapiDocument = StrapiComponent & {
 	publishedAt: string
 }
 
+export type StrapiImage = StrapiComponent & {
+	documentId: string
+	url: string
+}
+
 export type ValidateObjectResult<T extends Object> = [
 	res: T | undefined,
 	err: ValidateObjectError<T> | undefined
@@ -33,4 +38,8 @@ export function validateObject<T extends Object>(obj: Partial<T>, validate: Vali
 
 export function convertLabelToID(label: string): string {
 	return label.toLowerCase().replaceAll(' ', '_');
+}
+
+export function deepCopy<T>(a: T): T {
+	return JSON.parse(JSON.stringify(a));
 }

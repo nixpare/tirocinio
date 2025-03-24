@@ -27,14 +27,10 @@ export type FormSectionTemplate = {
 	/** titolo della pagina */
 	title: string
 	/** le proprietà iniziali */
-	starters: FormSectionStarterTemplate[]
+	starters: Record<string, FormFieldTemplate>
 	/** immagini da affiancare alle tabelle delle proprietà */
 	images?: string[]
 }
-
-export type FormSectionStarterTemplate = {
-	starterID: string
-} & FormFieldTemplate
 
 /**
  * FormFieldTemplate contiene le caratteristiche di una proprietà.
@@ -44,6 +40,7 @@ export type FormFieldTemplate = FormFieldBaseTemplate | FormFixedFieldTemplate |
 	FormSelectFieldTemplate | FormMultiSelectFieldTemplate | FormExpansionFieldTemplate | FormDeductionFieldTemplate
 
 type FormFieldBaseTemplate = {
+	id: string
 	/** il tipo di input sottostante alla proprietà */
 	type: FormFieldType
 	/** un simil table header per questo campo specifico */
@@ -83,11 +80,11 @@ export type FormNumberFieldTemplate = FormFieldBaseTemplate & {
 }
 export type FormSelectFieldTemplate = FormFieldBaseTemplate & {
 	type: 'select'
-	selectArgs: FormFieldSelectArgs | string
+	selectArgs: FormFieldSelectArgs
 }
 export type FormMultiSelectFieldTemplate = FormFieldBaseTemplate & {
 	type: 'multi-select'
-	selectArgs: FormFieldSelectArgs | string
+	selectArgs: FormFieldSelectArgs
 }
 export type FormExpansionFieldTemplate = FormFieldBaseTemplate & {
 	type: 'expansion'
@@ -131,7 +128,7 @@ export type FormFieldSelectArg = {
 	/** il valore mostrato in grafica */
 	display: string
 	/** i template dei campi della tabella generati alla selezione del valore sopra */
-	next?: FormFieldTemplate[]
+	next?: Record<string, FormFieldTemplate>
 }
 
 /**
