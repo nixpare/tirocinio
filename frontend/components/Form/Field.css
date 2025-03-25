@@ -1,5 +1,6 @@
 .field {
-	min-width: 30ch;
+	min-width: 20ch;
+	width: fit-content;
 }
 
 .field-header {
@@ -25,6 +26,11 @@
 	border-radius: .2em;
 }
 
+.field.text-field,
+.field.number-field {
+	max-width: 30ch;
+}
+
 .field.text-field input,
 .field.text-field textarea,
 .field.number-field input {
@@ -48,7 +54,7 @@
 
 .field .select-input {
 	width: fit-content;
-	min-width: 30ch;
+	min-width: 20ch;
 }
 .field .select-input:not(:has(>*)) {
 	display: none;
@@ -89,8 +95,22 @@
 .field .select-field,
 .field .next-fields {
 	display: flex;
-	flex-wrap: wrap;
 	gap: 1em;
+}
+.field .select-field {
+	flex-wrap: wrap;
+}
+
+.field .next-fields .toggle-show-next {
+	padding: .2em .6em;
+	transition: transform .3s;
+	background-color: rgba(var(--primary-color), .6);
+}
+.field .next-fields .toggle-show-next > i {
+	transition: transform .3s;
+}
+.field .next-fields .toggle-show-next[data-toggled=true] > i {
+	transform: rotate(90deg);
 }
 
 .field .multi-select .multi-select-arg .delete-row,
@@ -104,17 +124,17 @@
 
 .field.expansion-field .delete-row {
 	height: fit-content;
-	margin-top: auto;
-	margin-bottom: auto;
+	margin: .3em 0;
 }
 
 .field.expansion-field .additional {
 	width: fit-content;
-	padding: 1em 2em;
+	padding: 1em 0em;
 }
 
 .field.expansion-field .input-fields {
 	display: flex;
+	flex-wrap: wrap;
 	gap: 1em;
 	min-width: 20ch;
 }
@@ -132,14 +152,18 @@
 	text-align: center;
 }
 
+.field.expansion-field .fixed-data:not(:has(>*)),
+.field.expansion-field .expansion-data:not(:has(>*)) {
+	display: none;
+}
+
 .field.expansion-field .fixed-data > div,
 .field.expansion-field .expansion-data > div {
 	display: flex;
+	flex-wrap: wrap;
 	gap: 1em;
-	margin: .8em;
-	padding: .8em;
-	background-color: rgba(255, 255, 255, .5);
 	border-radius: .2em;
+	margin: 1em 0;
 }
 
 .field.expansion-field .row-counter {

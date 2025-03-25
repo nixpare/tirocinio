@@ -35,6 +35,7 @@ import Typography from '@mui/material/Typography';
 import { DeepUpdater } from '../../utils/updater';
 import { enqueueSnackbar } from 'notistack';
 import Alert from '@mui/material/Alert';
+import Paper from '@mui/material/Paper';
 
 export type UpdateFieldFunc = DeepUpdater<FormFieldData>
 type UpdateSelectFieldFunc = DeepUpdater<FormSelectFieldData>
@@ -172,24 +173,29 @@ function SelectField({ field, data, update, disabled, breadcrumb, hideHeader }: 
 	data?: FormSelectFieldData, update: UpdateSelectFieldFunc,
 	disabled: boolean, breadcrumb: string[], hideHeader?: boolean
 }) {
-	let selectArgs: FormFieldSelectArgs = {}
+	const [selectArgs, setSelectArgs] = useState < FormFieldSelectArgs>({});
+	const struct = useContext(AnatomStructDataContext)
+	const bodyContext = useContext(BodyContextProvider)
 
-	if (typeof field.selectArgs === 'string') {
-		try {
-			const struct = useContext(AnatomStructDataContext)
-			const bodyContext = useContext(BodyContextProvider)
-			if (!struct || !bodyContext) {
-				throw new Error('informazioni sul form corrente non trovate')
+	useEffect(() => {
+		// TODO: rivedere questa parte degli argomenti programmabili
+		if (typeof field.selectArgs === 'string') {
+			try {
+				if (!struct || !bodyContext) {
+					throw new Error('informazioni sul form corrente non trovate')
+				}
+
+				const f = selectArgsFunctionMap[field.selectArgs]
+				setSelectArgs(f(struct, bodyContext.body, breadcrumb))
+			} catch (e: any) {
+				enqueueSnackbar((
+					<Alert severity='error'>{e.message}</Alert>
+				))
 			}
-
-			const f = selectArgsFunctionMap[field.selectArgs]
-			selectArgs = f(struct, bodyContext.body, breadcrumb)
-		} catch (e) {
-			console.error(e)
+		} else {
+			setSelectArgs(field.selectArgs)
 		}
-	} else {
-		selectArgs = field.selectArgs
-	}
+	}, [field.selectArgs])
 
 	const options: SelectOption[] | undefined = Object.values(selectArgs).map(arg => ({
 		value: arg.value,
@@ -249,7 +255,7 @@ function SelectField({ field, data, update, disabled, breadcrumb, hideHeader }: 
 				)
 			)}
 		</div>
-		{data && data.value && (
+		{data && data.value && selectArgs[data.value.selection] && (
 			<SelectNextFields arg={selectArgs[data.value.selection]}
 				data={data} update={update}
 				breadcrumb={[...breadcrumb, data.value.selection]}
@@ -263,8 +269,17 @@ function SelectNextFields({ arg, data, update, breadcrumb }: {
 	data?: FormSelectFieldData, update: UpdateSelectFieldFunc,
 	breadcrumb: string[]
 }) {
+	const [showNext, setShowNext] = useState(false);
+	const toggleShowNext = (ev: MouseEvent<HTMLButtonElement>) => {
+		ev.preventDefault()
+		setShowNext(!showNext)
+	}
+
 	return <div className='next-fields'>
-		{arg.next && Object.values(arg.next).map(next => {
+		<button className="toggle-show-next" data-toggled={showNext} onClick={toggleShowNext}>
+			<i className="fa-solid fa-chevron-right"></i>
+		</button>
+		{arg.next != undefined && Object.values(arg.next).map(next => {
 			const updateNext: UpdateFieldFunc = (updater, ...breadcrumb) => {
 				update(selectData => {
 					if (arg.next == undefined)
@@ -288,9 +303,11 @@ function SelectNextFields({ arg, data, update, breadcrumb }: {
 				}, 'value', 'next', next.id, ...breadcrumb)
 			}
 
-			return <Field field={next} key={next.id}
-				data={data?.value?.next?.[next.id]}
-				update={updateNext} breadcrumb={[...breadcrumb, next.id]} />
+			return <div style={showNext ? undefined : { display: 'none' }} key={next.id}>
+				<Field field={next}
+					data={data?.value?.next?.[next.id]}
+					update={updateNext} breadcrumb={[...breadcrumb, next.id]} />
+			</div>
 		})}
 	</div>
 }
@@ -300,25 +317,29 @@ function MultiSelectField({ field, data, update, disabled, breadcrumb, hideHeade
 	data?: FormMultiSelectFieldData, update: UpdateMultiSelectFieldFunc,
 	disabled: boolean, breadcrumb: string[], hideHeader?: boolean
 }) {
-	let selectArgs: FormFieldSelectArgs = {}
+	const [selectArgs, setSelectArgs] = useState<FormFieldSelectArgs>({});
+	const struct = useContext(AnatomStructDataContext)
+	const bodyContext = useContext(BodyContextProvider)
 
-	// TODO: rivedere questa parte degli argomenti programmabili
-	if (typeof field.selectArgs === 'string') {
-		try {
-			const struct = useContext(AnatomStructDataContext)
-			const bodyContext = useContext(BodyContextProvider)
-			if (!struct || !bodyContext) {
-				throw new Error('informazioni sul form corrente non trovate')
+	useEffect(() => {
+		// TODO: rivedere questa parte degli argomenti programmabili
+		if (typeof field.selectArgs === 'string') {
+			try {
+				if (!struct || !bodyContext) {
+					throw new Error('informazioni sul form corrente non trovate')
+				}
+
+				const f = selectArgsFunctionMap[field.selectArgs]
+				setSelectArgs(f(struct, bodyContext.body, breadcrumb))
+			} catch (e: any) {
+				enqueueSnackbar((
+					<Alert severity='error'>{e.message}</Alert>
+				))
 			}
-
-			const f = selectArgsFunctionMap[field.selectArgs]
-			selectArgs = f(struct, bodyContext.body, breadcrumb)
-		} catch (e) {
-			console.error(e)
+		} else {
+			setSelectArgs(field.selectArgs)
 		}
-	} else {
-		selectArgs = field.selectArgs
-	}
+	}, [field.selectArgs])
 
 	const options: SelectOption[] | undefined = Object.entries(selectArgs).map(([value, arg]) => ({
 		value: value,
@@ -432,7 +453,16 @@ function MultiSelectNextFields({ selected, arg, data, update, breadcrumb }: {
 	data?: FormMultiSelectFieldData, update: UpdateMultiSelectFieldFunc,
 	breadcrumb: string[],
 }) {
+	const [showNext, setShowNext] = useState(false);
+	const toggleShowNext = (ev: MouseEvent<HTMLButtonElement>) => {
+		ev.preventDefault()
+		setShowNext(!showNext)
+	}
+
 	return <div className='next-fields'>
+		<button className="toggle-show-next" data-toggled={showNext} onClick={toggleShowNext}>
+			<i className="fa-solid fa-chevron-right"></i>
+		</button>
 		{arg.next && Object.values(arg.next).map(next => {
 			const updateNext: UpdateFieldFunc = (updater, ...breadcrumb) => {
 				update(selectData => {
@@ -460,9 +490,11 @@ function MultiSelectNextFields({ selected, arg, data, update, breadcrumb }: {
 				}, 'value', 'next', selected, next.id, ...breadcrumb)
 			}
 
-			return <Field field={next} key={next.id}
-				data={data?.value?.next?.[selected]?.[next.id]}
-				update={updateNext} breadcrumb={[...breadcrumb, next.id]} />
+			return <div style={showNext ? undefined : { display: 'none' }} key={next.id}>
+				<Field field={next}
+					data={data?.value?.next?.[selected]?.[next.id]}
+					update={updateNext} breadcrumb={[...breadcrumb, next.id]} />
+			</div>
 		})}
 	</div>
 }
@@ -497,7 +529,7 @@ function ExpansionField({ field, data, update, disabled, breadcrumb, hideHeader 
 		if (!allFieldsFilled) {
 			enqueueSnackbar((
 				<Alert severity='error'>Inserire tutti i campi prima di aggiungere la riga</Alert>
-			), { key: 'add-expansion-row', preventDuplicate: false })
+			))
 			return
 		}
 
@@ -567,7 +599,10 @@ function ExpansionField({ field, data, update, disabled, breadcrumb, hideHeader 
 					}/* , 'value', 'additional' */)
 				}
 
-				return <div key={rowIdx}>
+				return <Paper sx={{ backgroundColor: '#fff7', padding: '1em' }} key={rowIdx}>
+					{!disabled && <button className="delete-row" onClick={deleteAdditional}>
+						<i className="fa-solid fa-trash"></i>
+					</button>}
 					{field.incremental && <div className="row-counter">
 						<p>{field.prefix ?? '# '}{rowIdx + 1}</p>
 					</div>}
@@ -616,19 +651,16 @@ function ExpansionField({ field, data, update, disabled, breadcrumb, hideHeader 
 
 						return <ExpansionNextFields next={field.next} dataOffset={field.expansionArgs?.length ?? 0}
 							data={data.value?.additional?.[rowIdx]} update={updateNextFields}
-							breadcrumb={[...breadcrumb, 'additional', rowIdx.toString()]}
+							breadcrumb={[...breadcrumb, 'value', 'additional', rowIdx.toString()]}
 						/>
 					})()}
-					{!disabled && <button className="delete-row" onClick={deleteAdditional}>
-						<i className="fa-solid fa-trash"></i>
-					</button>}
-				</div>
+				</Paper>
 			}) || (disabled && (
 				<Typography>Nessun valore</Typography>
 			))}
 		</div>
 		{!disabled && <div className="additional">
-			<div className="input-fields">
+			<Paper sx={{ backgroundColor: '#fff7', padding: '1em' }} className="input-fields">
 				{field.expansionArgs?.map((arg, argIdx) => {
 					const updateField: UpdateFieldFunc = (updater/* , ...breadcrumb */) => {
 						updateAdditionalTempData(data => {
@@ -649,7 +681,7 @@ function ExpansionField({ field, data, update, disabled, breadcrumb, hideHeader 
 						breadcrumb={[...breadcrumb, 'add-input', argIdx.toString()]}
 					/>
 				})}
-			</div>
+			</Paper>
 			{!disabled && <button className='add-row' onClick={addRow} disabled={disabled}>
 				Aggiungi <i className="fa-solid fa-plus"></i>
 			</button>}
@@ -662,7 +694,16 @@ function ExpansionNextFields({ next, dataOffset, data, update, breadcrumb }: {
 	data?: FormFieldData[], update: DeepUpdater<FormFieldData[]>,
 	breadcrumb: string[]
 }) {
+	const [showNext, setShowNext] = useState(false);
+	const toggleShowNext = (ev: MouseEvent<HTMLButtonElement>) => {
+		ev.preventDefault()
+		setShowNext(!showNext)
+	}
+
 	return <div className='next-fields'>
+		<button className="toggle-show-next" data-toggled={showNext} onClick={toggleShowNext}>
+			<i className="fa-solid fa-chevron-right"></i>
+		</button>
 		{next.map((field, nextIdx) => {
 			const offset = dataOffset + nextIdx
 
@@ -683,10 +724,12 @@ function ExpansionNextFields({ next, dataOffset, data, update, breadcrumb }: {
 				}, offset.toString(), ...breadcrumb)
 			}
 
-			return <Field field={field} key={offset}
-				data={data?.[offset]}
-				update={updateNext}
-				breadcrumb={[...breadcrumb, offset.toString()]} />
+			return <div style={showNext ? undefined : { display: 'none' }} key={offset}>
+				<Field field={field}
+					data={data?.[offset]}
+					update={updateNext}
+					breadcrumb={[...breadcrumb, offset.toString()]} />
+			</div>
 		})}
 	</div>
 }
