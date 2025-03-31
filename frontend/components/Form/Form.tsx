@@ -1,6 +1,6 @@
 import './Form.css'
 
-import { createContext, SyntheticEvent, useState } from 'react'
+import { createContext, MouseEvent, SyntheticEvent, useState } from 'react'
 import { FormSectionTemplate, FormData, FormSectionData } from '../../../models/Form'
 import { Field, UpdateFieldFunc } from './Field'
 import { Carousel } from '../UI/Carousel'
@@ -144,6 +144,12 @@ export function FormSection({ section, data, update }: {
 	section: FormSectionTemplate, data: FormSectionData,
 	update: DeepUpdater<FormSectionData>
 }) {
+	const [showImages, setShowImages] = useState(true);
+	const toggleShowImages = (ev: MouseEvent<HTMLButtonElement>) => {
+		ev.preventDefault()
+		setShowImages(!showImages)
+	}
+	
 	const starters = section.starters.map(starter => {
 		// updateSection è la funzione di produzione sullo stato per la sezione specifica della pagina
 		const updateStarter: UpdateFieldFunc = (updater, ...breadcrumb) => {
@@ -208,12 +214,15 @@ export function FormSection({ section, data, update }: {
 
 	return <div className="form-section">
 		<h3>{section.title}</h3>
-		<div className="split">
+		<div className="section-split">
 			<div className="container container-start container-align-start">
 				{starters}
 			</div>
+			<button className="toggle-show-images" data-toggled={showImages} onClick={toggleShowImages}>
+				<i className="fa-solid fa-chevron-left"></i>
+			</button>
 			<div className="container">
-				<div className="images">
+				<div className="images" style={showImages ? undefined : { display: 'none' }}>
 					<Carousel>
 						{section.images?.map((image, imageIdx) => {
 							return <div className="image" key={imageIdx}>

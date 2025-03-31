@@ -41,6 +41,7 @@
 	min-height: 5em;
 	white-space: pre;
 	overflow-wrap: normal;
+	max-width: 100%;
 }
 .field.text-field textarea::-webkit-scrollbar {
 	background-color: transparent;
@@ -103,9 +104,10 @@
 }
 
 .field .next-fields .toggle-show-next {
-	padding: .2em .6em;
+	font-size: .6em;
+	padding: .2em .4em;
 	transition: transform .3s;
-	background-color: rgba(var(--primary-color), .6);
+	background-color: rgba(var(--primary-color), .2);
 }
 .field .next-fields .toggle-show-next > i {
 	transition: transform .3s;

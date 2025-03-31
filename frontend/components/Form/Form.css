@@ -15,7 +15,29 @@
 	margin-bottom: 1em;
 }
 
+.form-section .section-split {
+	display: flex;
+}
+.form-section .section-split > :first-child {
+	flex-grow: 1;
+}
+
+.form-section .toggle-show-images {
+	font-size: .6em;
+	padding: .2em .4em;
+	transition: transform .3s;
+	background-color: rgba(var(--primary-color), .2);
+}
+.form-section .toggle-show-images>i {
+	transition: transform .3s;
+}
+.form-section .toggle-show-images[data-toggled=true]>i {
+	transform: rotate(180deg);
+}
+
 .form-section .images {
+	min-width: 200px;
+	max-width: 350px;
 	background-color: rgba(var(--primary-color), .1);
 	padding: 1em .5em;
 	height: fit-content;
