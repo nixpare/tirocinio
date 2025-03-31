@@ -7,109 +7,136 @@ const atlanteCentriImg = '/images/atlante_centri.png';
 const atlanteSettoriImg = '/images/atlante_settori.png';
 
 const nextCentri_A_B: FormSelectFieldTemplate = {
+	id: 'Stato',
 	type: 'select',
 	header: 'Stato',
 	selectArgs: {
 		'assente_per_immaturità': {
+			value: 'assente_per_immaturità',
 			display: 'Assente per Immaturità',
-			next: [{ type: 'text', header: 'Commenti' }]
+			next: {
+				'Commenti' :{ id: 'Commenti', type: 'text', header: 'Commenti' }
+			}
 		},
 		'assente_per_tafonomia': {
+			value: 'assente_per_tafonomia',
 			display: 'Assente per Tafonomia',
-			next: [{ type: 'text', header: 'Commenti' }]
+			next: {
+				'Commenti' :{ id: 'Commenti', type: 'text', header: 'Commenti' }
+			}
 		},
 		'assente_non_valutabile': {
+			value: 'assente_non_valutabile',
 			display: 'Assente non valutabile',
-			next: [{ type: 'text', header: 'Commenti' }]
+			next: {
+				'Commenti' :{ id: 'Commenti', type: 'text', header: 'Commenti' }
+			}
 		},
 		'presente_fusione_non_valutabile': {
+			value: 'presente_fusione_non_valutabile',
 			display: 'Presente ma fusione non valutabile',
-			next: [{ type: 'text', header: 'Commenti' }]
+			next: {
+				'Commenti' :{ id: 'Commenti', type: 'text', header: 'Commenti' }
+			}
 		},
 		'presente_non_fuso': {
+			value: 'presente_non_fuso',
 			display: 'Presente non fuso',
-			next: [
-				{ type: 'number', header: 'Lunghezza massima (mm)' },
-				{ type: 'deduction', header: 'Fazekas (1978)', deductionID: 'atlante_fusione_fazekas_1978' },
-				{ type: 'text', header: 'Commenti' }
-			]
+			next: {
+				'Lunghezza massima (mm)': { id: 'Lunghezza massima (mm)', type: 'number', header: 'Lunghezza massima (mm)' },
+				'Fazekas (1978)': { id: 'Fazekas (1978)', type: 'deduction', header: 'Fazekas (1978)', deductionID: 'atlante_fusione_fazekas_1978' },
+				'Commenti': { id: 'Commenti', type: 'text', header: 'Commenti' }
+			}
 		},
 		'presente_in_fusione': {
+			value: 'presente_in_fusione',
 			display: 'Presente in fusione',
-			next: [{ type: 'text', header: 'Commenti' }]
+			next: {
+				'Commenti' :{ id: 'Commenti', type: 'text', header: 'Commenti' }
+			}
 		},
 		'presente_fuso': {
+			value: 'presente_fuso',
 			display: 'Presente fuso',
-			next: [{ type: 'text', header: 'Commenti' }]
+			next: {
+				'Commenti' :{ id: 'Commenti', type: 'text', header: 'Commenti' }
+			}
 		}
 	}
 }
 
-const nextCentri_C: FormFieldTemplate[] = [
-	{
+const nextCentri_C: Record<string, FormFieldTemplate> = {
+	'Stato': {
+		id: 'Stato',
 		type: 'select',
 		header: 'Stato',
 		selectArgs: {
-			'assente_per_immaturità': { display: 'Assente per Immaturità' },
-			'assente_per_tafonomia': { display: 'Assente per Tafonomia' },
-			'assente_non_valutabile': { display: 'Assente non valutabile' },
-			'presente_fusione_non_valutabile': { display: 'Presente ma fusione non valutabile' },
-			'presente_non_fuso': { display: 'Presente non fuso' },
-			'presente_in_fusione': { display: 'Presente in fusione' },
-			'presente_fuso': { display: 'Presente fuso' }
+			'assente_per_immaturità': { value: 'assente_per_immaturità', display: 'Assente per Immaturità' },
+			'assente_per_tafonomia': { value: 'assente_per_tafonomia', display: 'Assente per Tafonomia' },
+			'assente_non_valutabile': { value: 'assente_non_valutabile', display: 'Assente non valutabile' },
+			'presente_fusione_non_valutabile': { value: 'presente_fusione_non_valutabile', display: 'Presente ma fusione non valutabile' },
+			'presente_non_fuso': { value: 'presente_non_fuso', display: 'Presente non fuso' },
+			'presente_in_fusione': { value: 'presente_in_fusione', display: 'Presente in fusione' },
+			'presente_fuso': { value: 'presente_fuso', display: 'Presente fuso' }
 		}
 	},
-	{ type: 'text', header: 'Commenti' }
-]
+	'Commenti': { id: 'Commenti', type: 'text', header: 'Commenti' }
+}
 
-const nextSettori: FormFieldTemplate[] = [
-	{
+const nextSettori: Record<string, FormFieldTemplate> = {
+	'Qualità': {
+		id: 'Qualità',
 		type: 'select',
 		header: 'Qualità',
 		selectArgs: {
-			'1-25': { display: '1 (1% - 25%)' },
-			'26-50': { display: '2 (26% - 50%)' },
-			'51-75': { display: '3 (51% - 75%)' },
-			'76-99': { display: '4 (76% - 99%)' },
-			'completo': { display: 'Completo (100%)' },
-			'completo_ma_frammentario': { display: 'Completo ma frammentario (100%)' }
+			'1-25': { value: '', display: '1 (1% - 25%)' },
+			'26-50': { value: '', display: '2 (26% - 50%)' },
+			'51-75': { value: '', display: '3 (51% - 75%)' },
+			'76-99': { value: '', display: '4 (76% - 99%)' },
+			'completo': { value: '', display: 'Completo (100%)' },
+			'completo_ma_frammentario': { value: '', display: 'Completo ma frammentario (100%)' }
 		}
 	},
-	{
+	'Quantità': {
+		id: 'Quantità',
 		type: 'select',
 		header: 'Quantità',
 		selectArgs: {
-			'0': { display: '0% of sound cortical surface' },
-			'1-24': { display: '1-24% of sound cortical surface' },
-			'25-49': { display: '25-49% of sound cortical surface' },
-			'50-74': { display: '50-74% of sound cortical surface' },
-			'75-99': { display: '75-99% of sound cortical surface' },
-			'100': { display: '100% of sound cortical surface' }
+			'0': { value: '0', display: '0% of sound cortical surface' },
+			'1-24': { value: '1-24', display: '1-24% of sound cortical surface' },
+			'25-49': { value: '25-49', display: '25-49% of sound cortical surface' },
+			'50-74': { value: '50-74', display: '50-74% of sound cortical surface' },
+			'75-99': { value: '75-99', display: '75-99% of sound cortical surface' },
+			'100': { value: '100', display: '100% of sound cortical surface' }
 		}
 	},
-	{
+	'Colore': {
+		id: 'Colore',
 		type: 'select',
 		header: 'Colore',
 		selectArgs: {
-			'marrone_marrone_scuro': { display: 'Da marrone a marrone scuro' },
-			'grigio': { display: 'Grigio' },
-			'naturale': { display: 'Naturale' },
-			'arancione_marrone': { display: 'Da arancione a marrone' },
-			'giallo_arancione': { display: 'Da giallo ad arancione' },
+			'marrone_marrone_scuro': { value: 'marrone_marrone_scuro', display: 'Da marrone a marrone scuro' },
+			'grigio': { value: 'grigio', display: 'Grigio' },
+			'naturale': { value: 'naturale', display: 'Naturale' },
+			'arancione_marrone': { value: 'arancione_marrone', display: 'Da arancione a marrone' },
+			'giallo_arancione': { value: 'giallo_arancione', display: 'Da giallo ad arancione' },
 		}
 	},
-	{
+	'Commenti': {
+		id: 'Commenti',
 		type: 'text',
 		header: 'Commenti'
 	}
-]
+}
 
 const caratteriNonMetriciNext: FormFieldTemplate = {
+	id: 'Stato',
 	type: 'select',
+	header: 'Stato',
 	selectArgs: {
-		'assente': { display: 'Assente' },
-		'non_valutabile': { display: 'Non valutabile' },
-		'presente': { display: 'Presente' }
+		'assente': { value: 'assente', display: 'Assente' },
+		'non_valutabile': { value: 'non_valutabile', display: 'Non valutabile' },
+		'presente': { value: 'presente', display: 'Presente' }
 	}
 }
 
@@ -117,6 +144,7 @@ const profiloMetodiSessoArgs: Record<string, FormFieldSelectArg> = {
 	'approccio_metrico': {
 		display: 'Approccio metrico',
 		next: [{
+			id: 'Metodo',
 			type: 'expansion',
 			header: 'Metodo',
 			expansionArgs: [

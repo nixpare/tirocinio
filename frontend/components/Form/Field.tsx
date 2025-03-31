@@ -433,12 +433,12 @@ function MultiSelectField({ field, data, update, disabled, breadcrumb, hideHeade
 					}
 
 					return <div className='container container-horiz multi-select-arg' key={sel.value}>
-						<div className='arg-display'>{selectedArg.display}</div>
-						<MultiSelectNextFields selected={sel.value} arg={selectedArg}
-							data={data} update={update} breadcrumb={[...breadcrumb, sel.value]} />
 						{!disabled && <button className="delete-row" onClick={deleteSelection}>
 							<i className="fa-solid fa-trash"></i>
 						</button>}
+						<div className='arg-display'>{selectedArg.display}</div>
+						<MultiSelectNextFields selected={sel.value} arg={selectedArg}
+							data={data} update={update} breadcrumb={[...breadcrumb, sel.value]} />
 					</div>
 				})
 			) : (

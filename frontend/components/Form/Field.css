@@ -87,6 +87,7 @@
 }
 
 .field .multi-select .arg-display {
+	font-size: 1.2em;
 	background-color: rgba(var(--primary-color), .4);
 	padding: .4em .5em;
 	border-radius: .2em;
@@ -115,16 +116,12 @@
 
 .field .multi-select .multi-select-arg .delete-row,
 .field.expansion-field .delete-row {
-	padding: 1em .8em;
+	font-size: .9em;
+	padding: .6em;
 	border-radius: .2em;
 	color: #333;
 	background-color: #b90000;
-	margin-left: auto;
-}
-
-.field.expansion-field .delete-row {
 	height: fit-content;
-	margin: .3em 0;
 }
 
 .field.expansion-field .additional {
