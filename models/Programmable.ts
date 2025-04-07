@@ -5,6 +5,7 @@ import { AnatomStructData } from './AnatomStruct';
 import { Body } from './Body';
 import { farekasAtlante1, farekasAtlante2 } from '../frontend/storage/deduzione';
 import { FormFieldSelectArgs } from './Form';
+import { templateFieldScopeSelector } from '../frontend/components/Template/Template';
 
 export type Programmable<T = Object> = (struct: AnatomStructData, body: Body, breadcrum: string[]) => T
 export type ProgrammableElement<T = Object> = {
@@ -59,6 +60,9 @@ export const selectArgsFunctionMap: Record<string, SelectArgsFunction> = {}
 function loadSelectArgsFunctions() {
 	// atlante
 	selectArgsFunctionMap[atlantePatternLesivitàSegni.id] = atlantePatternLesivitàSegni.fn
+
+	// template
+	selectArgsFunctionMap[templateFieldScopeSelector.id] = templateFieldScopeSelector.fn
 }
 
 export function loadProgrammableFunctions() {
@@ -97,7 +101,7 @@ export function walkSetObject<T>(obj: T, set: any, query: string, split: string 
 	const value = steps.slice(0, -1).reduce<any>((prev, curr) => {
 		return prev[curr]
 	}, obj)
-	value[steps[steps.length-1]] = set
+	value[steps[steps.length - 1]] = set
 
 	return obj
 }

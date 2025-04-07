@@ -15,7 +15,8 @@ export default defineConfig({
         resolve(__dirname, 'frontend/coccige.html'),
         resolve(__dirname, 'frontend/atlante.html'),
         resolve(__dirname, 'frontend/femore.html'),
-        resolve(__dirname, 'frontend/deduzione.html')
+        resolve(__dirname, 'frontend/deduzione.html'),
+        resolve(__dirname, 'frontend/template.html')
       ]
     }
   },
