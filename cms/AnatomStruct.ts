@@ -1,7 +1,7 @@
 import { StrapiDocument, validateObject, ValidateObjectResult } from './Strapi';
 import { convertForm, StrapiSezione } from './Form';
 import { fetchQuery, headers } from './main';
-import { AnatomStruct, AnatomStructType } from '../models/AnatomStruct';
+import { AnatomStruct, AnatomStructType, isAnatomStructType } from '../models/AnatomStruct';
 
 export enum StrapiAnatomStructType {
 	Osso = 'ossa'
@@ -61,11 +61,6 @@ export function convertStrapi(doc: StrapiAnatomStruct, typ: StrapiAnatomStructTy
 	anatomStruct.form = form;
 
 	return validateObject(anatomStruct, validateAnatomStruct);
-}
-
-const anatomStructTypes: AnatomStructType[] = ['bone', 'exterior', 'viscera'];
-function isAnatomStructType(value: string): value is AnatomStructType {
-	return anatomStructTypes.includes(value as AnatomStructType);
 }
 
 function validateAnatomStruct(anatom: Partial<AnatomStruct>): anatom is AnatomStruct {

@@ -681,7 +681,7 @@ function ExpansionField({ field, data, update, disabled, breadcrumb, hideHeader 
 				<Typography>Nessun valore</Typography>
 			))}
 		</div>
-		{!disabled && <div className="additional">
+		{!disabled && field.expansionArgs != undefined && <div className="additional">
 			<Paper sx={{ backgroundColor: '#fff7', padding: '1em' }} className="input-fields">
 				{field.expansionArgs?.map((arg, argIdx) => {
 					const updateField: UpdateFieldFunc = (updater/* , ...breadcrumb */) => {

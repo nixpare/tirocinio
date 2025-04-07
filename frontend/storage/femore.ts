@@ -146,7 +146,7 @@ const profiloMetodiMorteAdultoArgs: FormFieldGenericSelectTemplate = {
 						{ id: 'Metodo', type: 'text', header: 'Nome metodo (anno)' },
 						{ id: 'Esito', type: 'text', header: 'Esito' }
 					]
-}
+				}
 			]
 		}
 	]

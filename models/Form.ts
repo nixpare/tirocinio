@@ -212,6 +212,7 @@ export type FormMultiSelectFieldValue = {
 	next?: Record<string, Record<string, FormFieldData> | undefined>
 }
 
+// TODO: convert to Record
 export type FormExpansionFieldValue = {
 	fixed?: FormFieldData[][]
 	additional?: FormFieldData[][]
