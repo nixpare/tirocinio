@@ -20,12 +20,11 @@ import {
 	FormMultiSelectFieldData,
 	FormMultiSelectFieldTemplate,
 	formFieldDataIsMultiSelect,
-	FormFieldSelectArg,
 	formFieldIsExpansion,
 	formFieldDataIsExpansion,
 	FormExpansionFieldData,
 	FormExpansionFieldTemplate,
-	FormFieldSelectArgs
+	FormFieldSelectArgs,
 } from "../../../models/Form";
 import { EditModeContext } from "./Form";
 import { deductionFunctionMap, DeductionTable, selectArgsFunctionMap } from '../../../models/Programmable';
@@ -137,6 +136,7 @@ export function Field({ field, data, update, breadcrumb, hideHeader }: {
 				disabled={!editMode} breadcrumb={breadcrumb} hideHeader={hideHeader}
 			/>
 		case formFieldIsDeduction(field):
+			console.log(deductionFunctionMap, field)
 			const deduction = deductionFunctionMap[field.deductionID];
 
 			let result: string;
@@ -173,31 +173,29 @@ function SelectField({ field, data, update, disabled, breadcrumb, hideHeader }: 
 	data?: FormSelectFieldData, update: UpdateSelectFieldFunc,
 	disabled: boolean, breadcrumb: string[], hideHeader?: boolean
 }) {
-	const [selectArgs, setSelectArgs] = useState < FormFieldSelectArgs>({});
+	let selectArgs: FormFieldSelectArgs = [];
+	
 	const struct = useContext(AnatomStructDataContext)
 	const bodyContext = useContext(BodyContextProvider)
 
-	useEffect(() => {
-		// TODO: rivedere questa parte degli argomenti programmabili
-		if (typeof field.selectArgs === 'string') {
-			try {
-				if (!struct || !bodyContext) {
-					throw new Error('informazioni sul form corrente non trovate')
-				}
-
-				const f = selectArgsFunctionMap[field.selectArgs]
-				setSelectArgs(f(struct, bodyContext.body, breadcrumb))
-			} catch (e: any) {
-				enqueueSnackbar((
-					<Alert severity='error'>{e.message}</Alert>
-				))
+	if (typeof field.selectArgs === 'string') {
+		try {
+			if (!struct || !bodyContext) {
+				throw new Error('informazioni sul form corrente non trovate')
 			}
-		} else {
-			setSelectArgs(field.selectArgs)
-		}
-	}, [field.selectArgs])
 
-	const options: SelectOption[] | undefined = Object.values(selectArgs).map(arg => ({
+			const f = selectArgsFunctionMap[field.selectArgs]
+			selectArgs = f(struct, bodyContext.body, breadcrumb)
+		} catch (e: any) {
+			enqueueSnackbar((
+				<Alert severity='error'>{e.message}</Alert>
+			))
+		}
+	} else {
+		selectArgs = field.selectArgs
+	}
+
+	const options: SelectOption[] | undefined = selectArgs.map(arg => ({
 		value: arg.value,
 		label: arg.display
 	}))
@@ -236,6 +234,16 @@ function SelectField({ field, data, update, disabled, breadcrumb, hideHeader }: 
 		})
 	}
 
+	const next: FormFieldTemplate[] = field.nextArgs?.filter(nextArg => {
+		if (data == undefined || data.value == undefined)
+			return
+
+		return nextArg.options.includes(data.value.selection)
+	}).reduce<FormFieldTemplate[]>((prev, curr) => {
+		prev.push(...curr.next)
+		return prev
+	}, []) ?? []
+
 	return <div className="field select-field">
 		<div className="select-input">
 			{!hideHeader && field.header && <p className="field-header">{field.header}</p>}
@@ -255,17 +263,17 @@ function SelectField({ field, data, update, disabled, breadcrumb, hideHeader }: 
 				)
 			)}
 		</div>
-		{data && data.value && selectArgs[data.value.selection] && (
-			<SelectNextFields arg={selectArgs[data.value.selection]}
+		{data && data.value && next.length > 0 && (
+			<SelectNextFields next={next}
 				data={data} update={update}
-				breadcrumb={[...breadcrumb, data.value.selection]}
+				breadcrumb={breadcrumb}
 			/>
 		)}
 	</div>
 }
 
-function SelectNextFields({ arg, data, update, breadcrumb }: {
-	arg: FormFieldSelectArg,
+function SelectNextFields({ next, data, update, breadcrumb }: {
+	next: FormFieldTemplate[],
 	data?: FormSelectFieldData, update: UpdateSelectFieldFunc,
 	breadcrumb: string[]
 }) {
@@ -279,10 +287,10 @@ function SelectNextFields({ arg, data, update, breadcrumb }: {
 		<button className="toggle-show-next" data-toggled={showNext} onClick={toggleShowNext}>
 			<i className="fa-solid fa-chevron-right"></i>
 		</button>
-		{arg.next != undefined && Object.values(arg.next).map(next => {
+		{next != undefined && Object.values(next).map(nextField => {
 			const updateNext: UpdateFieldFunc = (updater, ...breadcrumb) => {
 				update(selectData => {
-					if (arg.next == undefined)
+					if (next == undefined)
 						return
 
 					if (selectData == undefined || selectData.value == undefined)
@@ -292,21 +300,23 @@ function SelectNextFields({ arg, data, update, breadcrumb }: {
 						selectData.value.next = {}
 
 					if (typeof updater !== 'function') {
-						selectData.value.next[next.id] = updater
+						selectData.value.next[nextField.id] = updater
 						return
 					}
 
-					if (selectData.value.next[next.id] == undefined)
-						selectData.value.next[next.id] = { type: arg.next[next.id].type }
+					if (selectData.value.next[nextField.id] == undefined) {
+						const field = next.filter(nextEl => nextEl.id == nextField.id)[0]
+						selectData.value.next[nextField.id] = { type: field.type }
+					}
 
-					updater(selectData.value.next[next.id])
-				}, 'value', 'next', next.id, ...breadcrumb)
+					updater(selectData.value.next[nextField.id])
+				}, 'value', 'next', nextField.id, ...breadcrumb)
 			}
 
-			return <div style={showNext ? undefined : { display: 'none' }} key={next.id}>
-				<Field field={next}
-					data={data?.value?.next?.[next.id]}
-					update={updateNext} breadcrumb={[...breadcrumb, next.id]} />
+			return <div style={showNext ? undefined : { display: 'none' }} key={nextField.id}>
+				<Field field={nextField}
+					data={data?.value?.next?.[nextField.id]}
+					update={updateNext} breadcrumb={[...breadcrumb, 'value', 'next', nextField.id]} />
 			</div>
 		})}
 	</div>
@@ -317,32 +327,30 @@ function MultiSelectField({ field, data, update, disabled, breadcrumb, hideHeade
 	data?: FormMultiSelectFieldData, update: UpdateMultiSelectFieldFunc,
 	disabled: boolean, breadcrumb: string[], hideHeader?: boolean
 }) {
-	const [selectArgs, setSelectArgs] = useState<FormFieldSelectArgs>({});
+	let selectArgs: FormFieldSelectArgs = []
+
 	const struct = useContext(AnatomStructDataContext)
 	const bodyContext = useContext(BodyContextProvider)
 
-	useEffect(() => {
-		// TODO: rivedere questa parte degli argomenti programmabili
-		if (typeof field.selectArgs === 'string') {
-			try {
-				if (!struct || !bodyContext) {
-					throw new Error('informazioni sul form corrente non trovate')
-				}
-
-				const f = selectArgsFunctionMap[field.selectArgs]
-				setSelectArgs(f(struct, bodyContext.body, breadcrumb))
-			} catch (e: any) {
-				enqueueSnackbar((
-					<Alert severity='error'>{e.message}</Alert>
-				))
+	if (typeof field.selectArgs !== 'string') {
+		selectArgs = field.selectArgs
+	} else {
+		try {
+			if (!struct || !bodyContext) {
+				throw new Error('informazioni sul form corrente non trovate')
 			}
-		} else {
-			setSelectArgs(field.selectArgs)
-		}
-	}, [field.selectArgs])
 
-	const options: SelectOption[] | undefined = Object.entries(selectArgs).map(([value, arg]) => ({
-		value: value,
+			const f = selectArgsFunctionMap[field.selectArgs]
+			selectArgs = f(struct, bodyContext.body, breadcrumb)
+		} catch (e: any) {
+			enqueueSnackbar((
+				<Alert severity='error'>{e.message}</Alert>
+			))
+		}
+	}
+
+	const options: SelectOption[] | undefined = selectArgs.map(arg => ({
+		value: arg.value,
 		label: arg.display
 	}))
 
@@ -413,7 +421,7 @@ function MultiSelectField({ field, data, update, disabled, breadcrumb, hideHeade
 		<div className='multi-select'>
 			{selectedOptions.length > 0 ? (
 				selectedOptions.map((sel) => {
-					const selectedArg = selectArgs[sel.value]
+					const selectedArg = selectArgs.filter(arg => arg.value == sel.value)[0]
 					if (selectedArg == undefined)
 						return undefined
 
@@ -432,13 +440,25 @@ function MultiSelectField({ field, data, update, disabled, breadcrumb, hideHeade
 						})
 					}
 
+					const next = field.nextArgs?.filter(nextArg => {
+						if (data == undefined || data.value == undefined)
+							return
+
+						return nextArg.options.includes(selectedArg.value)
+					}).reduce<FormFieldTemplate[]>((prev, curr) => {
+						prev.push(...curr.next)
+						return prev
+					}, []) ?? []
+
 					return <div className='container container-horiz multi-select-arg' key={sel.value}>
 						{!disabled && <button className="delete-row" onClick={deleteSelection}>
 							<i className="fa-solid fa-trash"></i>
 						</button>}
 						<div className='arg-display'>{selectedArg.display}</div>
-						<MultiSelectNextFields selected={sel.value} arg={selectedArg}
-							data={data} update={update} breadcrumb={[...breadcrumb, sel.value]} />
+						{next.length > 0 && (
+							<MultiSelectNextFields selected={sel.value} next={next}
+								data={data} update={update} breadcrumb={[...breadcrumb, sel.value]} />
+						)}
 					</div>
 				})
 			) : (
@@ -448,8 +468,8 @@ function MultiSelectField({ field, data, update, disabled, breadcrumb, hideHeade
 	</div>
 }
 
-function MultiSelectNextFields({ selected, arg, data, update, breadcrumb }: {
-	selected: string, arg: FormFieldSelectArg,
+function MultiSelectNextFields({ selected, next, data, update, breadcrumb }: {
+	selected: string, next: FormFieldTemplate[],
 	data?: FormMultiSelectFieldData, update: UpdateMultiSelectFieldFunc,
 	breadcrumb: string[],
 }) {
@@ -463,10 +483,10 @@ function MultiSelectNextFields({ selected, arg, data, update, breadcrumb }: {
 		<button className="toggle-show-next" data-toggled={showNext} onClick={toggleShowNext}>
 			<i className="fa-solid fa-chevron-right"></i>
 		</button>
-		{arg.next && Object.values(arg.next).map(next => {
+		{next && Object.values(next).map(nextField => {
 			const updateNext: UpdateFieldFunc = (updater, ...breadcrumb) => {
 				update(selectData => {
-					if (arg.next == undefined)
+					if (next == undefined)
 						return
 
 					if (selectData == undefined || selectData.value == undefined)
@@ -479,21 +499,23 @@ function MultiSelectNextFields({ selected, arg, data, update, breadcrumb }: {
 						selectData.value.next[selected] = {}
 
 					if (typeof updater !== 'function') {
-						selectData.value.next[selected][next.id] = updater
+						selectData.value.next[selected][nextField.id] = updater
 						return
 					}
 
-					if (selectData.value.next[selected][next.id] == undefined)
-						selectData.value.next[selected][next.id] = { type: arg.next[next.id].type }
+					if (selectData.value.next[selected][nextField.id] == undefined) {
+						const field = next.filter(nextEl => nextEl.id == nextField.id)[0]
+						selectData.value.next[selected][nextField.id] = { type: field.type }
+					}
 
-					updater(selectData.value.next[selected][next.id])
-				}, 'value', 'next', selected, next.id, ...breadcrumb)
+					updater(selectData.value.next[selected][nextField.id])
+				}, 'value', 'next', selected, nextField.id, ...breadcrumb)
 			}
 
-			return <div style={showNext ? undefined : { display: 'none' }} key={next.id}>
-				<Field field={next}
-					data={data?.value?.next?.[selected]?.[next.id]}
-					update={updateNext} breadcrumb={[...breadcrumb, next.id]} />
+			return <div style={showNext ? undefined : { display: 'none' }} key={nextField.id}>
+				<Field field={nextField}
+					data={data?.value?.next?.[selected]?.[nextField.id]}
+					update={updateNext} breadcrumb={[...breadcrumb, 'value', 'next', selected, nextField.id]} />
 			</div>
 		})}
 	</div>
@@ -579,7 +601,7 @@ function ExpansionField({ field, data, update, disabled, breadcrumb, hideHeader 
 
 						return <Field field={field} key={fieldIdx}
 							data={data?.value?.fixed?.[rowIdx]?.[fieldIdx]} update={updateField}
-							breadcrumb={[...breadcrumb, 'fixed', rowIdx.toString(), fieldIdx.toString()]}
+							breadcrumb={[...breadcrumb, 'value', 'fixed', rowIdx.toString(), fieldIdx.toString()]}
 						/>
 					})}
 				</div>
@@ -629,7 +651,7 @@ function ExpansionField({ field, data, update, disabled, breadcrumb, hideHeader 
 
 						return <Field field={arg} key={argIdx}
 							data={additionalData[argIdx]} update={updateField}
-							breadcrumb={[...breadcrumb, 'additional', rowIdx.toString(), argIdx.toString()]}
+							breadcrumb={[...breadcrumb, 'value', 'additional', rowIdx.toString(), argIdx.toString()]}
 						/>
 					})}
 					{data?.value?.additional?.[rowIdx] && field.next && (() => {

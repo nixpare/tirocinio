@@ -1,5 +1,5 @@
 import { useImmer } from "use-immer"
-import { FormTemplate, FormData, FormFieldTemplate, FormSelectFieldTemplate, FormFieldSelectArgs, FormExpansionFieldTemplate, FormSelectFieldData } from "../../../models/Form"
+import { FormTemplate, FormData, FormFieldTemplate, FormFieldSelectArgs, FormTextFieldData } from "../../../models/Form"
 import { Body } from "../../../models/Body"
 import { Form } from "../Form/Form"
 import { SelectArgsElement, walkObject } from "../../../models/Programmable";
@@ -10,6 +10,10 @@ export function Template() {
 		templ: template,
 		sections: {
 			"template": {
+				"title": {
+					"type": "text",
+					"value": "Femore (Siding)"
+				},
 				"sections": {
 					"type": "expansion",
 					"value": {
@@ -17,7 +21,7 @@ export function Template() {
 							[
 								{
 									"type": "text",
-									"value": "Fuzione e Sviluppo"
+									"value": "Fusione, Sviluppo"
 								},
 								{
 									"type": "expansion",
@@ -25,57 +29,49 @@ export function Template() {
 										"additional": [
 											[
 												{
+													"type": "text",
+													"value": "Centri di Ossificazione"
+												},
+												{
 													"type": "select",
 													"value": {
-														"selection": "standard",
+														"selection": "multi-select",
 														"next": {
-															"header": {
-																"type": "text",
-																"value": "Nuclei di Ossificazione"
-															},
-															"type": {
-																"type": "select",
+															"select_options": {
+																"type": "expansion",
 																"value": {
-																	"selection": "select",
-																	"next": {
-																		"options": {
-																			"type": "expansion",
-																			"value": {
-																				"additional": [
-																					[
-																						{
-																							"type": "text",
-																							"value": "A"
-																						}
-																					],
-																					[
-																						{
-																							"type": "text",
-																							"value": "B"
-																						}
-																					],
-																					[
-																						{
-																							"type": "text",
-																							"value": "C"
-																						}
-																					],
-																					[
-																						{
-																							"type": "text",
-																							"value": "D"
-																						}
-																					],
-																					[
-																						{
-																							"type": "text",
-																							"value": "E"
-																						}
-																					]
-																				]
+																	"additional": [
+																		[
+																			{
+																				"type": "text",
+																				"value": "A"
 																			}
-																		}
-																	}
+																		],
+																		[
+																			{
+																				"type": "text",
+																				"value": "B"
+																			}
+																		],
+																		[
+																			{
+																				"type": "text",
+																				"value": "C"
+																			}
+																		],
+																		[
+																			{
+																				"type": "text",
+																				"value": "D"
+																			}
+																		],
+																		[
+																			{
+																				"type": "text",
+																				"value": "E"
+																			}
+																		]
+																	]
 																}
 															}
 														}
@@ -93,6 +89,10 @@ export function Template() {
 		}
 	});
 
+	/* useEffect(() => {
+		console.log(data.sections)
+	}, [data]) */
+
 	return (
 		<AnatomStructDataContext.Provider
 			//@ts-ignore
@@ -107,187 +107,151 @@ export function Template() {
 	)
 }
 
-const fieldInitiator: Record<string, FormFieldTemplate> = {
-	'header': {
-		id: 'header',
-		type: 'text',
-		header: 'Intestazione'
-	},
-	'type': {
-		id: 'type',
-		type: 'select',
-		header: 'Tipo campo',
-		selectArgs: {
-			'fixed': {
-				value: 'fixed',
-				display: 'Fisso',
-				next: {
-					'value': {
-						id: 'value',
-						type: 'text',
-						header: 'Valore'
-					}
-				}
-			},
-			'text': {
-				value: 'text',
-				display: 'Testo',
-				next: {
-					'multiline': {
-						id: 'multiline',
-						type: 'select',
-						header: 'Multilinea?',
-						selectArgs: {
-							'yes': { value: 'yes', display: 'Sì' },
-							'no': { value: 'no', display: 'No' }
-						}
-					}
-				}
-			},
-			'number': {
-				value: 'number',
-				display: 'Numero',
-				next: {
-					'min': {
-						id: 'min',
-						type: 'number',
-						header: 'Minimo',
-					},
-					'max': {
-						id: 'max',
-						type: 'number',
-						header: 'Massimo',
-					}
-				}
-			},
-			'select': {
-				value: 'select',
-				display: 'Selezione',
-				next: {
-					'options': {
-						id: 'options',
-						type: 'expansion',
-						header: 'Opzioni',
-						expansionArgs: [
-							{
-								id: 'value',
-								type: 'text',
-								header: 'Valore'
-							}
-						],
-						next: [
-							{
-								id: 'next',
-								header: 'Prossimi campi',
-								type: 'expansion',
-								expansionArgs: [] // Filled below for circular dependency
-							}
-						]
-					}
-				}
-			},
-			'multi-select': {
-				value: 'multi-select',
-				display: 'Multi-Selezione',
-				next: {
-					'options': {
-						id: 'options',
-						type: 'expansion',
-						header: 'Opzioni',
-						expansionArgs: [
-							{
-								id: 'value',
-								type: 'text',
-								header: 'Valore'
-							}
-						],
-						next: [
-							{
-								id: 'next',
-								header: 'Prossimi campi',
-								type: 'expansion',
-								expansionArgs: [] // Filled below for circular dependency
-							}
-						]
-					}
-				}
-			}
-		}
-	}
-}
-
 export const templateFieldScopeSelector: SelectArgsElement = {
 	id: 'field_scope_selector_args',
 	fn: fieldScopeSelectorArgs
 }
 
-const fieldScopeSelector: FormSelectFieldTemplate = {
-	id: 'field_scope',
-	header: 'Scope',
-	type: 'select',
-	selectArgs: templateFieldScopeSelector.id
-}
+const fieldInitiator: FormFieldTemplate[] = [
+	{
+		id: 'header',
+		type: 'text',
+		header: 'Intestazione'
+	},
+	{
+		id: 'type',
+		type: 'select',
+		header: 'Tipo campo',
+		selectArgs: [
+			{
+				value: 'fixed',
+				display: 'Fisso',
+			},
+			{
+				value: 'text',
+				display: 'Testo',
+			},
+			{
+				value: 'number',
+				display: 'Numero',
+			},
+			{
+				value: 'select',
+				display: 'Selezione',
+			},
+			{
+				value: 'multi-select',
+				display: 'Multi-Selezione',
+			}
+		],
+		nextArgs: [
+			{
+				options: ['fixed'],
+				next: [
+					{
+						id: 'value',
+						type: 'text',
+						header: 'Valore'
+					}
+				]
+			},
+			{
+				options: ['text'],
+				next: [
+					{
+						id: 'multiline',
+						type: 'select',
+						header: 'Multilinea?',
+						selectArgs: [
+							{ value: 'yes', display: 'Sì' },
+							{ value: 'no', display: 'No' }
+						]
+					}
+				]
+			},
+			{
+				options: ['number'],
+				next: [
+					{
+						id: 'min',
+						type: 'number',
+						header: 'Minimo',
+					},
+					{
+						id: 'max',
+						type: 'number',
+						header: 'Massimo',
+					}
+				]
+			},
+			{
+				options: ['select', 'multi-select'],
+				next: [
+					{
+						id: 'select_options',
+						type: 'expansion',
+						header: 'Opzioni',
+						expansionArgs: [
+							{
+								id: 'value',
+								type: 'text',
+								header: 'Valore'
+							}
+						]
+					},
+					{
+						id: 'next_fields',
+						type: 'expansion',
+						header: 'Prossimi Campi',
+						expansionArgs: [
+							{
+								id: 'values',
+								type: 'multi-select',
+								header: 'Valori',
+								selectArgs: templateFieldScopeSelector.id
+							}
+						],
+						next: [
+							{
+								id: 'next_new_fields',
+								type: 'expansion',
+								header: 'Campi',
+								expansionArgs: [] // Filled below because of recursive call
+							}
+						]
+					}
+				]
+			}
+		]
+	}
+]
+
+//@ts-ignore
+fieldInitiator[1].nextArgs[3].next[1].next[0].expansionArgs = fieldInitiator
 
 function fieldScopeSelectorArgs(struct: AnatomStructData, _: Body, breadcrumb: string[]): FormFieldSelectArgs {
 	const form = struct.form;
-	console.log(form.sections, breadcrumb)
 
-	const dependency = breadcrumb.slice(0, breadcrumb.indexOf('add-input'))
-	const fields = walkObject<FormSelectFieldData[][]>(struct.form.sections, `${dependency.join('.') }.value.additional`)
-	if (!fields) return {}
+	const commonPath = breadcrumb.slice(0, breadcrumb.lastIndexOf('next_fields'))
+	const commonObject = walkObject(form.sections, commonPath.join('.'))
+	const fields = walkObject<FormTextFieldData[][]>(commonObject, 'select_options.value.additional')
 
-	console.log(fields)
+	if (!fields) return []
 
-	return {}
-	/* const nSegni = walkObject<number>(struct.form.sections, 'lesività.lesività_segni.value.additional.length')
-	if (nSegni == undefined)
-		return {}
+	const values: FormFieldSelectArgs = fields
+		.map(field => {
+			return field[0].value as string
+		})
+		.filter(value => value != undefined)
+		.map(value => ({
+			value: value,
+			display: value // TODO: fix
+		}))
 
-	const [lesività] = struct.form.templ.sections.filter(section => section.id == 'lesività')
-	const [segni] = lesività.starters.filter(field => field.starterID == 'lesività_segni')
-	const prefix = (segni as FormExpansionFieldTemplate).prefix ?? ''
+	console.log(values)
 
-	const result: FormFieldSelectArgs = {}
-	for (let i = 0; i < nSegni; i++) {
-		const key = prefix + (i + 1)
-		result[key] = { display: key }
-	}
-
-	return result */
+	return values
 }
-
-const newFieldsTemplate: FormExpansionFieldTemplate = {
-	id: 'new_fields',
-	type: 'expansion',
-	header: 'Nuovi Campi',
-	expansionArgs: [
-		{
-			id: 'new_field',
-			type: 'select',
-			header: 'Nuovo Campo',
-			selectArgs: {
-				'standard': {
-					value: 'standard',
-					display: 'Standard',
-					next: fieldInitiator
-				},
-				'extended': {
-					value: 'extended',
-					display: 'Esteso',
-					next: {
-						[fieldScopeSelector.id]: fieldScopeSelector,
-						...fieldInitiator
-					}
-				}
-			}
-		}
-	]
-}
-
-//@ts-ignore
-fieldInitiator['type'].selectArgs['select'].next['options'].next[0].expansionArgs = [newFieldsTemplate]
-//@ts-ignore
-fieldInitiator['type'].selectArgs['multi-select'].next['options'].next[0].expansionArgs = [newFieldsTemplate]
 
 const template: FormTemplate = {
 	title: 'Template',
@@ -314,8 +278,10 @@ const template: FormTemplate = {
 					],
 					next: [
 						{
-							...newFieldsTemplate,
+							id: 'new_fields',
+							type: 'expansion',
 							header: 'Campi iniziali',
+							expansionArgs: fieldInitiator
 						}
 					]
 				}

@@ -78,14 +78,19 @@ export type FormNumberFieldTemplate = FormFieldBaseTemplate & {
 	min?: number
 	max?: number
 }
+export type FormFieldGenericSelectTemplate = {
+	selectArgs: FormFieldSelectArgs | string
+	nextArgs?: {
+		options: string[]
+		next: FormFieldTemplate[]
+	}[]
+}
 export type FormSelectFieldTemplate = FormFieldBaseTemplate & {
 	type: 'select'
-	selectArgs: FormFieldSelectArgs | string
-}
+} & FormFieldGenericSelectTemplate
 export type FormMultiSelectFieldTemplate = FormFieldBaseTemplate & {
 	type: 'multi-select'
-	selectArgs: FormFieldSelectArgs | string
-}
+} & FormFieldGenericSelectTemplate
 export type FormExpansionFieldTemplate = FormFieldBaseTemplate & {
 	type: 'expansion'
 	incremental?: boolean
@@ -121,16 +126,10 @@ export function formFieldIsDeduction(f: FormFieldTemplate): f is FormDeductionFi
 	return f.type == 'deduction';
 }
 
-export type FormFieldSelectArgs = Record<string, FormFieldSelectArg>
-
-/** FormFieldSelectArg rappresenta un'opzione di un campo Select */
-export type FormFieldSelectArg = {
+export type FormFieldSelectArgs = {
 	value: string
-	/** il valore mostrato in grafica */
 	display: string
-	/** i template dei campi della tabella generati alla selezione del valore sopra */
-	next?: Record<string, FormFieldTemplate>
-}
+}[]
 
 /**
  * AnatomStructState rappresenta le informazioni relative a una struttura anatomica

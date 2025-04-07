@@ -1,4 +1,4 @@
-import { FormFieldSelectArg, FormFieldTemplate } from "../../models/Form";
+import { FormFieldGenericSelectTemplate, FormFieldTemplate } from "../../models/Form";
 import { DeductionElement, DeductionResult } from "../../models/Programmable";
 import { Bone } from "../../models/AnatomStruct";
 
@@ -6,298 +6,222 @@ const femoreCentriImg = '/images/femore_centri.png'
 const femoreSettoriImg = '/images/femore_settori.png'
 const femoreMetricheImg = '/images/femore_metriche.png'
 
-const fusioneCentriNext: Record<string, FormFieldTemplate> = {
-	'Stato': {
-		id: 'Stato',
-		type: 'select',
-		header: 'Stato',
-		selectArgs: {
-			'assente_per_immaturità': { value: 'assente_per_immaturità', display: 'Assente per Immaturità' },
-			'assente_per_tafonomia': { value: 'assente_per_tafonomia', display: 'Assente per Tafonomia' },
-			'assente_non_valutabile': { value: 'assente_non_valutabile', display: 'Assente non valutabile' },
-			'presente_fusione_non_valutabile': { value: 'presente_fusione_non_valutabile', display: 'Presente ma fusione non valutabile' },
-			'presente_non_fuso': { value: 'presente_non_fuso', display: 'Presente non fuso' },
-			'presente_in_fusione': { value: 'presente_in_fusione', display: 'Presente in fusione' },
-			'presente_fuso': { value: 'presente_fuso', display: 'Presente fuso' }
-		}
-	},
-	'Commenti': {
-		id: 'Commenti',
-		type: 'text',
-		header: 'Commenti'
-	}
-}
-
-const nextSettori: Record<string, FormFieldTemplate> = {
-	'Qualità': {
-		id: 'Qualità',
-		type: 'select',
-		header: 'Qualità',
-		selectArgs: {
-			'1-25': { value: '1-25', display: '1 (1% - 25%)' },
-			'26-50': { value: '26-50', display: '2 (26% - 50%)' },
-			'51-75': { value: '51-75', display: '3 (51% - 75%)' },
-			'76-99': { value: '76-99', display: '4 (76% - 99%)' },
-			'completo': { value: 'completo', display: 'Completo (100%)' },
-			'completo_ma_frammentario': { value: 'completo_ma_frammentario', display: 'Completo ma frammentario (100%)' }
-		}
-	},
-	'Quantità': {
-		id: 'Quantità',
-		type: 'select',
-		header: 'Quantità',
-		selectArgs: {
-			'0': { value: '0', display: '0% of sound cortical surface' },
-			'1-24': { value: '1-24', display: '1-24% of sound cortical surface' },
-			'25-49': { value: '25-49', display: '25-49% of sound cortical surface' },
-			'50-74': { value: '50-74', display: '50-74% of sound cortical surface' },
-			'75-99': { value: '75-99', display: '75-99% of sound cortical surface' },
-			'100': { value: '100', display: '100% of sound cortical surface' }
-		}
-	},
-	'Colore': {
-		id: 'Colore',
-		type: 'select',
-		header: 'Colore',
-		selectArgs: {
-			'marrone_marrone_scuro': { value: 'marrone_marrone_scuro', display: 'Da marrone a marrone scuro' },
-			'grigio': { value: 'grigio', display: 'Grigio' },
-			'naturale': { value: 'naturale', display: 'Naturale' },
-			'arancione_marrone': { value: 'arancione_marrone', display: 'Da arancione a marrone' },
-			'giallo_arancione': { value: 'giallo_arancione', display: 'Da giallo ad arancione' },
-		}
-	},
-	'Commenti': {
-		id: 'Commenti',
-		type: 'text',
-		header: 'Commenti'
-	}
-}
-
 const caratteriNonMetriciNext: FormFieldTemplate = {
 	id: 'Stato',
 	type: 'select',
 	header: 'Stato',
-	selectArgs: {
-		'assente': { value: 'assente', display: 'Assente' },
-		'non_valutabile': { value: 'non_valutabile', display: 'Non valutabile' },
-		'presente': { value: 'presente', display: 'Presente' }
-	}
+	selectArgs: [
+		{ value: 'assente', display: 'Assente' },
+		{ value: 'non_valutabile', display: 'Non valutabile' },
+		{ value: 'presente', display: 'Presente' }
+	]
 }
 
-const profiloMetodiSessoArgs: Record<string, FormFieldSelectArg> = {
-	'approccio_metrico': {
-		value: 'approccio_metrico',
-		display: 'Approccio metrico',
-		next: {
-			'Metodo': {
-				id: 'Metodo',
-				type: 'expansion',
-				header: 'Metodo',
-				fixed: [
-					[
-						{ id: 'Metodo', type: 'fixed', header: 'Metodo', value: 'Purkait (2003)' },
-						{ id: 'Esito', type: 'deduction', header: 'Esito', deductionID: 'femore_purkait_2003' }
-					]
-				],
-				expansionArgs: [
-					{ id: 'Metodo', type: 'text', header: 'Nome metodo (anno)' },
-					{
-						id: 'Esito',
-						type: 'select',
-						header: 'Esito',
-						selectArgs: {
-							'm': { value: 'm', display: 'M' },
-							's': { value: 's', display: 'S' },
-							'incerto': { value: 'incerto', display: 'Incerto' },
-							'nd': { value: 'nd', display: 'N/D' }
+const profiloMetodiSessoArgs: FormFieldGenericSelectTemplate = {
+	selectArgs: [
+		{ value: 'approccio_metrico', display: 'Approccio metrico' },
+		{ value: 'approccio_morfologico', display: 'Approccio morfologico' }
+	],
+	nextArgs: [
+		{
+			options: ['approccio_metrico'],
+			next: [
+				{
+					id: 'Metodo',
+					type: 'expansion',
+					header: 'Metodo',
+					fixed: [
+						[
+							{ id: 'Metodo', type: 'fixed', header: 'Metodo', value: 'Purkait (2003)' },
+							{ id: 'Esito', type: 'deduction', header: 'Esito', deductionID: 'femore_purkait_2003' }
+						]
+					],
+					expansionArgs: [
+						{ id: 'Metodo', type: 'text', header: 'Nome metodo (anno)' },
+						{
+							id: 'Esito',
+							type: 'select',
+							header: 'Esito',
+							selectArgs: [
+								{ value: 'm', display: 'M' },
+								{ value: 's', display: 'S' },
+								{ value: 'incerto', display: 'Incerto' },
+								{ value: 'nd', display: 'N/D' }
+							]
 						}
-					}
-				]
-			}
-		}
-	},
-	'approccio_morfologico': {
-		value: 'approccio_morfologico',
-		display: 'Approccio morfologico',
-		next: {
-			'Metodo': {
-				id: 'Metodo',
-				type: 'expansion',
-				header: 'Metodo',
-				expansionArgs: [
-					{ id: 'Metodo', type: 'text', header: 'Nome metodo (anno)' },
-					{
-						id: 'Esito',
-						type: 'select',
-						header: 'Esito',
-						selectArgs: {
-							'm': { value: 'm', display: 'M' },
-							's': { value: 's', display: 'S' },
-							'incerto': { value: 'incerto', display: 'Incerto' },
-							'nd': { value: 'nd', display: 'N/D' }
+					]
+				}
+			]
+		},
+		{
+			options: ['approccio_morfologico'],
+			next: [
+				{
+					id: 'Metodo',
+					type: 'expansion',
+					header: 'Metodo',
+					expansionArgs: [
+						{ id: 'Metodo', type: 'text', header: 'Nome metodo (anno)' },
+						{
+							id: 'Esito',
+							type: 'select',
+							header: 'Esito',
+							selectArgs: [
+								{ value: 'm', display: 'M' },
+								{ value: 's', display: 'S' },
+								{ value: 'incerto', display: 'Incerto' },
+								{ value: 'nd', display: 'N/D' }
+							]
 						}
-					}
-				]
-			}
+					]
+				}
+			]
 		}
-	}
+	]
 }
 
-const profiloMetodiMorteSubadultoArgs: Record<string, FormFieldSelectArg> = {
-	'approccio_metrico': {
-		value: 'approccio_metrico',
-		display: 'Approccio metrico',
-		next: {
-			'Metodo': {
-				id: 'Metodo',
-				type: 'expansion',
-				header: 'Metodo',
-				fixed: [
-					[
-						{ id: 'Metodo', type: 'fixed', header: 'Nome metodo', value: 'Fazekas (1978)' },
-						{ id: 'Esito', type: 'deduction', header: 'Esito', deductionID: 'femore_fusione_fazekas_1978' }
-					]
-				],
-				expansionArgs: [
-					{ id: 'Metodo', type: 'text', header: 'Nome metodo (anno)' },
-					{ id: 'Esito', type: 'text', header: 'Esito' }
-				]
-			}
+const profiloMetodiMorteSubadultoArgs: FormFieldGenericSelectTemplate = {
+	selectArgs: [
+		{
+			value: 'approccio_metrico',
+			display: 'Approccio metrico',
+		},
+		{
+			value: 'approccio_morfologico',
+			display: 'Approccio morfologico',
 		}
-	},
-	'approccio_morfologico': {
-		value: 'approccio_morfologico',
-		display: 'Approccio morfologico',
-		next: {
-			'Metodo': {
-				id: 'Metodo',
-				type: 'expansion',
-				header: 'Metodo',
-				fixed: [
-					[
-						{ id: 'Metodo', type: 'fixed', header: 'Nome metodo', value: 'Scheuer & Black 2000' },
-						{ id: 'Esito', type: 'deduction', header: 'Esito generale', deductionID: 'femore_scheuer_&_black_2000' }
+	],
+	nextArgs: [
+		{
+			options: ['approccio_metrico'],
+			next: [
+				{ id: 'Metodo', type: 'fixed', header: 'Nome metodo', value: 'Fazekas (1978)' },
+				{ id: 'Esito', type: 'deduction', header: 'Esito', deductionID: 'femore_fusione_fazekas_1978' }
+			]
+		},
+		{
+			options: ['approccio_morfologico'],
+			next: [
+				{ id: 'Metodo', type: 'fixed', header: 'Nome metodo', value: 'Scheuer & Black 2000' },
+				{ id: 'Esito', type: 'deduction', header: 'Esito generale', deductionID: 'femore_scheuer_&_black_2000' }
+			]
+		},
+		{
+			options: ['approccio_metrico', 'approccio_morfologico'],
+			next: [
+				{
+					id: 'Metodo',
+					type: 'expansion',
+					header: 'Metodo',
+					expansionArgs: [
+						{ id: 'Metodo', type: 'text', header: 'Nome metodo (anno)' },
+						{ id: 'Esito', type: 'text', header: 'Esito' }
 					]
-				],
-				expansionArgs: [
-					{ id: 'Metodo', type: 'text', header: 'Nome metodo (anno)' },
-					{ id: 'Esito', type: 'text', header: 'Esito' }
-				]
-			}
+				}
+			]
 		}
-	}
+	]
 }
 
-const profiloMetodiMorteAdultoArgs: Record<string, FormFieldSelectArg> = {
-	'approccio_metrico': {
-		value: 'approccio_metrico',
-		display: 'Approccio metrico',
-		next: {
-			'Metodo': {
-				id: 'Metodo',
-				type: 'expansion',
-				header: 'Metodo',
-				expansionArgs: [
-					{ id: 'Metodo', type: 'text', header: 'Nome metodo (anno)' },
-					{ id: 'Esito', type: 'text', header: 'Esito' }
-				]
-			}
+const profiloMetodiMorteAdultoArgs: FormFieldGenericSelectTemplate = {
+	selectArgs: [
+		{
+			value: 'approccio_metrico',
+			display: 'Approccio metrico',
+		},
+		{
+			value: 'approccio_morfologico',
+			display: 'Approccio morfologico',
 		}
-	},
-	'approccio_morfologico': {
-		value: 'approccio_morfologico',
-		display: 'Approccio morfologico',
-		next: {
-			'Metodo': {
-				id: 'Metodo',
-				type: 'expansion',
-				header: 'Metodo',
-				expansionArgs: [
-					{ id: 'Metodo', type: 'text', header: 'Nome metodo (anno)' },
-					{ id: 'Esito', type: 'text', header: 'Esito' }
-				]
-			}
+	],
+	nextArgs: [
+		{
+			options: ['approccio_metrico', 'approccio_morfologico'],
+			next: [
+				{
+					id: 'Metodo',
+					type: 'expansion',
+					header: 'Metodo',
+					expansionArgs: [
+						{ id: 'Metodo', type: 'text', header: 'Nome metodo (anno)' },
+						{ id: 'Esito', type: 'text', header: 'Esito' }
+					]
+}
+			]
 		}
-	}
+	]
 }
 
-const profiloMetodiOrigineGeoArgs: Record<string, FormFieldSelectArg> = {
-	'approccio_metrico': {
-		value: 'approccio_metrico',
-		display: 'Approccio metrico',
-		next: {
-			'Metodo': {
-				id: 'Metodo',
-				type: 'expansion',
-				header: 'Metodo',
-				fixed: [
-					[
-						{ id: 'Metodo', type: 'fixed', header: 'Nome metodo', value: 'Fordisc' },
-						{ id: 'Esito', type: 'deduction', header: 'Esito', deductionID: 'femore_fordisc' }
+const profiloMetodiOrigineGeoArgs: FormFieldGenericSelectTemplate = {
+	selectArgs: [
+		{
+			value: 'approccio_metrico',
+			display: 'Approccio metrico',
+		},
+		{
+			value: 'approccio_morfologico',
+			display: 'Approccio morfologico',
+		}
+	],
+	nextArgs: [
+		{
+			options: ['approccio_metrico'],
+			next: [
+				{ id: 'Metodo', type: 'fixed', header: 'Nome metodo', value: 'Fordisc' },
+				{ id: 'Esito', type: 'deduction', header: 'Esito', deductionID: 'femore_fordisc' }
+			]
+		},
+		{
+			options: ['approccio_metrico', 'approccio_morfologico'],
+			next: [
+				{
+					id: 'Metodo',
+					type: 'expansion',
+					header: 'Metodo',
+					expansionArgs: [
+						{ id: 'Metodo', type: 'text', header: 'Nome metodo (anno)' },
+						{ id: 'Esito', type: 'text', header: 'Esito' }
 					]
-				],
-				expansionArgs: [
-					{ id: 'Metodo', type: 'text', header: 'Nome metodo (anno)' },
-					{ id: 'Esito', type: 'text', header: 'Esito' }
-				]
-			}
+				}
+			]
 		}
-	},
-	'approccio_morfologico': {
-		value: 'approccio_morfologico',
-		display: 'Approccio morfologico',
-		next: {
-			'Metodo': {
-				id: 'Metodo',
-				type: 'expansion',
-				header: 'Metodo',
-				expansionArgs: [
-					{ id: 'Metodo', type: 'text', header: 'Nome metodo (anno)' },
-					{ id: 'Esito', type: 'text', header: 'Esito' }
-				]
-			}
-		}
-	}
+	]
 }
 
-const profiloMetodiStaturaArgs: Record<string, FormFieldSelectArg> = {
-	'approccio_metrico': {
-		value: '',
-		display: 'Approccio metrico',
-		next: {
-			'Metodo': {
-				id: 'Metodo',
-				type: 'expansion',
-				header: 'Metodo',
-				fixed: [
-					[
-						{ id: 'Metodo', type: 'fixed', header: 'Nome metodo', value: 'Wilson (2010)' },
-						{ id: 'Esito', type: 'deduction', header: 'Esito', deductionID: 'femore_wilson_2010' }
+const profiloMetodiStaturaArgs: FormFieldGenericSelectTemplate = {
+	selectArgs: [
+		{
+			value: 'approccio_metrico',
+			display: 'Approccio metrico',
+		},
+		{
+			value: 'approccio_morfologico',
+			display: 'Approccio morfologico',
+		}
+	],
+	nextArgs: [
+		{
+			options: ['approccio_metrico'],
+			next: [
+				{ id: 'Metodo', type: 'fixed', header: 'Nome metodo', value: 'Wilson (2010)' },
+				{ id: 'Esito', type: 'deduction', header: 'Esito', deductionID: 'femore_wilson_2010' }
+			]
+		},
+		{
+			options: ['approccio_metrico', 'approccio_morfologico'],
+			next: [
+				{
+					id: 'Metodo',
+					type: 'expansion',
+					header: 'Metodo',
+					expansionArgs: [
+						{ id: 'Metodo', type: 'text', header: 'Nome metodo (anno)' },
+						{ id: 'Esito', type: 'number', header: 'Esito (cm)', min: 0, max: 250 }
 					]
-				],
-				expansionArgs: [
-					{ id: 'Metodo', type: 'text', header: 'Nome metodo (anno)' },
-					{ id: 'Esito', type: 'number', header: 'Esito (cm)', min: 0, max: 250 }
-				]
-			}
+				}
+			]
 		}
-	},
-	'approccio_morfologico': {
-		value: '',
-		display: 'Approccio morfologico',
-		next: {
-			'Metodo': {
-				id: 'Metodo',
-				type: 'expansion',
-				header: 'Metodo',
-				expansionArgs: [
-					{ id: 'Metodo', type: 'text', header: 'Nome metodo (anno)' },
-					{ id: 'Esito', type: 'number', header: 'Esito (cm)', min: 0, max: 250 }
-				]
-			}
-		}
-	}
+	]
 }
 
 export const femore: Bone = {
@@ -315,92 +239,103 @@ export const femore: Bone = {
 						id: 'centri',
 						type: 'multi-select',
 						header: 'Centri di Ossificazione',
-						selectArgs: {
-							'a': {
-								value: 'a',
-								display: 'A',
-								next: {
-									'Stato': {
+						selectArgs: [
+							{ value: 'a', display: 'A' },
+							{ value: 'b', display: 'B' },
+							{ value: 'c', display: 'C' },
+							{ value: 'd', display: 'D' },
+							{ value: 'e', display: 'E' },
+						],
+						nextArgs: [
+							{
+								options: ['a'],
+								next: [
+									{
 										id: 'Stato',
 										type: 'select',
 										header: 'Stato',
-										selectArgs: {
-											'assente_per_immaturità': {
+										selectArgs: [
+											{
 												value: 'assente_per_immaturità',
 												display: 'Assente per Immaturità',
-												next: {
-													'Commenti': { id: 'Commenti', type: 'text', header: 'Commenti', multiline: true }
-												}
 											},
-											'assente_per_tafonomia': {
+											{
 												value: 'assente_per_tafonomia',
 												display: 'Assente per Tafonomia',
-												next: {
-													'Commenti': { id: 'Commenti', type: 'text', header: 'Commenti', multiline: true }
-												}
 											},
-											'assente_non_valutabile': {
+											{
 												value: 'assente_non_valutabile',
 												display: 'Assente non valutabile',
-												next: {
-													'Commenti': { id: 'Commenti', type: 'text', header: 'Commenti', multiline: true }
-												}
 											},
-											'presente_fusione_non_valutabile': {
+											{
 												value: 'presente_fusione_non_valutabile',
 												display: 'Presente ma fusione non valutabile',
-												next: {
-													'Commenti': { id: 'Commenti', type: 'text', header: 'Commenti', multiline: true }
-												}
 											},
-											'presente_non_fuso': {
+											{
 												value: 'presente_non_fuso',
 												display: 'Presente non fuso',
-												next: {
-													'Lunghezza massima (mm)': { id: 'Lunghezza massima (mm)', type: 'number', header: 'Lunghezza massima (mm)' },
-													'Fazekas (1978)': { id: 'Fazekas (1978)', type: 'deduction', header: 'Fazekas (1978)', deductionID: 'femore_fazekas_1978' },
-													'Commenti': { id: 'Commenti', type: 'text', header: 'Commenti', multiline: true }
-												}
 											},
-											'presente_in_fusione': {
+											{
 												value: 'presente_in_fusione',
 												display: 'Presente in fusione',
-												next: {
-													'Commenti': { id: 'Commenti', type: 'text', header: 'Commenti', multiline: true }
-												}
 											},
-											'presente_fuso': {
+											{
 												value: 'presente_fuso',
 												display: 'Presente fuso',
-												next: {
-													'Commenti': { id: 'Commenti', type: 'text', header: 'Commenti', multiline: true }
-												}
 											}
-										}
+										],
+										nextArgs: [
+											{
+												options: ['presente_non_fuso'],
+												next: [
+													{
+														id: 'Lunghezza massima (mm)',
+														type: 'number',
+														header: 'Lunghezza massima (mm)'
+													},
+													{
+														id: 'Fazekas (1978)',
+														type: 'deduction',
+														header: 'Fazekas (1978)',
+														deductionID: 'femore_fusione_fazekas_1978'
+													}
+												]
+											}
+										]
 									}
-								}
+								]
 							},
-							'b': {
-								value: 'b',
-								display: 'B',
-								next: fusioneCentriNext
+							{
+								options: ['b', 'c', 'd', 'e'],
+								next: [
+									{
+										id: 'Stato',
+										type: 'select',
+										header: 'Stato',
+										selectArgs: [
+											{ value: 'assente_per_immaturità', display: 'Assente per Immaturità' },
+											{ value: 'assente_per_tafonomia', display: 'Assente per Tafonomia' },
+											{ value: 'assente_non_valutabile', display: 'Assente non valutabile' },
+											{ value: 'presente_fusione_non_valutabile', display: 'Presente ma fusione non valutabile' },
+											{ value: 'presente_non_fuso', display: 'Presente non fuso' },
+											{ value: 'presente_in_fusione', display: 'Presente in fusione' },
+											{ value: 'presente_fuso', display: 'Presente fuso' }
+										]
+									}
+								]
 							},
-							'c': {
-								value: 'c',
-								display: 'C',
-								next: fusioneCentriNext
-							},
-							'd': {
-								value: 'd',
-								display: 'D',
-								next: fusioneCentriNext
-							},
-							'e': {
-								value: 'e',
-								display: 'E',
-								next: fusioneCentriNext
+							{
+								options: ['a', 'b', 'c', 'd', 'e'],
+								next: [
+									{
+										id: 'Commenti',
+										type: 'text',
+										header: 'Commenti',
+										multiline: true
+									}
+								]
 							}
-						}
+						]
 					}
 				]
 			},
@@ -413,75 +348,81 @@ export const femore: Bone = {
 						id: 'settori',
 						type: 'multi-select',
 						header: 'Settori',
-						selectArgs: {
-							'1': {
-								value: '1',
-								display: '1',
-								next: nextSettori
-							},
-							'2': {
-								value: '2',
-								display: '2',
-								next: nextSettori
-							},
-							'3': {
-								value: '3',
-								display: '3',
-								next: nextSettori
-							},
-							'4': {
-								value: '4',
-								display: '4',
-								next: nextSettori
-							},
-							'5': {
-								value: '5',
-								display: '5',
-								next: nextSettori
-							},
-							'6': {
-								value: '6',
-								display: '6',
-								next: nextSettori
-							},
-							'7': {
-								value: '7',
-								display: '7',
-								next: nextSettori
-							},
-							'8': {
-								value: '8',
-								display: '8',
-								next: nextSettori
-							},
-							'9': {
-								value: '9',
-								display: '9',
-								next: nextSettori
-							},
-							'10': {
-								value: '10',
-								display: '10',
-								next: nextSettori
-							},
-							'11': {
-								value: '11',
-								display: '11',
-								next: nextSettori
+						selectArgs: [
+							{ value: '1', display: '1' },
+							{ value: '2', display: '2' },
+							{ value: '3', display: '3' },
+							{ value: '4', display: '4' },
+							{ value: '5', display: '5' },
+							{ value: '6', display: '6' },
+							{ value: '7', display: '7' },
+							{ value: '8', display: '8' },
+							{ value: '9', display: '9' },
+							{ value: '10', display: '10' },
+							{ value: '11', display: '11' }
+						],
+						nextArgs: [
+							{
+								options: ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11'],
+								next: [
+									{
+										id: 'Qualità',
+										type: 'select',
+										header: 'Qualità',
+										selectArgs: [
+											{ value: '1-25', display: '1 (1% - 25%)' },
+											{ value: '26-50', display: '2 (26% - 50%)' },
+											{ value: '51-75', display: '3 (51% - 75%)' },
+											{ value: '76-99', display: '4 (76% - 99%)' },
+											{ value: 'completo', display: 'Completo (100%)' },
+											{ value: 'completo_ma_frammentario', display: 'Completo ma frammentario (100%)' }
+										]
+									},
+									{
+										id: 'Quantità',
+										type: 'select',
+										header: 'Quantità',
+										selectArgs: [
+											{ value: '0', display: '0% of sound cortical surface' },
+											{ value: '1-24', display: '1-24% of sound cortical surface' },
+											{ value: '25-49', display: '25-49% of sound cortical surface' },
+											{ value: '50-74', display: '50-74% of sound cortical surface' },
+											{ value: '75-99', display: '75-99% of sound cortical surface' },
+											{ value: '100', display: '100% of sound cortical surface' }
+										]
+									},
+									{
+										id: 'Colore',
+										type: 'select',
+										header: 'Colore',
+										selectArgs: [
+											{ value: 'marrone_marrone_scuro', display: 'Da marrone a marrone scuro' },
+											{ value: 'grigio', display: 'Grigio' },
+											{ value: 'naturale', display: 'Naturale' },
+											{ value: 'arancione_marrone', display: 'Da arancione a marrone' },
+											{ value: 'giallo_arancione', display: 'Da giallo ad arancione' },
+										]
+									},
+									{
+										id: 'Commenti',
+										type: 'text',
+										header: 'Commenti'
+									}
+								]
 							}
-						}
+						]
 					},
 					{
 						type: 'select',
 						id: 'colore_generale',
 						header: 'Colore Generale',
-						selectArgs: {
-							'marrone_marrone_scuro': { value: 'marrone_marrone_scuro', display: 'Da marrone a marrone scuro' },
-							'grigio': { value: 'grigio', display: 'Grigio' },
-							'naturale': { value: 'naturale', display: 'Naturale' },
-							'arancione_marrone': { value: 'arancione_marrone', display: 'Da arancione a marrone' },
-							'giallo_arancione': { value: 'giallo_arancione', display: 'Da giallo ad arancione' },
-						}
+						selectArgs: [
+							{ value: 'marrone_marrone_scuro', display: 'Da marrone a marrone scuro' },
+							{ value: 'grigio', display: 'Grigio' },
+							{ value: 'naturale', display: 'Naturale' },
+							{ value: 'arancione_marrone', display: 'Da arancione a marrone' },
+							{ value: 'giallo_arancione', display: 'Da giallo ad arancione' },
+						]
 					},
 					{
 						type: 'expansion',
@@ -493,32 +434,32 @@ export const femore: Bone = {
 								id: 'Settore di appartenenza',
 								type: 'select',
 								header: 'Settore di appartenenza',
-								selectArgs: {
-									'1': { value: '1', display: '1' },
-									'2': { value: '2', display: '2' },
-									'3': { value: '3', display: '3' },
-									'4': { value: '4', display: '4' },
-									'5': { value: '5', display: '5' },
-									'6': { value: '6', display: '6' },
-									'7': { value: '7', display: '7' },
-									'8': { value: '8', display: '8' },
-									'9': { value: '9', display: '9' },
-									'10': { value: '10', display: '10' },
-									'11': { value: '11', display: '11' },
-									'nd': { value: '12', display: 'N/D' },
-								}
+								selectArgs: [
+									{ value: '1', display: '1' },
+									{ value: '2', display: '2' },
+									{ value: '3', display: '3' },
+									{ value: '4', display: '4' },
+									{ value: '5', display: '5' },
+									{ value: '6', display: '6' },
+									{ value: '7', display: '7' },
+									{ value: '8', display: '8' },
+									{ value: '9', display: '9' },
+									{ value: '10', display: '10' },
+									{ value: '11', display: '11' },
+									{ value: '12', display: 'N/D' },
+								]
 							},
 							{
 								id: 'Colore',
 								type: 'select',
 								header: 'Colore',
-								selectArgs: {
-									'marrone_marrone_scuro': { value: 'marrone_marrone_scuro', display: 'Da marrone a marrone scuro' },
-									'grigio': { value: 'grigio', display: 'Grigio' },
-									'naturale': { value: 'naturale', display: 'Naturale' },
-									'arancione_marrone': { value: 'arancione_marrone', display: 'Da arancione a marrone' },
-									'giallo_arancione': { value: 'giallo_arancione', display: 'Da giallo ad arancione' },
-								}
+								selectArgs: [
+									{ value: 'marrone_marrone_scuro', display: 'Da marrone a marrone scuro' },
+									{ value: 'grigio', display: 'Grigio' },
+									{ value: 'naturale', display: 'Naturale' },
+									{ value: 'arancione_marrone', display: 'Da arancione a marrone' },
+									{ value: 'giallo_arancione', display: 'Da giallo ad arancione' },
+								]
 							}
 						]
 					}
@@ -601,11 +542,13 @@ export const femore: Bone = {
 								header: 'Nome Misura'
 							}
 						],
-						next: [{
-							id: 'Misura (mm)',
-							type: 'number',
-							header: 'Misura (mm)'
-						}]
+						next: [
+							{
+								id: 'Misura (mm)',
+								type: 'number',
+								header: 'Misura (mm)'
+							}
+						]
 					}
 				]
 			},
@@ -643,31 +586,31 @@ export const femore: Bone = {
 						type: 'multi-select',
 						id: 'diagnosi_sesso_biologico',
 						header: 'Diagnosi di sesso biologico',
-						selectArgs: profiloMetodiSessoArgs,
+						...profiloMetodiSessoArgs
 					},
 					{
 						type: 'multi-select',
 						id: 'stima_età_alla_morte_subadulto',
 						header: 'Stima dell\'età alla morte (subadulto)',
-						selectArgs: profiloMetodiMorteSubadultoArgs,
+						...profiloMetodiMorteSubadultoArgs,
 					},
 					{
 						type: 'multi-select',
 						id: 'stima_età_alla_morte_adulto',
 						header: 'Stima dell\'età alla morte (adulto)',
-						selectArgs: profiloMetodiMorteAdultoArgs,
+						...profiloMetodiMorteAdultoArgs,
 					},
 					{
 						type: 'multi-select',
 						id: 'diagnosi_origine_biogeografica',
 						header: 'Diagnosi di origine biogeografica',
-						selectArgs: profiloMetodiOrigineGeoArgs,
+						...profiloMetodiOrigineGeoArgs,
 					},
 					{
 						type: 'multi-select',
 						id: 'stima_statura',
 						header: 'Stima della statura',
-						selectArgs: profiloMetodiStaturaArgs,
+						...profiloMetodiStaturaArgs,
 					}
 				]
 			}
