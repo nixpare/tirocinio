@@ -36,10 +36,6 @@ export function validateObject<T extends Object>(obj: Partial<T>, validate: Vali
 	return [undefined, undefined];
 }
 
-export function convertLabelToID(label: string): string {
-	return label.toLowerCase().replaceAll(' ', '_');
-}
-
 export function deepCopy<T>(a: T): T {
 	return JSON.parse(JSON.stringify(a));
 }

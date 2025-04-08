@@ -1,11 +1,12 @@
 import { Updater, useImmer } from "use-immer"
-import { FormTemplate, FormData, FormFieldTemplate, FormFieldSelectArgs, FormTextFieldData } from "../../../models/Form"
+import { FormTemplate, FormData, FormFieldSelectArgs, FormTextFieldData, FormSelectFieldData, FormTextFieldTemplate, FormSelectFieldTemplate } from "../../../models/Form"
 import { Body } from "../../../models/Body"
 import { Form } from "../Form/Form"
 import { SelectArgsElement, walkObject } from "../../../models/Programmable";
 import { AnatomStruct, AnatomStructData, AnatomStructDataContext } from "../../../models/AnatomStruct";
 import { useEffect } from "react";
 import { convertAnatomStruct } from "./conversion";
+import { convertLabelToID } from "../../../models/conversion";
 
 export function Template({ updateAnatomStruct }: {
 	updateAnatomStruct: Updater<AnatomStruct | undefined>
@@ -102,11 +103,11 @@ export function Template({ updateAnatomStruct }: {
 																				"type": "multi-select",
 																				"value": {
 																					"selections": [
-																						"A",
-																						"B",
-																						"C",
-																						"D",
-																						"E"
+																						"a",
+																						"b",
+																						"c",
+																						"d",
+																						"e"
 																					]
 																				}
 																			},
@@ -131,6 +132,89 @@ export function Template({ updateAnatomStruct }: {
 																											}
 																										}
 																									}
+																								}
+																							}
+																						]
+																					]
+																				}
+																			}
+																		]
+																	]
+																}
+															}
+														}
+													}
+												}
+											]
+										]
+									}
+								}
+							],
+							[
+								{
+									"type": "text",
+									"value": "Espansione"
+								},
+								{
+									"type": "expansion",
+									"value": {
+										"additional": [
+											[
+												{
+													"type": "text",
+													"value": "Test Espansione"
+												},
+												{
+													"type": "select",
+													"value": {
+														"selection": "expansion",
+														"next": {
+															"expansion_incremental": {
+																"type": "select",
+																"value": {
+																	"selection": "yes"
+																}
+															},
+															"expansion_prefix": {
+																"type": "text",
+																"value": "Pre"
+															},
+															"expansion_fixed": {
+																"type": "expansion",
+																"value": {
+																	"additional": [
+																		[
+																			{
+																				"type": "expansion",
+																				"value": {
+																					"additional": [
+																						[
+																							{
+																								"type": "text",
+																								"value": "Misura"
+																							},
+																							{
+																								"type": "select",
+																								"value": {
+																									"selection": "fixed",
+																									"next": {
+																										"value": {
+																											"type": "text",
+																											"value": "Misura 1"
+																										}
+																									}
+																								}
+																							}
+																						],
+																						[
+																							{
+																								"type": "text",
+																								"value": "Valore"
+																							},
+																							{
+																								"type": "select",
+																								"value": {
+																									"selection": "number"
 																								}
 																							}
 																						]
@@ -181,7 +265,8 @@ export const templateFieldScopeSelector: SelectArgsElement = {
 	fn: fieldScopeSelectorArgs
 }
 
-const fieldInitiator: FormFieldTemplate[] = [
+export type FieldInitiatorData = [FormTextFieldData, FormSelectFieldData]
+const fieldInitiator: [FormTextFieldTemplate, FormSelectFieldTemplate] = [
 	{
 		id: 'header',
 		type: 'text',
@@ -382,11 +467,9 @@ function fieldScopeSelectorArgs(struct: AnatomStructData, _: Body, breadcrumb: s
 		})
 		.filter(value => value != undefined)
 		.map(value => ({
-			value: value,
-			display: value // TODO: fix
+			value: convertLabelToID(value),
+			display: value
 		}))
-
-	console.log(values)
 
 	return values
 }

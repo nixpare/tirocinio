@@ -3,10 +3,6 @@ import { ObjectId } from "mongodb";
 import { FormTemplate, FormData } from "./Form"
 
 export type AnatomStructType = 'bone' | 'viscera' | 'exterior'
-const anatomStructTypes: AnatomStructType[] = ['bone', 'exterior', 'viscera'];
-export function isAnatomStructType(value: string): value is AnatomStructType {
-	return anatomStructTypes.includes(value as AnatomStructType);
-}
 
 export type AnatomStruct = Bone | Viscera | Exterior
 

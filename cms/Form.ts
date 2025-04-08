@@ -1,6 +1,7 @@
-import { convertLabelToID, StrapiComponent, StrapiImage, validateObject, ValidateObjectResult } from "./Strapi"
+import { StrapiComponent, StrapiImage, validateObject, ValidateObjectResult } from "./Strapi"
 import { rebuildStrapiCampoTree, StrapiCampo } from "./Field";
 import { FormFieldTemplate, FormSectionTemplate, FormTemplate } from "../models/Form";
+import { convertLabelToID } from "../models/conversion";
 import { StrapiAnatomStruct } from "./AnatomStruct";
 import { deeplog } from "./main";
 
@@ -41,7 +42,7 @@ export function convertFormSection(doc: StrapiSezione): ValidateObjectResult<For
 	if (err) throw err;
 	if (!starters) throw new Error("an unexpected error has occurred at FormSectionStarterTemplate[]");
 	section.starters = starters; */
-	section.starters = {};
+	section.starters = [];
 
 	section.images = doc.Immagine ? [doc.Immagine.url] : undefined
 

@@ -50,8 +50,8 @@ export function Form({ form, update, initialEditMode }: {
 		setSearchParams(searchParams)
 	}
 
-	const tabIdxParam = searchParams.get('tab')
-	const [tabIdx, setTabIdx] = useState(tabIdxParam ? parseInt(tabIdxParam) : 0)
+	const tabIdxParam = parseInt((searchParams.get('tab') ?? '0'))
+	const [tabIdx, setTabIdx] = useState(tabIdxParam < form.templ.sections.length ? tabIdxParam : 0)
 	const handleTabChange = (_: SyntheticEvent, newValue: number) => {
 		setTabIdx(newValue)
 
