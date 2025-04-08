@@ -1,6 +1,6 @@
 import { AnatomStruct } from "../../../models/AnatomStruct"
 import { convertLabelToID, isAnatomStructType, isFormFieldType } from "../../../models/conversion"
-import { FormData, FormExpansionFieldData, FormExpansionFieldTemplate, FormExpansionFieldValue, FormFieldData, FormFieldTemplate, FormFixedFieldTemplate, FormMultiSelectFieldData, FormMultiSelectFieldTemplate, FormNumberFieldTemplate, FormSectionTemplate, FormSelectFieldData, FormSelectFieldTemplate, FormSelectFieldValue, FormTextFieldData, FormTextFieldTemplate } from "../../../models/Form"
+import { FormData, FormDeductionFieldTemplate, FormExpansionFieldData, FormExpansionFieldTemplate, FormExpansionFieldValue, FormFieldData, FormFieldTemplate, FormFixedFieldTemplate, FormMultiSelectFieldData, FormMultiSelectFieldTemplate, FormNumberFieldTemplate, FormSectionTemplate, FormSelectFieldData, FormSelectFieldTemplate, FormSelectFieldValue, FormTextFieldData, FormTextFieldTemplate } from "../../../models/Form"
 import { FieldInitiatorData } from "./Template"
 
 export function convertAnatomStruct(form: FormData): AnatomStruct {
@@ -87,6 +87,9 @@ function convertFormField(fieldData: FieldInitiatorData): FormFieldTemplate {
 		case "expansion":
 			convertFormExpansionField(field as FormExpansionFieldTemplate, next);
 			break;
+		case "deduction":
+			convertFormDeductionField(field as FormDeductionFieldTemplate, next);
+			break;
 	}
 	
 	return field
@@ -153,8 +156,8 @@ function convertFormSelectField(field: FormSelectFieldTemplate | FormMultiSelect
 
 		const next = optionsNextData?.value?.additional?.map(field => {
 			return convertFormField(field as FieldInitiatorData)
-		})
-		if (!next) throw new Error("select field next fields not found")
+		}) ?? []
+		//if (!next) throw new Error("select field next fields not found")
 
 		return {
 			options: options,
@@ -187,4 +190,24 @@ function convertFormExpansionField(field: FormExpansionFieldTemplate, nextData: 
 			return convertFormField(field as FieldInitiatorData)
 		})
 	}) ?? []
+
+	const args = nextData['expansion_args']?.value as FormExpansionFieldValue | undefined
+	field.expansionArgs = args?.additional?.map(field => {
+		return convertFormField(field as FieldInitiatorData)
+	}) ?? []
+
+	const next = nextData['expansion_next']?.value as FormExpansionFieldValue | undefined
+	field.next = next?.additional?.map(field => {
+		return convertFormField(field as FieldInitiatorData)
+	}) ?? []
+}
+
+function convertFormDeductionField(field: FormDeductionFieldTemplate, nextData: Record<string, FormFieldData> | undefined) {
+	if (!nextData) {
+		return
+	}
+
+	const value = nextData['deduction_id']?.value as string | undefined
+	if (!value) throw new Error("deduction method id not found")
+	field.deductionID = value
 }

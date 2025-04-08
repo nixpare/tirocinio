@@ -224,6 +224,87 @@ export function Template({ updateAnatomStruct }: {
 																		]
 																	]
 																}
+															},
+															"expansion_args": {
+																"type": "expansion",
+																"value": {
+																	"additional": [
+																		[
+																			{
+																				"type": "text",
+																				"value": "Codice Misura"
+																			},
+																			{
+																				"type": "select",
+																				"value": {
+																					"selection": "text"
+																				}
+																			}
+																		],
+																		[
+																			{
+																				"type": "text",
+																				"value": "Nome Misura"
+																			},
+																			{
+																				"type": "select",
+																				"value": {
+																					"selection": "text"
+																				}
+																			}
+																		]
+																	]
+																}
+															},
+															"expansion_next": {
+																"type": "expansion",
+																"value": {
+																	"additional": [
+																		[
+																			{
+																				"type": "text",
+																				"value": "Valore"
+																			},
+																			{
+																				"type": "select",
+																				"value": {
+																					"selection": "number"
+																				}
+																			}
+																		]
+																	]
+																}
+															}
+														}
+													}
+												}
+											]
+										]
+									}
+								}
+							],
+							[
+								{
+									"type": "text",
+									"value": "Metodo"
+								},
+								{
+									"type": "expansion",
+									"value": {
+										"additional": [
+											[
+												{
+													"type": "text",
+													"value": "Test Metodo"
+												},
+												{
+													"type": "select",
+													"value": {
+														"selection": "deduction",
+														"next": {
+															"deduction_id": {
+																"type": "text",
+																"value": "Fazekas (1982)"
 															}
 														}
 													}

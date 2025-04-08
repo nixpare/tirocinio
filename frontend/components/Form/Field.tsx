@@ -27,7 +27,7 @@ import {
 	FormFieldSelectArgs,
 } from "../../../models/Form";
 import { EditModeContext } from "./Form";
-import { deductionFunctionMap, DeductionTable, selectArgsFunctionMap } from '../../../models/Programmable';
+import { DeductionElement, deductionFunctionMap, DeductionTable, selectArgsFunctionMap } from '../../../models/Programmable';
 import { AnatomStructDataContext } from '../../../models/AnatomStruct';
 import { BodyContextProvider } from '../../../models/Body';
 import Typography from '@mui/material/Typography';
@@ -136,28 +136,45 @@ export function Field({ field, data, update, breadcrumb, hideHeader }: {
 				disabled={!editMode} breadcrumb={breadcrumb} hideHeader={hideHeader}
 			/>
 		case formFieldIsDeduction(field):
-			console.log(deductionFunctionMap, field)
-			const deduction = deductionFunctionMap[field.deductionID];
+			const deduction: DeductionElement | undefined = deductionFunctionMap[field.deductionID];
+			const [result, setResult] = useState('Calcolo ...')
 
-			let result: string;
-			try {
-				const struct = useContext(AnatomStructDataContext)
-				const bodyContext = useContext(BodyContextProvider)
-				if (!struct || !bodyContext) {
-					throw new Error('informazioni sul form corrente non trovate')
+			useEffect(() => {
+				if (!deduction) {
+					const res = `Metodo '${field.deductionID}' non trovato`
+					
+					setResult(res)
+					enqueueSnackbar((
+						<Alert severity='error'>{res}</Alert>
+					))
+				} else {
+					try {
+						const struct = useContext(AnatomStructDataContext)
+						const bodyContext = useContext(BodyContextProvider)
+						if (!struct || !bodyContext) {
+							throw new Error('informazioni sul form corrente non trovate')
+						}
+
+						const { result: res } = deduction.fn(struct, bodyContext.body, breadcrumb)
+						setResult(res)
+
+					} catch (e) {
+						const res = 'Errore nel calcolo'
+						
+						console.error(e)
+						setResult(res)
+						enqueueSnackbar((
+							<Alert severity='error'>{res}</Alert>
+						))
+					}
 				}
-
-				({ result } = deduction.fn(struct, bodyContext.body, breadcrumb))
-			} catch (e) {
-				console.error(e)
-				result = 'Errore nel calcolo'
-			}
+			})
 
 			return <div className="field deduction-field">
 				{!hideHeader && field.header && <p className="field-header">{field.header}</p>}
 				<div>
 					<p className="deduction-result">{result}</p>
-					{deduction.hint && <DeductionHint hint={deduction.hint} />}
+					{deduction && deduction.hint && <DeductionHint hint={deduction.hint} />}
 				</div>
 			</div>
 	}
@@ -187,6 +204,7 @@ function SelectField({ field, data, update, disabled, breadcrumb, hideHeader }: 
 			const f = selectArgsFunctionMap[field.selectArgs]
 			selectArgs = f(struct, bodyContext.body, breadcrumb)
 		} catch (e: any) {
+			console.error(e)
 			enqueueSnackbar((
 				<Alert severity='error'>{e.message}</Alert>
 			))
@@ -343,6 +361,7 @@ function MultiSelectField({ field, data, update, disabled, breadcrumb, hideHeade
 			const f = selectArgsFunctionMap[field.selectArgs]
 			selectArgs = f(struct, bodyContext.body, breadcrumb)
 		} catch (e: any) {
+			console.error(e)
 			enqueueSnackbar((
 				<Alert severity='error'>{e.message}</Alert>
 			))
