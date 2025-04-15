@@ -42,7 +42,7 @@ const router = createBrowserRouter([
 				]
 			},
 			{
-				path: 'templates',
+				path: 'template',
 				Component: TemplateHome
 			},
 			{

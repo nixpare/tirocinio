@@ -1,18 +1,98 @@
 import { Updater, useImmer } from "use-immer"
 import { FormTemplate, FormData, FormFieldSelectArgs, FormTextFieldData, FormSelectFieldData, FormTextFieldTemplate, FormSelectFieldTemplate } from "../../../models/Form"
-import { Body } from "../../../models/Body"
-import { Form } from "../../components/Form/Form"
+import { Body, BodyContext, BodyContextProvider } from "../../../models/Body"
+import { EditModeContext, Form } from "../../components/Form/Form"
 import { SelectArgsElement, walkObject } from "../../../models/Programmable";
 import { AnatomStruct, AnatomStructData, AnatomStructDataContext } from "../../../models/AnatomStruct";
-import { useEffect } from "react";
+import { useContext, useEffect } from "react";
 import { convertAnatomStruct } from "./conversion";
 import { convertLabelToID } from "../../../models/conversion";
+import { childUpdater } from "../../utils/updater";
+import { testBody } from "../Test/storage/body";
+import Box from "@mui/material/Box/Box";
+import initialSections from "./initial";
+import { NavigationContextProvider } from "../../App";
 
 export function TemplateHome() {
+	const navigationContext = useContext(NavigationContextProvider)
+	
+	useEffect(() => {
+		navigationContext?.([
+			{
+				segment: '',
+				title: 'Home',
+				icon: <i className="fa-solid fa-house"></i>
+			},
+			{
+				segment: 'template',
+				title: 'Template editor',
+				icon: <i className="fa-solid fa-screwdriver-wrench"></i>
+			},
+			{
+				kind: 'divider'
+			},
+			{
+				segment: 'body/Test body',
+				title: 'Test body',
+				icon: <i className="fa-solid fa-user"></i>
+			}
+		])
+	}, [])
+
+	const [anatomStruct, updateAnatomStruct] = useImmer<AnatomStruct | undefined>(undefined);
+	const [anatomStructData, updateAnatomStructData] = useImmer<AnatomStructData>({
+		type: 'bone',
+		name: 'Placeholder',
+		form: {
+			templ: {
+				title: 'Placeholder',
+				sections: []
+			}
+		}
+	});
+	const updateForm = childUpdater(updateAnatomStructData, 'form')
+
+	useEffect(() => {
+		if (!anatomStruct) {
+			return;
+		}
+
+		updateAnatomStructData({
+			type: anatomStruct.type,
+			name: anatomStruct.name,
+			form: {
+				templ: anatomStruct.form,
+				sections: {}
+			}
+		})
+	}, [anatomStruct])
+
+	const [body, updateBody] = useImmer(testBody);
+	const bodyContext: BodyContext = {
+		body: body,
+		updateBody: updateBody
+	}
+
 	return (
-		<div>
-			ciao
-		</div>
+		<EditModeContext.Provider value={true}>
+			<BodyContextProvider.Provider value={bodyContext}>
+				<Box sx={{
+					fontFamily: 'Inter, system-ui, Avenir, Helvetica, Arial, sans-serif',
+					display: 'flex',
+					flexDirection: 'column',
+					gap: '4em',
+					padding: '2em'
+				}}>
+					<Template updateAnatomStruct={updateAnatomStruct} />
+					{anatomStructData && <Form
+						form={anatomStructData.form} update={updateForm}
+						initialEditMode
+					/>}
+
+					<button onClick={() => { console.log(anatomStructData) }}>LOG in Console</button>
+				</Box>
+			</BodyContextProvider.Provider>
+		</EditModeContext.Provider>
 	)
 }
 
@@ -21,312 +101,7 @@ export function Template({ updateAnatomStruct }: {
 }) {
 	const [data, updateData] = useImmer<FormData>({
 		templ: template,
-		sections: {
-			"anatom_struct": {
-				"name_and_type": {
-					"type": "expansion",
-					"value": {
-						"fixed": [
-							[
-								{
-									"type": "text",
-									"value": "Femore"
-								},
-								{
-									"type": "select",
-									"value": {
-										"selection": "bone"
-									}
-								}
-							]
-						]
-					}
-				},
-				"sections": {
-					"type": "expansion",
-					"value": {
-						"additional": [
-							[
-								{
-									"type": "text",
-									"value": "Fusione, Sviluppo"
-								},
-								{
-									"type": "expansion",
-									"value": {
-										"additional": [
-											[
-												{
-													"type": "text",
-													"value": "Centri di Ossificazione"
-												},
-												{
-													"type": "select",
-													"value": {
-														"selection": "multi-select",
-														"next": {
-															"select_options": {
-																"type": "expansion",
-																"value": {
-																	"additional": [
-																		[
-																			{
-																				"type": "text",
-																				"value": "A"
-																			}
-																		],
-																		[
-																			{
-																				"type": "text",
-																				"value": "B"
-																			}
-																		],
-																		[
-																			{
-																				"type": "text",
-																				"value": "C"
-																			}
-																		],
-																		[
-																			{
-																				"type": "text",
-																				"value": "D"
-																			}
-																		],
-																		[
-																			{
-																				"type": "text",
-																				"value": "E"
-																			}
-																		]
-																	]
-																}
-															},
-															"next_fields": {
-																"type": "expansion",
-																"value": {
-																	"additional": [
-																		[
-																			{
-																				"type": "multi-select",
-																				"value": {
-																					"selections": [
-																						"a",
-																						"b",
-																						"c",
-																						"d",
-																						"e"
-																					]
-																				}
-																			},
-																			{
-																				"type": "expansion",
-																				"value": {
-																					"additional": [
-																						[
-																							{
-																								"type": "text",
-																								"value": "Commenti"
-																							},
-																							{
-																								"type": "select",
-																								"value": {
-																									"selection": "text",
-																									"next": {
-																										"multiline": {
-																											"type": "select",
-																											"value": {
-																												"selection": "yes"
-																											}
-																										}
-																									}
-																								}
-																							}
-																						]
-																					]
-																				}
-																			}
-																		]
-																	]
-																}
-															}
-														}
-													}
-												}
-											]
-										]
-									}
-								}
-							],
-							[
-								{
-									"type": "text",
-									"value": "Espansione"
-								},
-								{
-									"type": "expansion",
-									"value": {
-										"additional": [
-											[
-												{
-													"type": "text",
-													"value": "Test Espansione"
-												},
-												{
-													"type": "select",
-													"value": {
-														"selection": "expansion",
-														"next": {
-															"expansion_incremental": {
-																"type": "select",
-																"value": {
-																	"selection": "yes"
-																}
-															},
-															"expansion_prefix": {
-																"type": "text",
-																"value": "Pre"
-															},
-															"expansion_fixed": {
-																"type": "expansion",
-																"value": {
-																	"additional": [
-																		[
-																			{
-																				"type": "expansion",
-																				"value": {
-																					"additional": [
-																						[
-																							{
-																								"type": "text",
-																								"value": "Misura"
-																							},
-																							{
-																								"type": "select",
-																								"value": {
-																									"selection": "fixed",
-																									"next": {
-																										"value": {
-																											"type": "text",
-																											"value": "Misura 1"
-																										}
-																									}
-																								}
-																							}
-																						],
-																						[
-																							{
-																								"type": "text",
-																								"value": "Valore"
-																							},
-																							{
-																								"type": "select",
-																								"value": {
-																									"selection": "number"
-																								}
-																							}
-																						]
-																					]
-																				}
-																			}
-																		]
-																	]
-																}
-															},
-															"expansion_args": {
-																"type": "expansion",
-																"value": {
-																	"additional": [
-																		[
-																			{
-																				"type": "text",
-																				"value": "Codice Misura"
-																			},
-																			{
-																				"type": "select",
-																				"value": {
-																					"selection": "text"
-																				}
-																			}
-																		],
-																		[
-																			{
-																				"type": "text",
-																				"value": "Nome Misura"
-																			},
-																			{
-																				"type": "select",
-																				"value": {
-																					"selection": "text"
-																				}
-																			}
-																		]
-																	]
-																}
-															},
-															"expansion_next": {
-																"type": "expansion",
-																"value": {
-																	"additional": [
-																		[
-																			{
-																				"type": "text",
-																				"value": "Valore"
-																			},
-																			{
-																				"type": "select",
-																				"value": {
-																					"selection": "number"
-																				}
-																			}
-																		]
-																	]
-																}
-															}
-														}
-													}
-												}
-											]
-										]
-									}
-								}
-							],
-							[
-								{
-									"type": "text",
-									"value": "Metodo"
-								},
-								{
-									"type": "expansion",
-									"value": {
-										"additional": [
-											[
-												{
-													"type": "text",
-													"value": "Test Metodo"
-												},
-												{
-													"type": "select",
-													"value": {
-														"selection": "deduction",
-														"next": {
-															"deduction_id": {
-																"type": "text",
-																"value": "Fazekas (1982)"
-															}
-														}
-													}
-												}
-											]
-										]
-									}
-								}
-							]
-						]
-					}
-				}
-			}
-		}
+		sections: initialSections
 	});
 
 	useEffect(() => {

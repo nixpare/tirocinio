@@ -85,11 +85,6 @@ export function BodyHome() {
 				icon: <i className="fa-solid fa-house"></i>
 			},
 			{
-				segment: 'templates',
-				title: 'Template editor',
-				icon: <i className="fa-solid fa-screwdriver-wrench"></i>
-			},
-			{
 				kind: 'divider'
 			},
 			{
