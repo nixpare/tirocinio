@@ -1,5 +1,6 @@
-import { formFieldIsMultiSelect, formFieldIsSelect, FormFieldSelectArg, FormFieldSelectArgs, FormFieldTemplate, FormFieldType } from "../models/Form";
-import { convertLabelToID, deepCopy, StrapiComponent, validateObject, ValidateObjectResult } from "./Strapi";
+import { convertLabelToID } from "../models/conversion";
+import { formFieldIsMultiSelect, formFieldIsSelect, FormFieldSelectArgs, FormFieldTemplate, FormFieldType } from "../models/Form";
+import { deepCopy, StrapiComponent, validateObject, ValidateObjectResult } from "./Strapi";
 
 export type StrapiCampo = StrapiComponent & {
 	NomeCampo: string
@@ -42,7 +43,8 @@ export function rebuildStrapiCampoTree(doc: StrapiCampo[]): Record<string, Strap
 		}
 
 		if (formFieldIsSelect(node) || formFieldIsMultiSelect(node)) {
-			node.selectArgs = {}
+			const selectArgs: FormFieldSelectArgs = []
+			
 			campo.ListaElementi.forEach(elemento => {
 				if (elemento.NomeCampo === 'Applica a tutti') {
 					//TODO: vedere se aggiungere un modo per attivare/disattivare il 'seleziona tutti'
@@ -51,12 +53,13 @@ export function rebuildStrapiCampoTree(doc: StrapiCampo[]): Record<string, Strap
 				}
 
 				const key = convertLabelToID(elemento.NomeCampo)
-				// @ts-ignore
-				node.selectArgs[key] = {
+				selectArgs.push({
 					value: key,
 					display: elemento.NomeCampo,
-				} as FormFieldSelectArg
+				})
 			})
+
+			node.selectArgs = selectArgs
 		}
 
 		nodes[campo.NomeCampo] = node

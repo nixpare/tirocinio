@@ -1,11 +1,11 @@
-import { coccigeRinaldo2019, coccigeScheuerBlack2000 } from '../frontend/storage/coccige';
-import { atlanteFusioneFazekas1978, atlanteProfiloFazekas1978, atlanteScheuerBlack2000, atlanteFordisc, atlantePatternLesivitàSegni } from '../frontend/storage/atlante';
-import { femoreFusioneFazekas1978, femoreProfiloFazekas1978, femoreScheuerBlack2000, femoreFordisc, femorePurkait2003, femoreWilson2010 } from '../frontend/storage/femore';
+import { coccigeRinaldo2019, coccigeScheuerBlack2000 } from '../frontend/pages/Test/storage/coccige';
+import { atlanteFusioneFazekas1978, atlanteProfiloFazekas1978, atlanteScheuerBlack2000, atlanteFordisc, atlantePatternLesivitàSegni } from '../frontend/pages/Test/storage/atlante';
+import { femoreFusioneFazekas1978, femoreProfiloFazekas1978, femoreScheuerBlack2000, femoreFordisc, femorePurkait2003, femoreWilson2010 } from '../frontend/pages/Test/storage/femore';
 import { AnatomStructData } from './AnatomStruct';
 import { Body } from './Body';
-import { farekasAtlante1, farekasAtlante2 } from '../frontend/storage/deduzione';
+import { farekasAtlante1, farekasAtlante2 } from '../frontend/pages/Test/storage/deduzione';
 import { FormFieldSelectArgs } from './Form';
-import { templateFieldScopeSelector } from '../frontend/components/Template/Template';
+import { templateFieldScopeSelector } from '../frontend/pages/Template/Template';
 
 export type Programmable<T = Object> = (struct: AnatomStructData, body: Body, breadcrum: string[]) => T
 export type ProgrammableElement<T = Object> = {

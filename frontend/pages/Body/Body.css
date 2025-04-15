@@ -1,0 +1,25 @@
+.anatom-struct-links {
+	margin-top: 2em;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 2em;
+}
+
+.anatom-struct-link {
+	padding: 1em 2em;
+	font-size: 1.2em;
+	background-color: rgba(var(--primary-color), .7);
+	border-radius: 1em;
+	text-decoration: none;
+	transition: background-color .2s;
+}
+.anatom-struct-link, .anatom-struct-link:visited {
+	color: unset;
+}
+.anatom-struct-link:hover {
+	background-color: rgba(var(--primary-color), .8);
+}
+.anatom-struct-link>i {
+	margin-left: .6em;
+}

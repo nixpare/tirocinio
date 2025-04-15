@@ -1,12 +1,20 @@
 import { Updater, useImmer } from "use-immer"
 import { FormTemplate, FormData, FormFieldSelectArgs, FormTextFieldData, FormSelectFieldData, FormTextFieldTemplate, FormSelectFieldTemplate } from "../../../models/Form"
 import { Body } from "../../../models/Body"
-import { Form } from "../Form/Form"
+import { Form } from "../../components/Form/Form"
 import { SelectArgsElement, walkObject } from "../../../models/Programmable";
 import { AnatomStruct, AnatomStructData, AnatomStructDataContext } from "../../../models/AnatomStruct";
 import { useEffect } from "react";
 import { convertAnatomStruct } from "./conversion";
 import { convertLabelToID } from "../../../models/conversion";
+
+export function TemplateHome() {
+	return (
+		<div>
+			ciao
+		</div>
+	)
+}
 
 export function Template({ updateAnatomStruct }: {
 	updateAnatomStruct: Updater<AnatomStruct | undefined>
@@ -330,7 +338,7 @@ export function Template({ updateAnatomStruct }: {
 	return (
 		<AnatomStructDataContext.Provider
 			//@ts-ignore
-			value={{form: data}}
+			value={{ form: data }}
 		>
 			<Form
 				form={data}

@@ -1,7 +1,7 @@
-import { Body } from "../../models/Body";
-import { DeductionElement, DeductionResult, DeductionTable, walkBreadcrumb } from "../../models/Programmable";
-import { AnatomStructData, Bone } from "../../models/AnatomStruct";
-import { FormFieldTemplate } from "../../models/Form";
+import { Body } from "../../../../models/Body";
+import { DeductionElement, DeductionResult, DeductionTable, walkBreadcrumb } from "../../../../models/Programmable";
+import { AnatomStructData, Bone } from "../../../../models/AnatomStruct";
+import { FormFieldTemplate } from "../../../../models/Form";
 
 const farekasTable: DeductionTable = {
 	headers: ['Lunghezza massima (mm)', 'Età prenatale (settimane)'],

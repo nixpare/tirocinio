@@ -2,11 +2,7 @@ import './Body.css'
 
 import { useQuery } from '@tanstack/react-query'
 import { Body, BodyContextProvider, BodyContext } from '../../../models/Body'
-import { Outlet, useParams } from 'react-router';
-import { createTheme } from '@mui/material/styles';
-import { type Navigation } from '@toolpad/core/AppProvider';
-import { ReactRouterAppProvider } from '@toolpad/core/react-router';
-import { DashboardLayout } from '@toolpad/core/DashboardLayout';
+import { Link, Outlet, useParams } from 'react-router';
 import Box from '@mui/material/Box';
 import Breadcrumbs from '@mui/material/Breadcrumbs';
 import Typography from '@mui/material/Typography';
@@ -14,8 +10,9 @@ import { useContext, useEffect } from 'react';
 import { Updater, useImmer } from 'use-immer';
 import { enqueueSnackbar } from 'notistack';
 import Alert from '@mui/material/Alert';
+import { NavigationContextProvider } from '../../App';
 
-export function BodyLayout() {
+export function BodyLoader() {
 	const [body, updateBody] = useImmer<Body | null>(null);
 	const { name } = useParams();
 	if (!name) {
@@ -61,61 +58,66 @@ export function BodyLayout() {
 }
 
 function BodyContent({ body, updateBody }: { body: Body, updateBody: Updater<Body> }) {
+	const context: BodyContext = { body, updateBody }
 	useEffect(() => {
 		enqueueSnackbar((
 			<Alert severity='info'>Corpo {body.generals.name} caricato</Alert>
 		), { key: 'body-loading', preventDuplicate: true })
 	}, [])
 
-	const context: BodyContext = { body, updateBody }
-
-	const baseURL = `body/${encodeURIComponent(body.generals.name)}`
-	const navigation: Navigation = [
-		{
-			segment: '',
-			title: body.generals.name,
-			icon: <i className="fa-solid fa-house"></i>
-		},
-		{
-			segment: baseURL,
-			title: body.generals.name,
-			icon: <i className="fa-solid fa-user"></i>
-		},
-		{
-			segment: baseURL + '/ossa',
-			title: 'Ossa',
-			icon: <i className="fa-solid fa-bone"></i>
-		}
-	]
-
 	return (
 		<BodyContextProvider.Provider value={context}>
-			<ReactRouterAppProvider
-				navigation={navigation}
-				theme={theme}
-				branding={{
-					title: 'Tirocinio',
-					logo: <img
-						src="/favicon.ico" alt="Logo"
-						style={{ height: '100%', padding: '.6em' }}
-					/>,
-					homeUrl: '/'
-				}}
-			>
-				<div className="body">
-					<DashboardLayout defaultSidebarCollapsed>
-						<div className="body-content">
-							<Outlet />
-						</div>
-					</DashboardLayout>
-				</div>
-			</ReactRouterAppProvider>
+			<Outlet />
 		</BodyContextProvider.Provider>
 	)
 }
 
 export function BodyHome() {
 	const bodyContext = useContext(BodyContextProvider);
+	const navigationContext = useContext(NavigationContextProvider);
+
+	useEffect(() => {
+		const baseURL = `body/${encodeURIComponent(body.generals.name)}`
+		navigationContext?.([
+			{
+				segment: '',
+				title: 'Home',
+				icon: <i className="fa-solid fa-house"></i>
+			},
+			{
+				segment: 'templates',
+				title: 'Template editor',
+				icon: <i className="fa-solid fa-screwdriver-wrench"></i>
+			},
+			{
+				kind: 'divider'
+			},
+			{
+				segment: baseURL,
+				title: body.generals.name,
+				icon: <i className="fa-solid fa-user"></i>
+			},
+			{
+				kind: 'divider'
+			},
+			{
+				segment: baseURL + '/bones',
+				title: 'Ossa',
+				icon: <i className="fa-solid fa-bone"></i>
+			},
+			{
+				segment: baseURL + '/viscus',
+				title: 'Visceri',
+				icon: <i className="fa-solid fa-lungs"></i>
+			},
+			{
+				segment: baseURL + '/exteriors',
+				title: 'Esterno',
+				icon: <i className="fa-solid fa-shield"></i>
+			}
+		])
+	}, [])
+
 	if (!bodyContext) throw new Error('BodyHome must be used within a BodyContextProvider')
 
 	const { body } = bodyContext;
@@ -126,13 +128,20 @@ export function BodyHome() {
 				<Typography sx={{ color: 'text.primary' }}>{body.generals.name}</Typography>
 			</Breadcrumbs>
 			<h1>{body.generals.name}</h1>
+			<div className="anatom-struct-links">
+				<Link to="bones" className='anatom-struct-link'>
+					Ossa
+					<i className="fa-solid fa-bone"></i>
+				</Link>
+				<Link to="viscus" className='anatom-struct-link'>
+					Visceri
+					<i className="fa-solid fa-lungs"></i>
+				</Link>
+				<Link to="exteriors" className='anatom-struct-link'>
+					Esterno
+					<i className="fa-solid fa-shield"></i>
+				</Link>
+			</div>
 		</Box>
 	)
 }
-
-const theme = createTheme({
-	cssVariables: {
-		colorSchemeSelector: 'data-toolpad-color-scheme',
-	},
-	colorSchemes: { light: true/* , dark: true */ },
-});

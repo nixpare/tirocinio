@@ -1,6 +1,6 @@
-import { FormFieldGenericSelectTemplate, FormFieldTemplate } from "../../models/Form";
-import { DeductionElement, DeductionResult } from "../../models/Programmable";
-import { Bone } from "../../models/AnatomStruct";
+import { FormFieldGenericSelectTemplate, FormFieldTemplate } from "../../../../models/Form";
+import { DeductionElement, DeductionResult } from "../../../../models/Programmable";
+import { Bone } from "../../../../models/AnatomStruct";
 
 const femoreCentriImg = '/images/femore_centri.png'
 const femoreSettoriImg = '/images/femore_settori.png'

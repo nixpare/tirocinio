@@ -1,4 +1,4 @@
-import { Body } from "../../models/Body";
+import { Body } from "../../../../models/Body";
 
 export const testBody: Body = {
 	generals: {

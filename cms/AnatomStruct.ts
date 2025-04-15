@@ -1,7 +1,8 @@
 import { StrapiDocument, validateObject, ValidateObjectResult } from './Strapi';
 import { convertForm, StrapiSezione } from './Form';
 import { fetchQuery, headers } from './main';
-import { AnatomStruct, AnatomStructType, isAnatomStructType } from '../models/AnatomStruct';
+import { AnatomStruct } from '../models/AnatomStruct';
+import { isAnatomStructType } from '../models/conversion';
 
 export enum StrapiAnatomStructType {
 	Osso = 'ossa'
