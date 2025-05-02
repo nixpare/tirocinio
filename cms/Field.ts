@@ -1,6 +1,6 @@
 import { convertLabelToID } from "../models/conversion";
-import { formFieldIsMultiSelect, formFieldIsSelect, FormFieldSelectArgs, FormFieldTemplate, FormFieldType } from "../models/Form";
-import { deepCopy, StrapiComponent, validateObject, ValidateObjectResult } from "./Strapi";
+import { formFieldIsExpansion, formFieldIsMultiSelect, formFieldIsNumber, formFieldIsSelect, formFieldIsText, FormFieldSelectArgs, FormFieldTemplate, FormFieldType } from "../models/Form";
+import { StrapiComponent } from "./Strapi";
 
 export type StrapiCampo = StrapiComponent & {
 	NomeCampo: string
@@ -13,6 +13,8 @@ export enum StrapiTipoCampo {
 	Number = 'number',
 	Select = 'select',
 	MultiSelect = 'select-multi',
+	TextMulti = 'text-multi',
+	ID = 'ID'
 	// TODO: implementare il campo 'ID'
 	// TODO: chiedere che cosa sia un tipo campo 'text-multi'
 	// TODO: capire meglio il campo 'reference'
@@ -37,10 +39,10 @@ type StrapiCampoNode = FormFieldTemplate & {
 
 export function rebuildStrapiCampoTree(doc: StrapiCampo[]): StrapiCampoNode[] {
 	const nodes: (StrapiCampoNode | undefined)[] = []
-	
-	doc.slice(0, 2).forEach(campo => {
+
+	doc.forEach(campo => {
 		const path: StrapiCampoNode["path"] = []
-		
+
 		let nextChar = 0;
 		let segment = -1;
 		while (nextChar >= 0 && nextChar < campo.NomeCampo.length) {
@@ -51,7 +53,7 @@ export function rebuildStrapiCampoTree(doc: StrapiCampo[]): StrapiCampoNode[] {
 
 			const needle = campo.NomeCampo.slice(nextChar, newNextChar);
 			nextChar = newNextChar + 1;
-			
+
 			if (needle === '') {
 				path[segment].selector = {
 					type: "foreach"
@@ -79,7 +81,7 @@ export function rebuildStrapiCampoTree(doc: StrapiCampo[]): StrapiCampoNode[] {
 			segment++;
 		}
 
-		const name = path[path.length-1].name
+		const name = path[path.length - 1].name
 
 		const node: StrapiCampoNode = {
 			id: convertLabelToID(name),
@@ -90,7 +92,7 @@ export function rebuildStrapiCampoTree(doc: StrapiCampo[]): StrapiCampoNode[] {
 
 		if (formFieldIsSelect(node) || formFieldIsMultiSelect(node)) {
 			const selectArgs: FormFieldSelectArgs = []
-			
+
 			campo.ListaElementi.forEach(elemento => {
 				if (elemento.NomeCampo === 'Applica a tutti') {
 					//TODO: vedere se aggiungere un modo per attivare/disattivare il 'seleziona tutti'
@@ -98,108 +100,146 @@ export function rebuildStrapiCampoTree(doc: StrapiCampo[]): StrapiCampoNode[] {
 					return;
 				}
 
-				const key = convertLabelToID(elemento.NomeCampo)
 				selectArgs.push({
-					value: key,
+					value: convertLabelToID(elemento.NomeCampo),
 					display: elemento.NomeCampo,
 				})
 			})
 
 			node.selectArgs = selectArgs
+
+			nodes.push(node)
+			return
+		}
+
+		if (formFieldIsExpansion(node)) {
+			switch (campo.TipoCampo) {
+				case StrapiTipoCampo.TextMulti:
+					node.expansionArgs = campo.ListaElementi.map(elemento => ({
+						id: convertLabelToID(elemento.NomeCampo),
+						type: 'text',
+						header: elemento.NomeCampo,
+					}))
+
+					nodes.push(node)
+					break;
+
+				case StrapiTipoCampo.ID:
+					node.incremental = true
+
+					nodes.push(node)
+					break;
+			}
+
+			return;
 		}
 
 		nodes.push(node)
 	})
-	
+
 	for (const i in nodes) {
 		if (nodes[i] == undefined)
 			continue;
 
-		const isRootNode = nodes[i].path.length > 1
 		rebuildTree(nodes[i], nodes);
-
-		if (!isRootNode) {
-			delete nodes[i]
-		}
+		delete nodes[i]
 	}
 
 	return nodes.filter(node => node != undefined);
 }
 
-function rebuildTree(node: StrapiCampoNode, prev: (StrapiCampoNode | undefined)[]) {
-	if (node.path.length == 1) {
+function rebuildTree(node: StrapiCampoNode, prev: (FormFieldTemplate | undefined)[]) {
+	const { path, ...field } = node;
+	const selector = path[0].selector;
+	const nextKey = convertLabelToID(path[0].name);
+
+	if (path.length == 1) {
+		prev.push(field)
 		return;
 	}
 
-	const { path, ...field } = node;
+	path.shift()
 
-	const [nextName, selector] = [path[0].name, path[0].selector];
-	const nextKey = convertLabelToID(nextName);
-
-	if (selector == undefined)
-		throw new Error(`selector should not be undefined: <${path}> <${nextKey}> <${selector}>, <${Object.keys(prev)}>`);
+	if (selector == undefined) {
+		console.error(path, nextKey, selector, prev)
+		throw new Error('node selector should not be undefined');
+	}
 
 	const parent = prev.find(el => el?.id === nextKey);
-	if (parent == undefined)
-		throw new Error(`parent node should not be undefined: <${path}> <${nextKey}> <${selector}>, <${Object.keys(prev)}>`);
-
-	path.shift();
+	if (parent == undefined) {
+		console.error(prev, path, nextKey, selector, prev)
+		throw new Error('parent node should not be undefined');
+	}
 
 	if (formFieldIsSelect(parent) || formFieldIsMultiSelect(parent)) {
 		const selectArgs = parent.selectArgs as FormFieldSelectArgs
 
+		if (parent.nextArgs == undefined) {
+			parent.nextArgs = []
+		}
+
 		switch (selector.type) {
 			case "any":
+				if (parent.nextAnyValue == undefined) {
+					parent.nextAnyValue = []
+				}
+
+				console.log(field, parent)
+
+				rebuildTree({ path: [...path], ...field }, parent.nextAnyValue)
 				break;
 			case "foreach":
-				selectArgs.forEach(arg => {
-					if (parent.nextArgs == undefined) {
-						parent.nextArgs = []
+				for (const arg of selectArgs) {
+					let next = parent.nextArgs.find(nextArg => nextArg.options.includes(arg.value))
+					if (next == undefined) {
+						next = {
+							options: [arg.value],
+							next: []
+						}
+						parent.nextArgs.push(next)
 					}
 
-					parent.nextArgs.push({
-						options: [arg.value],
-						next: [field]
-					})
-				})
+					rebuildTree({ path: [...path], ...field }, next.next)
+				}
 
 				break;
 			case "value":
-				const value = selector.value
+				const value = selector.value ? convertLabelToID(selector.value) : undefined
 				if (!value) throw new Error(`value of selector with type "value" is undefined`)
 
-				if (parent.nextArgs == undefined) {
-					parent.nextArgs = []
+				let next = parent.nextArgs.find(nextArg => nextArg.options.includes(value))
+				if (next == undefined) {
+					next = {
+						options: [value],
+						next: []
+					}
+					parent.nextArgs.push(next)
 				}
 
-				parent.nextArgs.push({
-					options: [value],
-					next: [field]
-				})
-
+				rebuildTree({ path: [...path], ...field }, next.next)
 				break;
 		}
-		
-		/* if (selection == undefined) {
-			Object.values(parent.selectArgs).forEach(arg => {
-				if (arg.next == undefined) {
-					arg.next = {}
-				}
-				// @ts-ignore
-				rebuildTree(deepCopy(node), arg.next);
-			});
-		} else {
-			const selectionKey = convertLabelToID(selection);
-			// @ts-ignore
-			const arg = parent.selectArgs[selectionKey];
-			// @ts-ignore
-			rebuildTree(node, arg.next);
-		} */
 
 		return;
 	}
 
-	return;
+	switch (selector.type) {
+		case "any":
+			if (parent.nextAnyValue == undefined) {
+				parent.nextAnyValue = []
+			}
+
+			rebuildTree({ path: [...path], ...field }, parent.nextAnyValue)
+			break;
+		case "foreach":
+			console.log(`foreach selector not supported for field ${parent.type}, skipping`, parent, field, path, selector)
+			//throw new Error(`foreach selector not supported for field ${parent.type}`)
+			break;
+		case "value":
+			console.log(`value selector not supported for field ${parent.type}, skipping`, parent, field, path, selector)
+			//throw new Error(`value selector not supported for field ${parent.type}`)
+			break;
+	}
 }
 
 function convertStrapiTipoCampo(typ: StrapiTipoCampo): FormFieldType {
@@ -212,6 +252,10 @@ function convertStrapiTipoCampo(typ: StrapiTipoCampo): FormFieldType {
 			return 'select';
 		case StrapiTipoCampo.MultiSelect:
 			return 'multi-select';
+		case StrapiTipoCampo.TextMulti:
+			return 'expansion';
+		case StrapiTipoCampo.ID:
+			return 'expansion';
 	}
 }
 

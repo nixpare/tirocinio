@@ -1,8 +1,8 @@
-import { StrapiDocument, validateObject, ValidateObjectResult } from './Strapi';
+import { baseURL, StrapiDocument, validateObject, ValidateObjectResult } from './Strapi';
 import { convertForm, StrapiSezione } from './Form';
-import { fetchQuery } from './main';
 import { AnatomStruct } from '../models/AnatomStruct';
 import { isAnatomStructType } from '../models/conversion';
+import qs from 'qs';
 
 export enum StrapiAnatomStructType {
 	Osso = 'ossa'
@@ -30,8 +30,22 @@ const anatomStructQuery = {
 	}
 };
 
-export async function fetchStrapiDocument(url: string, typ: StrapiAnatomStructType, name: string): Promise<StrapiAnatomStruct> {
-	url += `/${typ}`
+async function fetchQuery<T = any>(url: string, populate: any): Promise<T> {
+	const compiledQuery = qs.stringify({
+		populate: populate,
+		status: 'draft'
+	}, { encodeValuesOnly: true });
+
+	const queryUrl = url + `?${compiledQuery}`;
+	const response = await fetch(queryUrl);
+	if (!response.ok) throw new Error(`Error fetching ${queryUrl}: ${await response.text()}`);
+
+	let data = (await response.json()).data as T;
+	return data;
+}
+
+export async function fetchStrapiDocument(typ: StrapiAnatomStructType, name: string): Promise<StrapiAnatomStruct> {
+	let url = `${baseURL}/${typ}`;
 	let response = await fetch(url);
 	if (!response.ok) throw new Error(`Error fetching ${url}: ${await response.text()}`);
 

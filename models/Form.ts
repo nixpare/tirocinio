@@ -45,6 +45,8 @@ type FormFieldBaseTemplate = {
 	type: FormFieldType
 	/** un simil table header per questo campo specifico */
 	header?: string
+	/** */
+	nextAnyValue?: FormFieldTemplate[]
 }
 
 /**
@@ -151,6 +153,7 @@ export type FormFieldData = FormFieldBaseData | FormTextFieldData | FormNumberFi
 type FormFieldBaseData = {
 	type: FormFieldType
 	value?: string | number | FormSelectFieldValue | FormMultiSelectFieldValue | FormExpansionFieldValue
+	nextAnyValue?: Record<string, FormFieldData>
 }
 
 export type FormTextFieldData = FormFieldBaseData & {

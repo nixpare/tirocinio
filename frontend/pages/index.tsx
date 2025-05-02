@@ -27,6 +27,11 @@ export function Index() {
                 segment: 'body/Test body',
                 title: 'Test body',
                 icon: <i className="fa-solid fa-user"></i>
+            },
+            {
+                segment: 'conversion',
+                title: 'Conversione',
+                icon: <i className="fa-solid fa-screwdriver-wrench"></i>
             }
         ])
     }, [])

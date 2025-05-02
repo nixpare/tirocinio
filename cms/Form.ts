@@ -3,7 +3,6 @@ import { rebuildStrapiCampoTree, StrapiCampo, validateFormField } from "./Field"
 import { FormFieldTemplate, FormSectionTemplate, FormTemplate } from "../models/Form";
 import { convertLabelToID } from "../models/conversion";
 import { StrapiAnatomStruct } from "./AnatomStruct";
-import { deeplog } from "./main";
 
 export type StrapiSezione = StrapiComponent & {
 	Nome: string
@@ -16,7 +15,7 @@ export function convertForm(doc: StrapiAnatomStruct): ValidateObjectResult<FormT
 
 	form.title = doc.Nome;
 	// TODO: remove slice limitation
-	form.sections = doc.Sezioni.slice(0, 1).map<FormSectionTemplate>(sezione => {
+	form.sections = doc.Sezioni.slice(0, 4).map<FormSectionTemplate>(sezione => {
 		const [formSection, err] = convertFormSection(sezione);
 		if (err) throw err;
 		if (!formSection) throw new Error("an unexpected error has occurred at FormSectionTemplate");
@@ -29,7 +28,7 @@ export function convertForm(doc: StrapiAnatomStruct): ValidateObjectResult<FormT
 function validateForm(form: Partial<FormTemplate>): form is FormTemplate {
 	if (form.title == undefined) throw new Error("title in FormTemplate is not defined");
 	if (form.sections == undefined) throw new Error("sections in FormTemplate is not defined");
-	
+
 	return true;
 }
 
@@ -38,7 +37,7 @@ export function convertFormSection(doc: StrapiSezione): ValidateObjectResult<For
 
 	section.id = convertLabelToID(doc.Nome);
 	section.title = doc.Nome;
-	
+
 	const [starters, err] = convertFormSectionStarters(doc.Campo);
 	if (err) throw err;
 	if (!starters) throw new Error("an unexpected error has occurred at FormSectionTemplate[]");
@@ -59,6 +58,7 @@ function validateFormSection(section: Partial<FormSectionTemplate>): section is 
 
 export function convertFormSectionStarters(doc: StrapiCampo[]): ValidateObjectListResult<FormFieldTemplate> {
 	const nodes = rebuildStrapiCampoTree(doc);
+	console.log('outcome:', nodes)
 
 	const fields: FormFieldTemplate[] = nodes.map(node => {
 		const { path: _, ...field } = node;

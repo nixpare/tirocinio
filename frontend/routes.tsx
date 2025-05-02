@@ -1,9 +1,10 @@
 import { createBrowserRouter } from "react-router";
-import { Index } from './pages/Index';
 import { TemplateHome } from "./pages/Template/Template";
 import { AppLayout } from "./App";
 import { BodyHome, BodyLoader } from "./pages/Body/Body";
 import { Bones, BoneView } from "./pages/Body/Bones";
+import { Conversion, conversionLoader } from "./pages/Conversion";
+import { Index } from "./pages";
 
 const router = createBrowserRouter([
 	{
@@ -40,6 +41,11 @@ const router = createBrowserRouter([
 			{
 				path: 'template',
 				Component: TemplateHome
+			},
+			{
+				path: 'conversion',
+				Component: Conversion,
+				loader: conversionLoader
 			}
 		]
 	}
