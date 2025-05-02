@@ -1,6 +1,6 @@
 import { StrapiDocument, validateObject, ValidateObjectResult } from './Strapi';
 import { convertForm, StrapiSezione } from './Form';
-import { fetchQuery, headers } from './main';
+import { fetchQuery } from './main';
 import { AnatomStruct } from '../models/AnatomStruct';
 import { isAnatomStructType } from '../models/conversion';
 
@@ -32,7 +32,7 @@ const anatomStructQuery = {
 
 export async function fetchStrapiDocument(url: string, typ: StrapiAnatomStructType, name: string): Promise<StrapiAnatomStruct> {
 	url += `/${typ}`
-	let response = await fetch(url, { headers });
+	let response = await fetch(url);
 	if (!response.ok) throw new Error(`Error fetching ${url}: ${await response.text()}`);
 
 	const documents = (await response.json()).data as StrapiAnatomStruct[];

@@ -36,6 +36,38 @@ export function validateObject<T extends Object>(obj: Partial<T>, validate: Vali
 	return [undefined, undefined];
 }
 
+export type ValidateObjectListResult<T extends Object> = [
+	res: T[] | undefined,
+	err: ValidateObjectListError<T> | undefined
+]
+export type ValidateObjectListError<T extends Object> = {
+	computed: Partial<T>[]
+	error: Error
+}
+
+export function validateObjectList<T extends Object>(objs: Partial<T>[], validate: ValidateObjectFunc<T>): ValidateObjectListResult<T> {
+	const error: ValidateObjectListError<T> = {
+		computed: [],
+		error: new Error()
+	}
+	
+	for (const el of objs) {
+		try {
+			if (!validate(el)) {
+				return [undefined, undefined];
+			}
+
+			error.computed.push(el)
+		} catch (err) {
+			error.error = (err as ValidateObjectError<T>).error;
+			error.computed.push(el);
+			return [undefined, error];
+		}
+	}
+
+	return [objs as T[], undefined]
+}
+
 export function deepCopy<T>(a: T): T {
 	return JSON.parse(JSON.stringify(a));
 }

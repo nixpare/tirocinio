@@ -23,17 +23,63 @@ type StrapiElemento = StrapiComponent & {
 	NomeCampo: string
 }
 
-type StrapiCampoNode = FormFieldTemplate & {
-	path: string[]
+type StrapiCampoNodeSelector = {
+	type: 'any' | 'foreach' | 'value'
+	value?: string
 }
 
-export function rebuildStrapiCampoTree(doc: StrapiCampo[]): Record<string, StrapiCampoNode> {
-	const nodes: Record<string, StrapiCampoNode> = {}
+type StrapiCampoNode = FormFieldTemplate & {
+	path: {
+		name: string
+		selector?: StrapiCampoNodeSelector
+	}[]
+}
+
+export function rebuildStrapiCampoTree(doc: StrapiCampo[]): StrapiCampoNode[] {
+	const nodes: (StrapiCampoNode | undefined)[] = []
 	
-	doc.forEach(campo => {
-		campo.NomeCampo = campo.NomeCampo.replaceAll('//', '/');
-		const path = campo.NomeCampo.split('/');
-		const [name] = path[path.length-1].split(':');
+	doc.slice(0, 2).forEach(campo => {
+		const path: StrapiCampoNode["path"] = []
+		
+		let nextChar = 0;
+		let segment = -1;
+		while (nextChar >= 0 && nextChar < campo.NomeCampo.length) {
+			let newNextChar = campo.NomeCampo.indexOf('/', nextChar);
+			if (newNextChar == -1) {
+				newNextChar = campo.NomeCampo.length
+			}
+
+			const needle = campo.NomeCampo.slice(nextChar, newNextChar);
+			nextChar = newNextChar + 1;
+			
+			if (needle === '') {
+				path[segment].selector = {
+					type: "foreach"
+				}
+				continue;
+			}
+
+			if (needle.startsWith(':')) {
+				path[segment].selector = {
+					type: "value",
+					value: needle.slice(1)
+				}
+				continue;
+			}
+
+			if (segment >= 0 && path[segment].selector == undefined) {
+				path[segment].selector = {
+					type: "any"
+				}
+			}
+
+			path.push({
+				name: needle
+			})
+			segment++;
+		}
+
+		const name = path[path.length-1].name
 
 		const node: StrapiCampoNode = {
 			id: convertLabelToID(name),
@@ -62,37 +108,79 @@ export function rebuildStrapiCampoTree(doc: StrapiCampo[]): Record<string, Strap
 			node.selectArgs = selectArgs
 		}
 
-		nodes[campo.NomeCampo] = node
+		nodes.push(node)
 	})
+	
+	for (const i in nodes) {
+		if (nodes[i] == undefined)
+			continue;
 
-	const keys = Object.keys(nodes)
-	for (let i = 0; i < keys.length; i++) {
-		const key = keys[i]
-		const node = nodes[key];
+		const isRootNode = nodes[i].path.length > 1
+		rebuildTree(nodes[i], nodes);
 
-		rebuildTree(node, nodes);
-		delete nodes[key];
+		if (!isRootNode) {
+			delete nodes[i]
+		}
 	}
 
-	return nodes;
+	return nodes.filter(node => node != undefined);
 }
 
-function rebuildTree(node: StrapiCampoNode, prev: Record<string, StrapiCampoNode>) {
+function rebuildTree(node: StrapiCampoNode, prev: (StrapiCampoNode | undefined)[]) {
 	if (node.path.length == 1) {
-		prev[node.id] = node;
 		return;
 	}
 
-	const [nextName, selection] = node.path[0].split(':') as [string, string | undefined];
+	const { path, ...field } = node;
+
+	const [nextName, selector] = [path[0].name, path[0].selector];
 	const nextKey = convertLabelToID(nextName);
 
-	const parent: StrapiCampoNode | undefined = prev[nextKey];
-	if (parent == undefined) throw new Error(`this should not be possible: <${node.path}> <${nextKey}> <${selection}>, <${Object.keys(prev)}>`);
+	if (selector == undefined)
+		throw new Error(`selector should not be undefined: <${path}> <${nextKey}> <${selector}>, <${Object.keys(prev)}>`);
 
-	node.path.shift();
+	const parent = prev.find(el => el?.id === nextKey);
+	if (parent == undefined)
+		throw new Error(`parent node should not be undefined: <${path}> <${nextKey}> <${selector}>, <${Object.keys(prev)}>`);
+
+	path.shift();
 
 	if (formFieldIsSelect(parent) || formFieldIsMultiSelect(parent)) {
-		if (selection == undefined) {
+		const selectArgs = parent.selectArgs as FormFieldSelectArgs
+
+		switch (selector.type) {
+			case "any":
+				break;
+			case "foreach":
+				selectArgs.forEach(arg => {
+					if (parent.nextArgs == undefined) {
+						parent.nextArgs = []
+					}
+
+					parent.nextArgs.push({
+						options: [arg.value],
+						next: [field]
+					})
+				})
+
+				break;
+			case "value":
+				const value = selector.value
+				if (!value) throw new Error(`value of selector with type "value" is undefined`)
+
+				if (parent.nextArgs == undefined) {
+					parent.nextArgs = []
+				}
+
+				parent.nextArgs.push({
+					options: [value],
+					next: [field]
+				})
+
+				break;
+		}
+		
+		/* if (selection == undefined) {
 			Object.values(parent.selectArgs).forEach(arg => {
 				if (arg.next == undefined) {
 					arg.next = {}
@@ -106,10 +194,12 @@ function rebuildTree(node: StrapiCampoNode, prev: Record<string, StrapiCampoNode
 			const arg = parent.selectArgs[selectionKey];
 			// @ts-ignore
 			rebuildTree(node, arg.next);
-		}
+		} */
 
 		return;
 	}
+
+	return;
 }
 
 function convertStrapiTipoCampo(typ: StrapiTipoCampo): FormFieldType {
@@ -123,4 +213,12 @@ function convertStrapiTipoCampo(typ: StrapiTipoCampo): FormFieldType {
 		case StrapiTipoCampo.MultiSelect:
 			return 'multi-select';
 	}
+}
+
+export function validateFormField(field: Partial<FormFieldTemplate>): field is FormFieldTemplate {
+	if (field.id == undefined) throw new Error('id in FormFieldTemplate is not defined');
+	//if (field.title == undefined) throw new Error('title in FormFieldTemplate is not defined');
+	//if (field.starters == undefined) throw new Error('starters in FormFieldTemplate are not defined');
+
+	return true;
 }

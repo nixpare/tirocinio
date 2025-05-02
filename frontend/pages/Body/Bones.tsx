@@ -238,12 +238,8 @@ function EditBone({ bone, updateBonesData }: { bone: BoneData, updateBonesData: 
 	)
 }
 
-// TODO: remove optinal fallback 'id' parameter from BoneView component
-export function BoneView({ fallbackId }: { fallbackId?: string }) {
+export function BoneView() {
 	let { id } = useParams<{ id: string }>();
-	if (!id && fallbackId) {
-		id = fallbackId
-	}
 	if (!id) throw new Error('BoneView must be used with an id parameter')
 
 	const bodyContext = useContext(BodyContextProvider);
@@ -265,11 +261,6 @@ export function BoneView({ fallbackId }: { fallbackId?: string }) {
 	const updateBodyBone = childUpdater(updateBodyBones, id)
 	const updateBodyBoneDataDeep = rootDeepUpdater(updateBodyBone, (bone, ...breadcrumb) => {
 		const payload = walkObject<any>(bone, breadcrumb.join('.'))
-
-		// TODO: remove optinal fallback 'id' parameter from BoneView component
-		if (fallbackId) return;
-
-		console.log(breadcrumb, payload)
 		updateBoneData(body.generals.name, bone.name, payload, breadcrumb)
 	})
 	const updateBodyBoneData = childDeepUpdater(updateBodyBoneDataDeep, 'form', 'form')

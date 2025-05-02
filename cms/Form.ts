@@ -1,5 +1,5 @@
-import { StrapiComponent, StrapiImage, validateObject, ValidateObjectResult } from "./Strapi"
-import { rebuildStrapiCampoTree, StrapiCampo } from "./Field";
+import { StrapiComponent, StrapiImage, validateObject, validateObjectList, ValidateObjectListResult, ValidateObjectResult } from "./Strapi"
+import { rebuildStrapiCampoTree, StrapiCampo, validateFormField } from "./Field";
 import { FormFieldTemplate, FormSectionTemplate, FormTemplate } from "../models/Form";
 import { convertLabelToID } from "../models/conversion";
 import { StrapiAnatomStruct } from "./AnatomStruct";
@@ -15,7 +15,8 @@ export function convertForm(doc: StrapiAnatomStruct): ValidateObjectResult<FormT
 	const form: Partial<FormTemplate> = {};
 
 	form.title = doc.Nome;
-	form.sections = doc.Sezioni.map<FormSectionTemplate>(sezione => {
+	// TODO: remove slice limitation
+	form.sections = doc.Sezioni.slice(0, 1).map<FormSectionTemplate>(sezione => {
 		const [formSection, err] = convertFormSection(sezione);
 		if (err) throw err;
 		if (!formSection) throw new Error("an unexpected error has occurred at FormSectionTemplate");
@@ -38,11 +39,10 @@ export function convertFormSection(doc: StrapiSezione): ValidateObjectResult<For
 	section.id = convertLabelToID(doc.Nome);
 	section.title = doc.Nome;
 	
-	/* const [starters, err] = convertFormSectionStarters(doc.Campo);
+	const [starters, err] = convertFormSectionStarters(doc.Campo);
 	if (err) throw err;
-	if (!starters) throw new Error("an unexpected error has occurred at FormSectionStarterTemplate[]");
-	section.starters = starters; */
-	section.starters = [];
+	if (!starters) throw new Error("an unexpected error has occurred at FormSectionTemplate[]");
+	section.starters = starters;
 
 	section.images = doc.Immagine ? [doc.Immagine.url] : undefined
 
@@ -57,11 +57,13 @@ function validateFormSection(section: Partial<FormSectionTemplate>): section is 
 	return true;
 }
 
-export function convertFormSectionStarters(doc: StrapiCampo[]): ValidateObjectResult<Record<string, FormFieldTemplate>> {
-	const starters: Record<string, Partial<FormFieldTemplate>> = {};
-
+export function convertFormSectionStarters(doc: StrapiCampo[]): ValidateObjectListResult<FormFieldTemplate> {
 	const nodes = rebuildStrapiCampoTree(doc);
-	deeplog(nodes);
 
-	return [{}, undefined];
+	const fields: FormFieldTemplate[] = nodes.map(node => {
+		const { path: _, ...field } = node;
+		return field
+	})
+
+	return validateObjectList(fields, validateFormField);
 }

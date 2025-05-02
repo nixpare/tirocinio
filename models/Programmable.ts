@@ -1,9 +1,5 @@
-import { coccigeRinaldo2019, coccigeScheuerBlack2000 } from '../frontend/pages/Test/storage/coccige';
-import { atlanteFusioneFazekas1978, atlanteProfiloFazekas1978, atlanteScheuerBlack2000, atlanteFordisc, atlantePatternLesivitàSegni } from '../frontend/pages/Test/storage/atlante';
-import { femoreFusioneFazekas1978, femoreProfiloFazekas1978, femoreScheuerBlack2000, femoreFordisc, femorePurkait2003, femoreWilson2010 } from '../frontend/pages/Test/storage/femore';
 import { AnatomStructData } from './AnatomStruct';
 import { Body } from './Body';
-import { farekasAtlante1, farekasAtlante2 } from '../frontend/pages/Test/storage/deduzione';
 import { FormFieldSelectArgs } from './Form';
 import { templateFieldScopeSelector } from '../frontend/pages/Template/Template';
 
@@ -29,27 +25,7 @@ export type DeductionElement = ProgrammableElement<DeductionResult> & {
 export const deductionFunctionMap: Record<string, DeductionElement> = {}
 
 function loadDeductionFunctions() {
-	// coccige
-	deductionFunctionMap[coccigeScheuerBlack2000.id] = coccigeScheuerBlack2000
-	deductionFunctionMap[coccigeRinaldo2019.id] = coccigeRinaldo2019
-
-	// atlante
-	deductionFunctionMap[atlanteFusioneFazekas1978.id] = atlanteFusioneFazekas1978
-	deductionFunctionMap[atlanteProfiloFazekas1978.id] = atlanteProfiloFazekas1978
-	deductionFunctionMap[atlanteScheuerBlack2000.id] = atlanteScheuerBlack2000
-	deductionFunctionMap[atlanteFordisc.id] = atlanteFordisc
-
-	// femore
-	deductionFunctionMap[femoreFusioneFazekas1978.id] = femoreFusioneFazekas1978
-	deductionFunctionMap[femorePurkait2003.id] = femorePurkait2003
-	deductionFunctionMap[femoreProfiloFazekas1978.id] = femoreProfiloFazekas1978
-	deductionFunctionMap[femoreScheuerBlack2000.id] = femoreScheuerBlack2000
-	deductionFunctionMap[femoreFordisc.id] = femoreFordisc
-	deductionFunctionMap[femoreWilson2010.id] = femoreWilson2010
-
-	// Testing
-	deductionFunctionMap[farekasAtlante1.id] = farekasAtlante1
-	deductionFunctionMap[farekasAtlante2.id] = farekasAtlante2
+	
 }
 
 export type SelectArgsFunction = Programmable<FormFieldSelectArgs>
@@ -58,8 +34,6 @@ export type SelectArgsElement = ProgrammableElement<FormFieldSelectArgs>
 export const selectArgsFunctionMap: Record<string, SelectArgsFunction> = {}
 
 function loadSelectArgsFunctions() {
-	// atlante
-	selectArgsFunctionMap[atlantePatternLesivitàSegni.id] = atlantePatternLesivitàSegni.fn
 
 	// template
 	selectArgsFunctionMap[templateFieldScopeSelector.id] = templateFieldScopeSelector.fn

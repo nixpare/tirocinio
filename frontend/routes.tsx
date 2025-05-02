@@ -4,10 +4,6 @@ import { TemplateHome } from "./pages/Template/Template";
 import { AppLayout } from "./App";
 import { BodyHome, BodyLoader } from "./pages/Body/Body";
 import { Bones, BoneView } from "./pages/Body/Bones";
-import { AtlanteTest } from "./pages/Test/Atlante";
-import { CoccigeTest } from "./pages/Test/Coccige";
-import { DeduzioneTest } from "./pages/Test/Deduzione";
-import { FemoreTest } from "./pages/Test/Femore";
 
 const router = createBrowserRouter([
 	{
@@ -44,27 +40,6 @@ const router = createBrowserRouter([
 			{
 				path: 'template',
 				Component: TemplateHome
-			},
-			{
-				path: 'test',
-				children: [
-					{
-						path: 'atlante',
-						Component: AtlanteTest
-					},
-					{
-						path: 'coccige',
-						Component: CoccigeTest
-					},
-					{
-						path: 'deduzione',
-						Component: DeduzioneTest
-					},
-					{
-						path: 'femore',
-						Component: FemoreTest
-					}
-				]
 			}
 		]
 	}

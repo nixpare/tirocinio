@@ -8,10 +8,19 @@ import { useContext, useEffect } from "react";
 import { convertAnatomStruct } from "./conversion";
 import { convertLabelToID } from "../../../models/conversion";
 import { childUpdater } from "../../utils/updater";
-import { testBody } from "../Test/storage/body";
 import Box from "@mui/material/Box/Box";
 import initialSections from "./initial";
 import { NavigationContextProvider } from "../../App";
+
+const testBody: Body = {
+	generals: {
+		name: "Test body",
+		age: 100
+	},
+	bones: {},
+	viscus: {},
+	exteriors: {}
+}
 
 export function TemplateHome() {
 	const navigationContext = useContext(NavigationContextProvider)

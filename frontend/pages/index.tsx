@@ -1,7 +1,9 @@
 import { useContext, useEffect } from 'react'
 import Container from '@mui/material/Container'
 import { NavigationContextProvider } from '../App'
-import { Link } from 'react-router'
+import Breadcrumbs from '@mui/material/Breadcrumbs/Breadcrumbs'
+import Typography from '@mui/material/Typography/Typography'
+import Divider from '@mui/material/Divider/Divider'
 
 export function Index() {
     const navigationContext = useContext(NavigationContextProvider)
@@ -30,15 +32,18 @@ export function Index() {
     }, [])
 
     return (
-        <Container>
-            <h1>Home</h1>
-            <h3>Altre pagine del progetto:</h3>
-            <div className="container container-horiz">
-                <Link to="/coccige">Prototipo coccige</Link>
-                <Link to="/atlante">Prototipo atlante</Link>
-                <Link to="/femore">Prototipo femore</Link>
-                <Link to="/deduzione">Prototipo deduzione</Link>
-            </div>
-        </Container>
+        <>
+            <Container>
+                <Breadcrumbs separator="›" aria-label="breadcrumb">
+                    <Typography sx={{ color: 'text.primary' }}>Home</Typography>
+                </Breadcrumbs>
+                <h1>Corpi</h1>
+                {/* bodies from db */}
+            </Container>
+            <Divider variant="middle" sx={{ marginTop: '1em', marginBottom: '1em' }} />
+            <Container>
+                {/* create new body */}
+            </Container>
+        </>
     )
 }
