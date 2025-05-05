@@ -25,6 +25,10 @@ import {
 	FormExpansionFieldData,
 	FormExpansionFieldTemplate,
 	FormFieldSelectArgs,
+	formFieldIsGroup,
+	formFieldDataIsGroup,
+	FormFieldGroupData,
+	FormFieldGroupTemplate,
 } from "../../../models/Form";
 import { EditModeContext } from "./Form";
 import { DeductionElement, deductionFunctionMap, DeductionTable, selectArgsFunctionMap } from '../../../models/Programmable';
@@ -40,6 +44,7 @@ export type UpdateFieldFunc = DeepUpdater<FormFieldData>
 type UpdateSelectFieldFunc = DeepUpdater<FormSelectFieldData>
 type UpdateMultiSelectFieldFunc = DeepUpdater<FormMultiSelectFieldData>
 type UpdateExpansionFieldFunc = DeepUpdater<FormExpansionFieldData>
+type UpdateFieldGroupFunc = DeepUpdater<FormFieldGroupData>
 
 export function Field({ field, data, update, breadcrumb, hideHeader }: {
 	field: FormFieldTemplate,
@@ -177,6 +182,15 @@ export function Field({ field, data, update, breadcrumb, hideHeader }: {
 					{deduction && deduction.hint && <DeductionHint hint={deduction.hint} />}
 				</div>
 			</div>
+		case formFieldIsGroup(field):
+			if (data != undefined && !formFieldDataIsGroup(data))
+				data = undefined
+
+			return <FieldGroup
+				field={field}
+				data={data} update={update as UpdateFieldGroupFunc}
+				disabled={!editMode} breadcrumb={breadcrumb} hideHeader={hideHeader}
+			/>
 	}
 }
 
@@ -295,7 +309,7 @@ function SelectNextFields({ next, data, update, breadcrumb }: {
 	data?: FormSelectFieldData, update: UpdateSelectFieldFunc,
 	breadcrumb: string[]
 }) {
-	const [showNext, setShowNext] = useState(false);
+	const [showNext, setShowNext] = useState(true);
 	const toggleShowNext = (ev: MouseEvent<HTMLButtonElement>) => {
 		ev.preventDefault()
 		setShowNext(!showNext)
@@ -334,7 +348,8 @@ function SelectNextFields({ next, data, update, breadcrumb }: {
 			return <div style={showNext ? undefined : { display: 'none' }} key={nextField.id}>
 				<Field field={nextField}
 					data={data?.value?.next?.[nextField.id]}
-					update={updateNext} breadcrumb={[...breadcrumb, 'value', 'next', nextField.id]} />
+					update={updateNext}
+					breadcrumb={[...breadcrumb, 'value', 'next', nextField.id]} />
 			</div>
 		})}
 	</div>
@@ -492,7 +507,7 @@ function MultiSelectNextFields({ selected, next, data, update, breadcrumb }: {
 	data?: FormMultiSelectFieldData, update: UpdateMultiSelectFieldFunc,
 	breadcrumb: string[],
 }) {
-	const [showNext, setShowNext] = useState(false);
+	const [showNext, setShowNext] = useState(true);
 	const toggleShowNext = (ev: MouseEvent<HTMLButtonElement>) => {
 		ev.preventDefault()
 		setShowNext(!showNext)
@@ -735,7 +750,7 @@ function ExpansionNextFields({ next, dataOffset, data, update, breadcrumb }: {
 	data?: FormFieldData[], update: DeepUpdater<FormFieldData[]>,
 	breadcrumb: string[]
 }) {
-	const [showNext, setShowNext] = useState(false);
+	const [showNext, setShowNext] = useState(true);
 	const toggleShowNext = (ev: MouseEvent<HTMLButtonElement>) => {
 		ev.preventDefault()
 		setShowNext(!showNext)
@@ -800,5 +815,45 @@ function DeductionHint({ hint }: { hint: DeductionTable }) {
 				})}
 			</tbody>
 		</table>
+	</div>
+}
+
+function FieldGroup({ field, data, update, breadcrumb, hideHeader }: {
+	field: FormFieldGroupTemplate,
+	data?: FormFieldGroupData, update: UpdateFieldGroupFunc,
+	disabled: boolean, breadcrumb: string[], hideHeader?: boolean
+}) {
+	return <div className="field field-group">
+		{!hideHeader && field.header && <p className="field-header">{field.header}</p>}
+		<div className='group'>
+			{field.group.map(groupField => {
+				const updateField: UpdateFieldFunc = (updater, ...breadcrumb) => {
+					update(groupData => {
+						if (groupData.value == undefined) {
+							groupData.value = {}
+						}
+
+						if (typeof updater !== 'function') {
+							groupData.value[groupField.id] = updater
+							return
+						}
+
+						if (groupData.value[groupField.id] == undefined) {
+							groupData.value[groupField.id] = { type: groupField.type }
+						}
+
+						updater(groupData.value[groupField.id])
+					}, 'value', groupField.id, ...breadcrumb)
+				}
+
+				return (
+					<Field key={groupField.id}
+						field={groupField}
+						data={data?.value?.[groupField.id]}
+						update={updateField} breadcrumb={[...breadcrumb, 'value', groupField.id]}
+					/>
+				)
+			})}
+		</div>
 	</div>
 }

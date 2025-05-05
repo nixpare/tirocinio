@@ -237,3 +237,14 @@
 .field.deduction-field .deduction-hint table tbody tr:last-child td:last-child {
 	border-bottom-right-radius: .2em;
 }
+
+.field.field-group {
+	background-color: rgba(var(--primary-color), .1);
+	padding: 1em;
+}
+
+.field.field-group .group {
+	display: flex;
+	gap: 1em;
+	flex-wrap: wrap;
+}

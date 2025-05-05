@@ -15,8 +15,7 @@ export enum StrapiTipoCampo {
 	MultiSelect = 'select-multi',
 	TextMulti = 'text-multi',
 	ID = 'ID'
-	// TODO: implementare il campo 'ID'
-	// TODO: chiedere che cosa sia un tipo campo 'text-multi'
+
 	// TODO: capire meglio il campo 'reference'
 	// TODO: implementare il campo 'method'
 }
@@ -109,6 +108,46 @@ export function rebuildStrapiCampoTree(doc: StrapiCampo[]): StrapiCampoNode[] {
 			node.selectArgs = selectArgs
 
 			nodes.push(node)
+			return
+		}
+
+		if (formFieldIsText(node)) {
+			if (campo.ListaElementi.length == 0) {
+				nodes.push(node)
+				return
+			}
+
+			const group: StrapiCampoNode = {
+				...node,
+				type: 'group',
+				group: campo.ListaElementi.map(elemento => ({
+					id: convertLabelToID(elemento.NomeCampo),
+					type: node.type,
+					header: elemento.NomeCampo
+				}))
+			}
+
+			nodes.push(group)
+			return
+		}
+
+		if (formFieldIsNumber(node)) {
+			if (campo.ListaElementi.length == 0) {
+				nodes.push(node)
+				return
+			}
+
+			const group: StrapiCampoNode = {
+				...node,
+				type: 'group',
+				group: campo.ListaElementi.map(elemento => ({
+					id: convertLabelToID(elemento.NomeCampo),
+					type: node.type,
+					header: elemento.NomeCampo
+				}))
+			}
+
+			nodes.push(group)
 			return
 		}
 

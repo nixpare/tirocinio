@@ -37,7 +37,7 @@ export type FormSectionTemplate = {
  * Le varie proprietà opzionali sono dedicate alle varie modalità di input
  */
 export type FormFieldTemplate = FormFieldBaseTemplate | FormFixedFieldTemplate | FormTextFieldTemplate | FormNumberFieldTemplate |
-	FormSelectFieldTemplate | FormMultiSelectFieldTemplate | FormExpansionFieldTemplate | FormDeductionFieldTemplate
+	FormSelectFieldTemplate | FormMultiSelectFieldTemplate | FormExpansionFieldTemplate | FormDeductionFieldTemplate | FormFieldGroupTemplate
 
 type FormFieldBaseTemplate = {
 	id: string
@@ -65,11 +65,12 @@ type FormFieldBaseTemplate = {
  *     + `form`: i dati inseriti (`FormData`) presi dalla tabella
  *     + `rowIdx`: l'indice della riga nella tabella, per poter fare calcoli diversi in base alla riga
  */
-export type FormFieldType = 'fixed' | 'text' | 'number' | 'select' | 'multi-select' | 'expansion' | 'deduction'
+export type FormFieldType = 'fixed' | 'text' | 'number' | 'select' | 'multi-select' | 'expansion' | 'deduction' | 'group'
 
 export type FormFixedFieldTemplate = FormFieldBaseTemplate & {
 	type: 'fixed'
 	value?: string
+	nextAnyValue: undefined
 }
 export type FormTextFieldTemplate = FormFieldBaseTemplate & {
 	type: 'text'
@@ -105,6 +106,10 @@ export type FormDeductionFieldTemplate = FormFieldBaseTemplate & {
 	type: 'deduction'
 	deductionID: string
 }
+export type FormFieldGroupTemplate = FormFieldBaseTemplate & {
+	type: 'group'
+	group: FormFieldTemplate[]
+}
 
 export function formFieldIsFixed(f: FormFieldTemplate): f is FormFixedFieldTemplate {
 	return f.type == 'fixed';
@@ -127,6 +132,9 @@ export function formFieldIsExpansion(f: FormFieldTemplate): f is FormExpansionFi
 export function formFieldIsDeduction(f: FormFieldTemplate): f is FormDeductionFieldTemplate {
 	return f.type == 'deduction';
 }
+export function formFieldIsGroup(f: FormFieldTemplate): f is FormFieldGroupTemplate {
+	return f.type == 'group';
+}
 
 export type FormFieldSelectArgs = {
 	value: string
@@ -148,11 +156,11 @@ export type FormData = {
 export type FormSectionData = Record<string, FormFieldData> | undefined
 
 export type FormFieldData = FormFieldBaseData | FormTextFieldData | FormNumberFieldData |
-	FormSelectFieldData | FormMultiSelectFieldData | FormExpansionFieldData | FormDeductionFieldData
+	FormSelectFieldData | FormMultiSelectFieldData | FormExpansionFieldData | FormDeductionFieldData | FormFieldGroupData
 
 type FormFieldBaseData = {
 	type: FormFieldType
-	value?: string | number | FormSelectFieldValue | FormMultiSelectFieldValue | FormExpansionFieldValue
+	value?: string | number | FormSelectFieldValue | FormMultiSelectFieldValue | FormExpansionFieldValue | Record<string, FormFieldData>
 	nextAnyValue?: Record<string, FormFieldData>
 }
 
@@ -179,6 +187,10 @@ export type FormExpansionFieldData = FormFieldBaseData & {
 export type FormDeductionFieldData = FormFieldBaseData & {
 	type: 'deduction'
 }
+export type FormFieldGroupData = FormFieldBaseData & {
+	type: 'text'
+	value?: Record<string, FormFieldData>
+}
 
 export function formFieldDataIsText(f: FormFieldData): f is FormTextFieldData {
 	return f.type == 'text';
@@ -197,6 +209,9 @@ export function formFieldDataIsExpansion(f: FormFieldData): f is FormExpansionFi
 }
 export function formFieldDataIsDeduction(f: FormFieldData): f is FormDeductionFieldData {
 	return f.type == 'deduction';
+}
+export function formFieldDataIsGroup(f: FormFieldData): f is FormFieldGroupData {
+	return f.type == 'group';
 }
 
 /** FormSelectFieldValue contiene lo stato di una proprietà `Select` */
