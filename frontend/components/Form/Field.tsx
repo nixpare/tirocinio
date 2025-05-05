@@ -39,6 +39,9 @@ import { DeepUpdater } from '../../utils/updater';
 import { enqueueSnackbar } from 'notistack';
 import Alert from '@mui/material/Alert';
 import Paper from '@mui/material/Paper';
+import Accordion from '@mui/material/Accordion/Accordion';
+import { AccordionSummaryLeft } from '../UI/Accordion';
+import AccordionDetails from '@mui/material/AccordionDetails/AccordionDetails';
 
 export type UpdateFieldFunc = DeepUpdater<FormFieldData>
 type UpdateSelectFieldFunc = DeepUpdater<FormSelectFieldData>
@@ -46,19 +49,48 @@ type UpdateMultiSelectFieldFunc = DeepUpdater<FormMultiSelectFieldData>
 type UpdateExpansionFieldFunc = DeepUpdater<FormExpansionFieldData>
 type UpdateFieldGroupFunc = DeepUpdater<FormFieldGroupData>
 
-export function Field({ field, data, update, breadcrumb, hideHeader }: {
+export function Field({ field, data, update, breadcrumb }: {
 	field: FormFieldTemplate,
-	data?: FormFieldData, update: UpdateFieldFunc,
-	breadcrumb: string[], hideHeader?: boolean
+	data?: FormFieldData,
+	update: UpdateFieldFunc,
+	breadcrumb: string[]
+}) {
+	return (
+		<>
+			<FieldSwitch
+				field={field}
+				data={data}
+				update={update}
+				breadcrumb={breadcrumb}
+			/>
+			{field.nextAnyValue && data && data.value != undefined && (
+				<FieldNextAnyValue
+					fields={field.nextAnyValue}
+					data={data}
+					update={update}
+					breadcrumb={breadcrumb}
+				/>
+			)}
+		</>
+	)
+}
+
+export function FieldSwitch({ field, data, update, breadcrumb }: {
+	field: FormFieldTemplate,
+	data?: FormFieldData,
+	update: UpdateFieldFunc,
+	breadcrumb: string[],
 }) {
 	const editMode = useContext(EditModeContext)
 
 	switch (true) {
 		case formFieldIsFixed(field):
-			return <div className="field fixed-field">
-				{!hideHeader && field.header && <p className="field-header">{field.header}</p>}
-				<p className="fixed-value">{field.value}</p>
-			</div>
+			return field.value && (
+				<div className="field fixed-field">
+					{field.header && <p className="field-header">{field.header}</p>}
+					<p className="fixed-value">{field.value}</p>
+				</div>
+			)
 		case formFieldIsText(field):
 			if (data != undefined && !formFieldDataIsText(data))
 				data = undefined
@@ -70,21 +102,22 @@ export function Field({ field, data, update, breadcrumb, hideHeader }: {
 				})
 			}
 
-			return <div className="field text-field">
-				{!hideHeader && field.header && <p className="field-header">{field.header}</p>}
-				{!field.multiline ? <>
-					<input type="text"
-						value={data?.value ?? ''}
-						onChange={handleTextInput} disabled={!editMode}
-					/>
-				</> : <>
-					<textarea
-						value={data?.value ?? ''}
-						onChange={handleTextInput} disabled={!editMode}
-					/>
-				</>}
-
-			</div>
+			return (
+				<div className="field text-field">
+					{field.header && <p className="field-header">{field.header}</p>}
+					{!field.multiline ? <>
+						<input type="text"
+							value={data?.value ?? ''}
+							onChange={handleTextInput} disabled={!editMode}
+						/>
+					</> : <>
+						<textarea
+							value={data?.value ?? ''}
+							onChange={handleTextInput} disabled={!editMode}
+						/>
+					</>}
+				</div>
+			)
 		case formFieldIsNumber(field):
 			if (data != undefined && !formFieldDataIsNumber(data))
 				data = undefined
@@ -106,40 +139,48 @@ export function Field({ field, data, update, breadcrumb, hideHeader }: {
 				})
 			}
 
-			return <div className="field number-field">
-				{!hideHeader && field.header && <p className="field-header">{field.header}</p>}
-				<input type="number" className={className}
-					value={(data?.value ?? 0).toString()}
-					onChange={handleNumberInput} disabled={!editMode}
-				/>
-			</div>
+			return (
+				<div className="field number-field">
+					{field.header && <p className="field-header">{field.header}</p>}
+					<input type="number" className={className}
+						value={(data?.value ?? 0).toString()}
+						onChange={handleNumberInput} disabled={!editMode}
+					/>
+				</div>
+			)
 		case formFieldIsSelect(field):
 			if (data != undefined && !formFieldDataIsSelect(data))
 				data = undefined
 
-			return <SelectField
-				field={field}
-				data={data} update={update as UpdateSelectFieldFunc}
-				disabled={!editMode} breadcrumb={breadcrumb} hideHeader={hideHeader}
-			/>
+			return (
+				<SelectField
+					field={field}
+					data={data} update={update as UpdateSelectFieldFunc}
+					disabled={!editMode} breadcrumb={breadcrumb}
+				/>
+			)
 		case formFieldIsMultiSelect(field):
 			if (data != undefined && !formFieldDataIsMultiSelect(data))
 				data = undefined
 
-			return <MultiSelectField
-				field={field}
-				data={data} update={update as UpdateMultiSelectFieldFunc}
-				disabled={!editMode} breadcrumb={breadcrumb} hideHeader={hideHeader}
-			/>
+			return (
+				<MultiSelectField
+					field={field}
+					data={data} update={update as UpdateMultiSelectFieldFunc}
+					disabled={!editMode} breadcrumb={breadcrumb}
+				/>
+			)
 		case formFieldIsExpansion(field):
 			if (data != undefined && !formFieldDataIsExpansion(data))
 				data = undefined
 
-			return <ExpansionField
-				field={field}
-				data={data} update={update as UpdateExpansionFieldFunc}
-				disabled={!editMode} breadcrumb={breadcrumb} hideHeader={hideHeader}
-			/>
+			return (
+				<ExpansionField
+					field={field}
+					data={data} update={update as UpdateExpansionFieldFunc}
+					disabled={!editMode} breadcrumb={breadcrumb}
+				/>
+			)
 		case formFieldIsDeduction(field):
 			const deduction: DeductionElement | undefined = deductionFunctionMap[field.deductionID];
 			const [result, setResult] = useState('Calcolo ...')
@@ -175,23 +216,67 @@ export function Field({ field, data, update, breadcrumb, hideHeader }: {
 				}
 			})
 
-			return <div className="field deduction-field">
-				{!hideHeader && field.header && <p className="field-header">{field.header}</p>}
-				<div>
-					<p className="deduction-result">{result}</p>
-					{deduction && deduction.hint && <DeductionHint hint={deduction.hint} />}
+			return (
+				<div className="field deduction-field">
+					{field.header && <p className="field-header">{field.header}</p>}
+					<div>
+						<p className="deduction-result">{result}</p>
+						{deduction && deduction.hint && <DeductionHint hint={deduction.hint} />}
+					</div>
 				</div>
-			</div>
+			)
 		case formFieldIsGroup(field):
 			if (data != undefined && !formFieldDataIsGroup(data))
 				data = undefined
 
-			return <FieldGroup
-				field={field}
-				data={data} update={update as UpdateFieldGroupFunc}
-				disabled={!editMode} breadcrumb={breadcrumb} hideHeader={hideHeader}
-			/>
+			return (
+				<FieldGroup
+					field={field}
+					data={data} update={update as UpdateFieldGroupFunc}
+					disabled={!editMode} breadcrumb={breadcrumb}
+				/>
+			)
 	}
+}
+
+function FieldNextAnyValue({ fields, data, update, breadcrumb }: {
+	fields: FormFieldTemplate[],
+	data: FormFieldData,
+	update: UpdateFieldFunc,
+	breadcrumb: string[]
+}) {
+	return (
+		<>
+			{fields.map(next => {
+				const updateNext: UpdateFieldFunc = (updater, ...breadcrumb) => {
+					update(fieldData => {
+						if (fieldData.nextAnyValue == undefined)
+							fieldData.nextAnyValue = {}
+
+						if (typeof updater !== 'function') {
+							fieldData.nextAnyValue[next.id] = updater
+							return
+						}
+
+						if (fieldData.nextAnyValue[next.id] == undefined) {
+							fieldData.nextAnyValue[next.id] = { type: next.type }
+						}
+
+						updater(fieldData.nextAnyValue[next.id])
+					}, 'nextAnyValue', next.id, ...breadcrumb)
+				}
+
+				return (
+					<Field key={next.id}
+						field={next}
+						data={data?.nextAnyValue?.[next.id]}
+						update={updateNext}
+						breadcrumb={[...breadcrumb, 'nextAnyValue', next.id]}
+					/>
+				)
+			})}
+		</>
+	)
 }
 
 type SelectOption = {
@@ -276,32 +361,34 @@ function SelectField({ field, data, update, disabled, breadcrumb, hideHeader }: 
 		return prev
 	}, []) ?? []
 
-	return <div className="field select-field">
-		<div className="select-input">
-			{!hideHeader && field.header && <p className="field-header">{field.header}</p>}
-			{!disabled ? (
-				<Select options={options} isClearable={true} isDisabled={disabled}
-					ref={selectRef}
-					placeholder={field.header}
-					styles={styles}
-					value={selectedOption}
-					onChange={onChange}
-				/>
-			) : (
-				selectedOption ? (
-					<Typography className="fixed-value">{selectedOption.label}</Typography>
+	return (
+		<>
+			<div className="field select-field">
+				{!hideHeader && field.header && <p className="field-header">{field.header}</p>}
+				{!disabled ? (
+					<Select options={options} isClearable={true} isDisabled={disabled}
+						ref={selectRef}
+						placeholder={field.header}
+						styles={styles}
+						value={selectedOption}
+						onChange={onChange}
+					/>
 				) : (
-					<Typography className="no-value">Nessuna selezione</Typography>
-				)
+					selectedOption ? (
+						<Typography className="fixed-value">{selectedOption.label}</Typography>
+					) : (
+						<Typography className="no-value">Nessuna selezione</Typography>
+					)
+				)}
+			</div>
+			{data && data.value && next.length > 0 && (
+				<SelectNextFields next={next}
+					data={data} update={update}
+					breadcrumb={breadcrumb}
+				/>
 			)}
-		</div>
-		{data && data.value && next.length > 0 && (
-			<SelectNextFields next={next}
-				data={data} update={update}
-				breadcrumb={breadcrumb}
-			/>
-		)}
-	</div>
+		</>
+	)
 }
 
 function SelectNextFields({ next, data, update, breadcrumb }: {
@@ -309,50 +396,45 @@ function SelectNextFields({ next, data, update, breadcrumb }: {
 	data?: FormSelectFieldData, update: UpdateSelectFieldFunc,
 	breadcrumb: string[]
 }) {
-	const [showNext, setShowNext] = useState(true);
-	const toggleShowNext = (ev: MouseEvent<HTMLButtonElement>) => {
-		ev.preventDefault()
-		setShowNext(!showNext)
-	}
+	return (
+		<>
+			{next != undefined && Object.values(next).map(nextField => {
+				const updateNext: UpdateFieldFunc = (updater, ...breadcrumb) => {
+					update(selectData => {
+						if (next == undefined)
+							return
 
-	return <div className='next-fields'>
-		<button className="toggle-show-next" data-toggled={showNext} onClick={toggleShowNext}>
-			<i className="fa-solid fa-chevron-right"></i>
-		</button>
-		{next != undefined && Object.values(next).map(nextField => {
-			const updateNext: UpdateFieldFunc = (updater, ...breadcrumb) => {
-				update(selectData => {
-					if (next == undefined)
-						return
+						if (selectData == undefined || selectData.value == undefined)
+							throw new Error('select is undefined after the first stage')
 
-					if (selectData == undefined || selectData.value == undefined)
-						throw new Error('select is undefined after the first stage')
+						if (selectData.value.next == undefined)
+							selectData.value.next = {}
 
-					if (selectData.value.next == undefined)
-						selectData.value.next = {}
+						if (typeof updater !== 'function') {
+							selectData.value.next[nextField.id] = updater
+							return
+						}
 
-					if (typeof updater !== 'function') {
-						selectData.value.next[nextField.id] = updater
-						return
-					}
+						if (selectData.value.next[nextField.id] == undefined) {
+							const field = next.filter(nextEl => nextEl.id == nextField.id)[0]
+							selectData.value.next[nextField.id] = { type: field.type }
+						}
 
-					if (selectData.value.next[nextField.id] == undefined) {
-						const field = next.filter(nextEl => nextEl.id == nextField.id)[0]
-						selectData.value.next[nextField.id] = { type: field.type }
-					}
+						updater(selectData.value.next[nextField.id])
+					}, 'value', 'next', nextField.id, ...breadcrumb)
+				}
 
-					updater(selectData.value.next[nextField.id])
-				}, 'value', 'next', nextField.id, ...breadcrumb)
-			}
-
-			return <div style={showNext ? undefined : { display: 'none' }} key={nextField.id}>
-				<Field field={nextField}
-					data={data?.value?.next?.[nextField.id]}
-					update={updateNext}
-					breadcrumb={[...breadcrumb, 'value', 'next', nextField.id]} />
-			</div>
-		})}
-	</div>
+				return (
+					<Field key={nextField.id}
+						field={nextField}
+						data={data?.value?.next?.[nextField.id]}
+						update={updateNext}
+						breadcrumb={[...breadcrumb, 'value', 'next', nextField.id]}
+					/>
+				)
+			})}
+		</>
+	)
 }
 
 function MultiSelectField({ field, data, update, disabled, breadcrumb, hideHeader }: {
@@ -440,66 +522,79 @@ function MultiSelectField({ field, data, update, disabled, breadcrumb, hideHeade
 		})
 	}
 
-	return <div className="field multi-select-field">
-		<div className="select-input">
-			{!hideHeader && field.header && <p className="field-header">{field.header}</p>}
-			{!disabled && <button className="select-all" onClick={selectAll}>SELEZIONA TUTTO</button>}
-			{!disabled && <Select options={options} isMulti isClearable={false} isDisabled={disabled}
-				ref={selectRef}
-				placeholder={field.header}
-				styles={styles}
-				value={selectedOptions}
-				onChange={onChange}
-			/>}
+	return (
+		<div className="field multi-select-field">
+			<div className="select-input">
+				{!hideHeader && field.header && <p className="field-header">{field.header}</p>}
+				{!disabled && <button className="select-all" onClick={selectAll}>SELEZIONA TUTTO</button>}
+				{!disabled && <Select options={options} isMulti isClearable={false} isDisabled={disabled}
+					ref={selectRef}
+					placeholder={field.header}
+					styles={styles}
+					value={selectedOptions}
+					onChange={onChange}
+				/>}
+			</div>
+			<div className='multi-select-next'>
+				{selectedOptions.length > 0 ? (
+					selectedOptions.map((sel) => {
+						const selectedArg = selectArgs.filter(arg => arg.value == sel.value)[0]
+						if (selectedArg == undefined)
+							return undefined
+
+						const deleteSelection = (ev: MouseEvent<HTMLButtonElement, PointerEvent>) => {
+							ev.preventDefault()
+							selectRef?.current?.removeValue(sel)
+
+							update(selectData => {
+								if (selectData.value) {
+									selectData.value.selections = selectData.value.selections.filter((selection) => {
+										return selection !== sel.value
+									})
+
+									delete selectData.value.next?.[sel.value]
+								}
+							})
+						}
+
+						const next = field.nextArgs?.filter(nextArg => {
+							if (data == undefined || data.value == undefined)
+								return
+
+							return nextArg.options.includes(selectedArg.value)
+						}).reduce<FormFieldTemplate[]>((prev, curr) => {
+							prev.push(...curr.next)
+							return prev
+						}, []) ?? []
+
+						return (
+							<div className="container container-horiz container-align-start no-wrap">
+								{!disabled && <button className="delete-row" onClick={deleteSelection}>
+									<i className="fa-solid fa-trash"></i>
+								</button>}
+								<Accordion key={sel.value}
+									className="multi-select-arg"
+									elevation={4}
+								>
+									<AccordionSummaryLeft>
+										<div className='arg-display'>{selectedArg.display}</div>
+									</AccordionSummaryLeft>
+									<AccordionDetails>
+										{next.length > 0 && (
+											<MultiSelectNextFields selected={sel.value} next={next}
+												data={data} update={update} breadcrumb={[...breadcrumb, sel.value]} />
+										)}
+									</AccordionDetails>
+								</Accordion>
+							</div>
+						)
+					})
+				) : (
+					disabled && <Typography>Nessuna selezione</Typography>
+				)}
+			</div>
 		</div>
-		<div className='multi-select'>
-			{selectedOptions.length > 0 ? (
-				selectedOptions.map((sel) => {
-					const selectedArg = selectArgs.filter(arg => arg.value == sel.value)[0]
-					if (selectedArg == undefined)
-						return undefined
-
-					const deleteSelection = (ev: MouseEvent<HTMLButtonElement, PointerEvent>) => {
-						ev.preventDefault()
-						selectRef?.current?.removeValue(sel)
-
-						update(selectData => {
-							if (selectData.value) {
-								selectData.value.selections = selectData.value.selections.filter((selection) => {
-									return selection !== sel.value
-								})
-
-								delete selectData.value.next?.[sel.value]
-							}
-						})
-					}
-
-					const next = field.nextArgs?.filter(nextArg => {
-						if (data == undefined || data.value == undefined)
-							return
-
-						return nextArg.options.includes(selectedArg.value)
-					}).reduce<FormFieldTemplate[]>((prev, curr) => {
-						prev.push(...curr.next)
-						return prev
-					}, []) ?? []
-
-					return <div className='container container-horiz multi-select-arg' key={sel.value}>
-						{!disabled && <button className="delete-row" onClick={deleteSelection}>
-							<i className="fa-solid fa-trash"></i>
-						</button>}
-						<div className='arg-display'>{selectedArg.display}</div>
-						{next.length > 0 && (
-							<MultiSelectNextFields selected={sel.value} next={next}
-								data={data} update={update} breadcrumb={[...breadcrumb, sel.value]} />
-						)}
-					</div>
-				})
-			) : (
-				disabled && <Typography>Nessuna selezione</Typography>
-			)}
-		</div>
-	</div>
+	)
 }
 
 function MultiSelectNextFields({ selected, next, data, update, breadcrumb }: {
@@ -507,16 +602,7 @@ function MultiSelectNextFields({ selected, next, data, update, breadcrumb }: {
 	data?: FormMultiSelectFieldData, update: UpdateMultiSelectFieldFunc,
 	breadcrumb: string[],
 }) {
-	const [showNext, setShowNext] = useState(true);
-	const toggleShowNext = (ev: MouseEvent<HTMLButtonElement>) => {
-		ev.preventDefault()
-		setShowNext(!showNext)
-	}
-
 	return <div className='next-fields'>
-		<button className="toggle-show-next" data-toggled={showNext} onClick={toggleShowNext}>
-			<i className="fa-solid fa-chevron-right"></i>
-		</button>
 		{next && Object.values(next).map(nextField => {
 			const updateNext: UpdateFieldFunc = (updater, ...breadcrumb) => {
 				update(selectData => {
@@ -546,11 +632,12 @@ function MultiSelectNextFields({ selected, next, data, update, breadcrumb }: {
 				}, 'value', 'next', selected, nextField.id, ...breadcrumb)
 			}
 
-			return <div style={showNext ? undefined : { display: 'none' }} key={nextField.id}>
-				<Field field={nextField}
+			return (
+				<Field key={nextField.id}
+					field={nextField}
 					data={data?.value?.next?.[selected]?.[nextField.id]}
 					update={updateNext} breadcrumb={[...breadcrumb, 'value', 'next', selected, nextField.id]} />
-			</div>
+			)
 		})}
 	</div>
 }
@@ -561,232 +648,98 @@ function ExpansionField({ field, data, update, disabled, breadcrumb, hideHeader 
 	data?: FormExpansionFieldData, update: UpdateExpansionFieldFunc,
 	disabled: boolean, breadcrumb: string[], hideHeader?: boolean
 }) {
-	const [additionalTempData, updateAdditionalTempData] = useImmer<FormFieldData[]>([])
+	const [fakeData, updateFakeData] = useImmer<FormFieldData>({
+		type: field.expansionArg.type
+	})
 
 	//const additionalRowCount = data?.value?.additional?.length ?? -1;
 	const addRow = (ev: MouseEvent<HTMLButtonElement, PointerEvent>) => {
 		ev.preventDefault()
 
-		if (additionalTempData.length != field.expansionArgs?.length) {
+		if (fakeData.value == undefined && fakeData.type != 'fixed') {
 			enqueueSnackbar((
 				<Alert severity='error'>Inserire tutti i campi prima di aggiungere la riga</Alert>
 			), { key: 'add-expansion-row', preventDuplicate: false })
 			return
 		}
 
-		let allFieldsFilled = true
-		for (let i = 0; i < additionalTempData.length; i++) {
-			const additionalFieldData: FormFieldData | undefined = additionalTempData[i]
-			if (!additionalFieldData || additionalFieldData.value == undefined) {
-				allFieldsFilled = false
-				break;
-			}
-		}
-		if (!allFieldsFilled) {
-			enqueueSnackbar((
-				<Alert severity='error'>Inserire tutti i campi prima di aggiungere la riga</Alert>
-			))
-			return
-		}
-
 		update(data => {
 			if (data.value == undefined)
-				data.value = {}
+				data.value = []
 
-			if (data.value.additional == undefined)
-				data.value.additional = []
-
-			data.value.additional.push(additionalTempData)
+			data.value.push(fakeData)
 		}/* , 'value', 'additional', (additionalRowCount + 1).toString() */)
-		updateAdditionalTempData([])
+		updateFakeData({
+			type: field.expansionArg.type
+		})
 	}
 
 	return <div className='field expansion-field'>
 		{!hideHeader && field.header && <p className="field-header">{field.header}</p>}
-		<div className="fixed-data">
-			{field.fixed?.map((fixedRow, rowIdx) => {
-				return <div key={rowIdx}>
-					{fixedRow.map((field, fieldIdx) => {
-						const updateField: UpdateFieldFunc = (updater/* , ...breadcrumb */) => {
-							update(expansionData => {
-								if (expansionData == undefined)
-									throw new Error('expansion is undefined after the first stage')
-
-								if (expansionData.value == undefined)
-									expansionData.value = {}
-
-								if (expansionData.value.fixed == undefined)
-									expansionData.value.fixed = []
-
-								if (expansionData.value.fixed[rowIdx] == undefined)
-									expansionData.value.fixed[rowIdx] = []
-
-								if (typeof updater !== 'function') {
-									expansionData.value.fixed[rowIdx][fieldIdx] = updater
-									return
-								}
-
-								if (expansionData.value.fixed[rowIdx][fieldIdx] == undefined)
-									expansionData.value.fixed[rowIdx][fieldIdx] = { type: field.type }
-
-								updater(expansionData.value.fixed[rowIdx][fieldIdx])
-							}/* , 'value', 'fixed', rowIdx.toString(), fieldIdx.toString(), ...breadcrumb */)
-						}
-
-						return <Field field={field} key={fieldIdx}
-							data={data?.value?.fixed?.[rowIdx]?.[fieldIdx]} update={updateField}
-							breadcrumb={[...breadcrumb, 'value', 'fixed', rowIdx.toString(), fieldIdx.toString()]}
-						/>
-					})}
-				</div>
-			})}
-		</div>
 		<div className="expansion-data">
-			{data?.value?.additional?.map((additionalData, rowIdx) => {
+			{data?.value?.map((additionalData, rowIdx) => {
 				const deleteAdditional = (ev: MouseEvent<HTMLButtonElement, PointerEvent>) => {
 					ev.preventDefault()
 
 					update(expansionData => {
-						if (expansionData.value && expansionData.value.additional) {
-							expansionData.value.additional = expansionData.value.additional.filter((_, idx) => {
+						if (expansionData.value != undefined) {
+							expansionData.value = expansionData.value.filter((_, idx) => {
 								return idx != rowIdx
 							})
 						}
 					}/* , 'value', 'additional' */)
 				}
 
-				return <Paper sx={{ backgroundColor: '#fff7', padding: '1em' }} key={rowIdx}>
-					{!disabled && <button className="delete-row" onClick={deleteAdditional}>
-						<i className="fa-solid fa-trash"></i>
-					</button>}
-					{field.incremental && <div className="row-counter">
-						<p>{field.prefix ?? '# '}{rowIdx + 1}</p>
-					</div>}
-					{field.expansionArgs?.map((arg, argIdx) => {
-						const updateField: UpdateFieldFunc = (updater/* , ...breadcrumb */) => {
-							update(expansionData => {
-								if (expansionData == undefined || expansionData.value == undefined || expansionData.value.additional == undefined)
-									throw new Error('expansion is undefined after the first stage')
+				const updateField: UpdateFieldFunc = (updater/* , ...breadcrumb */) => {
+					update(expansionData => {
+						if (expansionData.value == undefined)
+							expansionData.value = []
 
-								if (expansionData.value.additional[rowIdx] == undefined)
-									expansionData.value.additional[rowIdx] = []
-
-								if (typeof updater !== 'function') {
-									expansionData.value.additional[rowIdx][argIdx] = updater
-									return
-								}
-
-								if (expansionData.value.additional[rowIdx][argIdx] == undefined)
-									expansionData.value.additional[rowIdx][argIdx] = { type: arg.type }
-
-								updater(expansionData.value.additional[rowIdx][argIdx])
-							}/* , 'value', 'additional', rowIdx.toString(), argIdx.toString(), ...breadcrumb */)
+						if (typeof updater !== 'function') {
+							expansionData.value[rowIdx] = updater
+							return
 						}
 
-						return <Field field={arg} key={argIdx}
-							data={additionalData[argIdx]} update={updateField}
-							breadcrumb={[...breadcrumb, 'value', 'additional', rowIdx.toString(), argIdx.toString()]}
-						/>
-					})}
-					{data?.value?.additional?.[rowIdx] && field.next && (() => {
-						const updateNextFields: DeepUpdater<FormFieldData[]> = (updater/* , ...breadcrumb */) => {
-							update(expansionData => {
-								if (expansionData == undefined || expansionData.value == undefined ||
-									expansionData.value.additional == undefined || expansionData.value.additional[rowIdx] == undefined) {
-									throw new Error('expansion is undefined after the first stage')
-								}
+						if (expansionData.value[rowIdx] == undefined)
+							expansionData.value[rowIdx] = { type: field.expansionArg.type }
 
-								if (typeof updater !== 'function') {
-									expansionData.value.additional[rowIdx] = updater
-									return
-								}
+						updater(expansionData.value[rowIdx])
+					}/* , 'value', 'additional', rowIdx.toString(), argIdx.toString(), ...breadcrumb */)
+				}
 
-								updater(expansionData.value.additional[rowIdx])
-							}/* , 'value', 'additional', rowIdx.toString(), ...breadcrumb */)
-						}
-
-						return <ExpansionNextFields next={field.next} dataOffset={field.expansionArgs?.length ?? 0}
-							data={data.value?.additional?.[rowIdx]} update={updateNextFields}
-							breadcrumb={[...breadcrumb, 'value', 'additional', rowIdx.toString()]}
-						/>
-					})()}
-				</Paper>
+				return (
+					<div className="container container-horiz container-align-start no-wrap">
+						{!disabled && <button className="delete-row" onClick={deleteAdditional}>
+							<i className="fa-solid fa-trash"></i>
+						</button>}
+						<Paper className="input-fields" key={rowIdx}>
+							{field.incremental && <div className="row-counter">
+								<p>{field.prefix ?? '# '}{rowIdx + 1}</p>
+							</div>}
+							<Field field={field.expansionArg}
+								data={additionalData} update={updateField}
+								breadcrumb={[...breadcrumb, 'value', rowIdx.toString()]}
+							/>
+						</Paper>
+					</div>
+				)
 			}) || (disabled && (
 				<Typography>Nessun valore</Typography>
 			))}
 		</div>
-		{!disabled && field.expansionArgs != undefined && <div className="additional">
-			<Paper sx={{ backgroundColor: '#fff7', padding: '1em' }} className="input-fields">
-				{field.expansionArgs?.map((arg, argIdx) => {
-					const updateField: UpdateFieldFunc = (updater/* , ...breadcrumb */) => {
-						updateAdditionalTempData(data => {
-							if (typeof updater !== 'function') {
-								data[argIdx] = updater
-								return
-							}
-
-							if (data[argIdx] == undefined)
-								data[argIdx] = { type: arg.type }
-
-							updater(data[argIdx])
-						}/*  */)
-					}
-
-					return <Field field={arg} key={argIdx}
-						data={additionalTempData[argIdx]} update={updateField}
-						breadcrumb={[...breadcrumb, 'add-input', argIdx.toString()]}
+		{!disabled && (
+			<div className="additional">
+				<Paper className="input-fields">
+					<Field field={field.expansionArg}
+						data={fakeData} update={updateFakeData}
+						breadcrumb={[...breadcrumb, 'fake-field']}
 					/>
-				})}
-			</Paper>
-			{!disabled && <button className='add-row' onClick={addRow} disabled={disabled}>
-				Aggiungi <i className="fa-solid fa-plus"></i>
-			</button>}
-		</div>}
-	</div>
-}
-
-function ExpansionNextFields({ next, dataOffset, data, update, breadcrumb }: {
-	next: FormFieldTemplate[], dataOffset: number,
-	data?: FormFieldData[], update: DeepUpdater<FormFieldData[]>,
-	breadcrumb: string[]
-}) {
-	const [showNext, setShowNext] = useState(true);
-	const toggleShowNext = (ev: MouseEvent<HTMLButtonElement>) => {
-		ev.preventDefault()
-		setShowNext(!showNext)
-	}
-
-	return <div className='next-fields'>
-		<button className="toggle-show-next" data-toggled={showNext} onClick={toggleShowNext}>
-			<i className="fa-solid fa-chevron-right"></i>
-		</button>
-		{next.map((field, nextIdx) => {
-			const offset = dataOffset + nextIdx
-
-			const updateNext: UpdateFieldFunc = (updater, ...breadcrumb) => {
-				update(nextData => {
-					if (nextData == undefined)
-						throw new Error('select is undefined after the first stage')
-
-					if (typeof updater !== 'function') {
-						nextData[offset] = updater
-						return
-					}
-
-					if (nextData[offset] == undefined)
-						nextData[offset] = { type: field.type }
-
-					updater(nextData[offset])
-				}, offset.toString(), ...breadcrumb)
-			}
-
-			return <div style={showNext ? undefined : { display: 'none' }} key={offset}>
-				<Field field={field}
-					data={data?.[offset]}
-					update={updateNext}
-					breadcrumb={[...breadcrumb, offset.toString()]} />
+				</Paper>
+				{!disabled && <button className='add-row' onClick={addRow} disabled={disabled}>
+					Aggiungi <i className="fa-solid fa-plus"></i>
+				</button>}
 			</div>
-		})}
+		)}
 	</div>
 }
 

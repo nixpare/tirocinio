@@ -53,21 +53,22 @@
 	border-radius: 2em;
 }
 
-.field .select-input {
+.field.select-field,
+.field.multi-select-field>.select-input {
 	width: fit-content;
 	min-width: 20ch;
 }
-.field .select-input:not(:has(>*)) {
+.field.select-field:not(:has(>*)),
+.field.multi-select-field>.select-input:not(:has(>*)) {
 	display: none;
 }
 
-.field .multi-select {
-	padding: .4em 1em;
+.field .multi-select-next {
 	margin-top: .6em;
 	display: flex;
 	flex-wrap: wrap;
 }
-.field .multi-select:not(:has(>*)) {
+.field .multi-select-next:not(:has(>*)) {
 	display: none;
 }
 
@@ -82,28 +83,23 @@
 	font-weight: bold;
 }
 
-.field .multi-select .multi-select-arg {
-	width: fit-content;
-	flex-wrap: nowrap;
-	justify-content: start;
+.field .multi-select-next .multi-select-arg {
+	padding: 0;
 	background-color: rgba(var(--primary-color), .1);
-	margin: .5em;
 }
 
-.field .multi-select .arg-display {
+.field .multi-select-next .arg-display {
 	font-size: 1.2em;
 	background-color: rgba(var(--primary-color), .4);
 	padding: .4em .5em;
 	border-radius: .2em;
 }
 
-.field .select-field,
 .field .next-fields {
 	display: flex;
-	gap: 1em;
-}
-.field .select-field {
 	flex-wrap: wrap;
+	gap: 1em;
+	width: fit-content;
 }
 
 .field .next-fields .toggle-show-next {
@@ -120,9 +116,10 @@
 	transform: rotate(90deg);
 }
 
-.field .multi-select .multi-select-arg .delete-row,
+.field .multi-select-next .delete-row,
 .field.expansion-field .delete-row {
 	font-size: .9em;
+	margin-top: 1em;
 	padding: .6em;
 	border-radius: .2em;
 	color: #333;
@@ -139,7 +136,13 @@
 	display: flex;
 	flex-wrap: wrap;
 	gap: 1em;
+	padding: 1em;
 	min-width: 20ch;
+	background-color: rgba(255, 255, 255, 50%);
+}
+.field.expansion-field .input-fields:not(:has(>*)) {
+	background-color: transparent;
+	padding: 0;
 }
 
 .field.expansion-field .add-row {
@@ -155,12 +158,10 @@
 	text-align: center;
 }
 
-.field.expansion-field .fixed-data:not(:has(>*)),
 .field.expansion-field .expansion-data:not(:has(>*)) {
 	display: none;
 }
 
-.field.expansion-field .fixed-data > div,
 .field.expansion-field .expansion-data > div {
 	display: flex;
 	flex-wrap: wrap;

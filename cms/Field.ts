@@ -154,20 +154,44 @@ export function rebuildStrapiCampoTree(doc: StrapiCampo[]): StrapiCampoNode[] {
 		if (formFieldIsExpansion(node)) {
 			switch (campo.TipoCampo) {
 				case StrapiTipoCampo.TextMulti:
-					node.expansionArgs = campo.ListaElementi.map(elemento => ({
-						id: convertLabelToID(elemento.NomeCampo),
-						type: 'text',
-						header: elemento.NomeCampo,
-					}))
+					if (campo.ListaElementi.length == 0) {
+						throw new Error('did not expect to receive empty ListaElementi for text-multi field')
+					}
+
+					if (campo.ListaElementi.length == 1) {
+						const elem = campo.ListaElementi[0];
+						node.expansionArg = {
+							id: convertLabelToID(elem.NomeCampo),
+							type: 'text',
+							header: elem.NomeCampo
+						}
+					} else {
+						const group: StrapiCampoNode = {
+							...node,
+							type: 'group',
+							group: campo.ListaElementi.map(elemento => ({
+								id: convertLabelToID(elemento.NomeCampo),
+								type: 'text',
+								header: elemento.NomeCampo,
+							}))
+						}
+					}
 
 					nodes.push(node)
 					break;
 
 				case StrapiTipoCampo.ID:
 					node.incremental = true
+					node.expansionArg = {
+						id: 'ID',
+						type: 'fixed',
+					}
 
 					nodes.push(node)
 					break;
+				
+				default:
+					throw new Error(`field ${campo.TipoCampo} not implemented for expansion field`)
 			}
 
 			return;

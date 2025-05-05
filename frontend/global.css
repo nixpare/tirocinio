@@ -94,6 +94,9 @@ input.invalid {
 .container.container-align-start {
   align-items: start;
 }
+.no-wrap {
+  flex-wrap: nowrap;
+}
 
 .w-100 {
   width: 100% !important;

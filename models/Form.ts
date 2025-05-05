@@ -70,7 +70,6 @@ export type FormFieldType = 'fixed' | 'text' | 'number' | 'select' | 'multi-sele
 export type FormFixedFieldTemplate = FormFieldBaseTemplate & {
 	type: 'fixed'
 	value?: string
-	nextAnyValue: undefined
 }
 export type FormTextFieldTemplate = FormFieldBaseTemplate & {
 	type: 'text'
@@ -98,8 +97,7 @@ export type FormExpansionFieldTemplate = FormFieldBaseTemplate & {
 	type: 'expansion'
 	incremental?: boolean
 	prefix?: string
-	fixed?: FormFieldTemplate[][]
-	expansionArgs?: FormFieldTemplate[]
+	expansionArg: FormFieldTemplate
 	next?: FormFieldTemplate[]
 }
 export type FormDeductionFieldTemplate = FormFieldBaseTemplate & {
@@ -160,7 +158,7 @@ export type FormFieldData = FormFieldBaseData | FormTextFieldData | FormNumberFi
 
 type FormFieldBaseData = {
 	type: FormFieldType
-	value?: string | number | FormSelectFieldValue | FormMultiSelectFieldValue | FormExpansionFieldValue | Record<string, FormFieldData>
+	value?: string | number | FormSelectFieldValue | FormMultiSelectFieldValue | FormFieldData[] | Record<string, FormFieldData>
 	nextAnyValue?: Record<string, FormFieldData>
 }
 
@@ -182,7 +180,7 @@ export type FormMultiSelectFieldData = FormFieldBaseData & {
 }
 export type FormExpansionFieldData = FormFieldBaseData & {
 	type: 'expansion'
-	value?: FormExpansionFieldValue
+	value?: FormFieldData[]
 }
 export type FormDeductionFieldData = FormFieldBaseData & {
 	type: 'deduction'
@@ -228,10 +226,4 @@ export type FormMultiSelectFieldValue = {
 	selections: string[]
 	/** le `AnatomStructProperty` innestate, opzionale, indica i valori della proprietà derivate dalla selezione corrente */
 	next?: Record<string, Record<string, FormFieldData> | undefined>
-}
-
-// TODO: convert to Record
-export type FormExpansionFieldValue = {
-	fixed?: FormFieldData[][]
-	additional?: FormFieldData[][]
 }

@@ -178,7 +178,6 @@ export function FormSection({ section, data, update }: {
 					<Field field={starter}
 						data={data?.[starter.id]} update={updateStarter}
 						breadcrumb={[section.id, starter.id]}
-						hideHeader
 					/>
 				</div>
 			)
@@ -198,7 +197,6 @@ export function FormSection({ section, data, update }: {
 					<Field field={starter}
 						data={data?.[starter.id]} update={updateStarter}
 						breadcrumb={[section.id, starter.id]}
-						hideHeader
 					/>
 				</AccordionDetails>
 			</Accordion>
