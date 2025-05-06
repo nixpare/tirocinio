@@ -5,7 +5,9 @@ import { isAnatomStructType } from '../models/conversion';
 import qs from 'qs';
 
 export enum StrapiAnatomStructType {
-	Osso = 'ossa'
+	Osso = 'ossa',
+	Viscera = 'viscere',
+	Esterno = 'esterni'
 }
 
 export type StrapiAnatomStruct = StrapiDocument & {

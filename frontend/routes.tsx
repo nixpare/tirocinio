@@ -3,7 +3,7 @@ import { TemplateHome } from "./pages/Template/Template";
 import { AppLayout } from "./App";
 import { BodyHome, BodyLoader } from "./pages/Body/Body";
 import { Bones, BoneView } from "./pages/Body/Bones";
-import { Conversion, conversionLoader } from "./pages/Conversion";
+import { Conversion, conversionLoader, ConversionSelector } from "./pages/Conversion";
 import { Index } from "./pages";
 
 const router = createBrowserRouter([
@@ -44,8 +44,17 @@ const router = createBrowserRouter([
 			},
 			{
 				path: 'conversion',
-				Component: Conversion,
-				loader: conversionLoader
+				children: [
+					{
+						index: true,
+						Component: ConversionSelector,
+					},
+					{
+						path: ':anatomType/:anatomName',
+						loader: conversionLoader,
+						Component: Conversion,
+					}
+				]
 			}
 		]
 	}

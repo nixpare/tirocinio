@@ -1,18 +1,76 @@
 import { useLoaderData } from 'react-router';
 import { convertStrapi, fetchStrapiDocument, StrapiAnatomStructType } from '../../cms/AnatomStruct'
-import { Body } from '../../models/Body';
+import { Body, BodyContextProvider } from '../../models/Body';
 import { AnatomStructDataContext, Bone } from '../../models/AnatomStruct';
-import { BodyContextProvider } from '../../models/Body';
 import { useImmer } from 'use-immer';
 import { Form } from '../components/Form/Form';
 import { childDeepUpdater, childUpdater, rootDeepUpdater } from '../utils/updater';
 import { walkObject } from '../../models/Programmable';
+import Select from 'react-select';
+import { useContext, useEffect, useState } from 'react';
+import { NavigationContextProvider } from '../App';
+import { Link } from '@mui/material';
+import { Link as RouterLink } from 'react-router';
 
-export async function conversionLoader() {
-	const strapiDoc = await fetchStrapiDocument(StrapiAnatomStructType.Osso, 'Femore destro');
+type AnatomTypeOption = {
+	label: string,
+	value: StrapiAnatomStructType
+}
+
+export function ConversionSelector() {
+	useConversionNavigation()
+
+	const options: AnatomTypeOption[] = [
+		{ label: 'Osso', value: StrapiAnatomStructType.Osso },
+		{ label: 'Viscera', value: StrapiAnatomStructType.Viscera },
+		{ label: 'Esterno', value: StrapiAnatomStructType.Esterno }
+	]
+
+	const [anatomType, setAnatomType] = useState<string>('')
+	const [anatomName, setAnatomName] = useState<string>('')
+
+	return (
+		<>
+			<div className='container container-horiz container-start'>
+				<Select
+					options={options}
+					value={options.find(option => option.value === anatomType)}
+					onChange={(newValue) => {
+						setAnatomType(newValue?.value ?? '')
+					}}
+					isClearable
+				/>
+				<input type="text"
+					value={anatomName}
+					onChange={(ev) => {
+						setAnatomName(ev.target.value)
+					}}
+				/>
+			</div>
+			{anatomType !== '' && anatomName !== '' && (
+				<Link
+					component={RouterLink}
+					to={`/conversion/${anatomType}/${anatomName}`}
+				>
+					Converti
+				</Link>
+			)}		
+		</>
+	)
+}
+
+export async function conversionLoader({ params }: {
+	params: any
+}) {
+	const { anatomType, anatomName } = params as {
+		anatomType: StrapiAnatomStructType,
+		anatomName: string
+	};
+
+	const strapiDoc = await fetchStrapiDocument(anatomType, anatomName);
 	console.log(strapiDoc)
 
-	const [anatom, err] = convertStrapi(strapiDoc, StrapiAnatomStructType.Osso);
+	const [anatom, err] = convertStrapi(strapiDoc, anatomType);
 	if (err) {
 		console.error(err.error, err.computed);
 	}
@@ -24,6 +82,8 @@ export async function conversionLoader() {
 }
 
 export function Conversion() {
+	useConversionNavigation()
+
 	const bone = useLoaderData<Bone>();
 	console.log(bone)
 
@@ -66,4 +126,30 @@ export function Conversion() {
 			</AnatomStructDataContext.Provider>
 		</BodyContextProvider.Provider>
 	)
+}
+
+function useConversionNavigation() {
+	const navigationContext = useContext(NavigationContextProvider);
+	useEffect(() => {
+		navigationContext?.([
+			{
+				segment: '',
+				title: 'Home',
+				icon: <i className="fa-solid fa-house"></i>
+			},
+			{
+				segment: 'template',
+				title: 'Template editor',
+				icon: <i className="fa-solid fa-screwdriver-wrench"></i>
+			},
+			{
+				kind: 'divider'
+			},
+			{
+				segment: 'conversion',
+				title: 'Conversione',
+				icon: <i className="fa-solid fa-screwdriver-wrench"></i>
+			}
+		])
+	}, [])
 }
