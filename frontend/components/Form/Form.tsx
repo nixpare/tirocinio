@@ -187,6 +187,7 @@ export function FormSection({ section, data, update }: {
 			<Accordion key={starter.id}
 				className="starter-field"
 				elevation={4}
+				defaultExpanded
 			>
 				<AccordionSummaryLeft>
 					<Typography className="field-header">

@@ -105,17 +105,22 @@ export function FieldSwitch({ field, data, update, breadcrumb }: {
 			return (
 				<div className="field text-field">
 					{field.header && <p className="field-header">{field.header}</p>}
-					{!field.multiline ? <>
-						<input type="text"
+					{!field.multiline ? (
+						<input
+							type="text"
+							placeholder='Inserisci testo ...'
 							value={data?.value ?? ''}
-							onChange={handleTextInput} disabled={!editMode}
+							onChange={handleTextInput}
+							disabled={!editMode}
 						/>
-					</> : <>
+					) : (
 						<textarea
+							placeholder='Inserisci testo ...'
 							value={data?.value ?? ''}
-							onChange={handleTextInput} disabled={!editMode}
+							onChange={handleTextInput}
+							disabled={!editMode}
 						/>
-					</>}
+					)}
 				</div>
 			)
 		case formFieldIsNumber(field):
@@ -132,18 +137,20 @@ export function FieldSwitch({ field, data, update, breadcrumb }: {
 			}
 
 			const handleNumberInput = (ev: ChangeEvent<HTMLInputElement>): void => {
-				const n = Number(ev.target.value)
 				update({
 					type: 'number',
-					value: Number.isNaN(n) ? 0 : n
+					value: Number(ev.target.value)
 				})
 			}
 
 			return (
 				<div className="field number-field">
 					{field.header && <p className="field-header">{field.header}</p>}
-					<input type="number" className={className}
-						value={(data?.value ?? 0).toString()}
+					<input
+						type="number"
+						className={className}
+						placeholder='Inserire valore ...'
+						value={(data?.value?.toString() ?? '')}
 						onChange={handleNumberInput} disabled={!editMode}
 					/>
 				</div>
@@ -318,9 +325,9 @@ function SelectField({ field, data, update, disabled, breadcrumb, hideHeader }: 
 	}))
 
 	const styles: StylesConfig<SelectOption> = {
-		multiValueLabel: (base, _) => {
-			return { ...base, fontWeight: 'bold', paddingRight: 6 };
-		},
+		container: (base, _) => {
+			return { ...base, maxWidth: '50ch' }
+		}
 	};
 
 	const selectedOption: SelectOption | undefined = options.find(option => option.value == data?.value?.selection);
@@ -486,8 +493,11 @@ function MultiSelectField({ field, data, update, disabled, breadcrumb, hideHeade
 	}, [selectRef.current, data])
 
 	const styles: StylesConfig<SelectOption, true> = {
+		container: (base, _) => {
+			return { ...base, maxWidth: '50ch' }
+		},
 		multiValueLabel: (base, _) => {
-			return { ...base, fontWeight: 'bold', paddingRight: 6 };
+			return { ...base, fontWeight: 'bold', paddingRight: 6, maxWidth: '12ch' };
 		},
 		multiValueRemove: (base, _) => {
 			return { ...base, display: 'none' };
@@ -575,6 +585,7 @@ function MultiSelectField({ field, data, update, disabled, breadcrumb, hideHeade
 								<Accordion key={sel.value}
 									className="multi-select-arg"
 									elevation={4}
+									defaultExpanded
 								>
 									<AccordionSummaryLeft>
 										<div className='arg-display'>{selectedArg.display}</div>
