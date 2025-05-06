@@ -48,13 +48,13 @@ async function fetchQuery<T = any>(url: string, populate: any): Promise<T> {
 
 export async function fetchStrapiDocument(typ: StrapiAnatomStructType, name: string): Promise<StrapiAnatomStruct> {
 	let url = `${baseURL}/api/${typ}/`;
-	let response = await fetch(url);
+	let response = await fetch(url + '?status=draft');
 	if (!response.ok) throw new Error(`Error fetching ${url}: ${await response.text()}`);
 
 	const documents = (await response.json()).data as StrapiAnatomStruct[];
-	const id = documents
-		.filter(doc => doc.Nome.includes(name))
-		.map(doc => doc.documentId)[0];
+	const id = documents.find(doc => doc.Nome === name)?.documentId
+
+	if (id == undefined) throw new Error(`Document ${name} not found`);
 
 	url += `${id}`
 	const data: StrapiAnatomStruct = await fetchQuery(url, anatomStructQuery);
@@ -69,6 +69,12 @@ export function convertStrapi(doc: StrapiAnatomStruct, typ: StrapiAnatomStructTy
 	switch (typ) {
 		case StrapiAnatomStructType.Osso:
 			anatomStruct.type = 'bone';
+			break;
+		case StrapiAnatomStructType.Viscera:
+			anatomStruct.type = 'viscera';
+			break;
+		case StrapiAnatomStructType.Esterno:
+			anatomStruct.type = 'exterior';
 			break;
 	}
 

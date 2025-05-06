@@ -323,7 +323,7 @@ function SelectField({ field, data, update, disabled, breadcrumb, hideHeader }: 
 		},
 	};
 
-	const selectedOption: SelectOption | undefined = options.filter(option => option.value == data?.value?.selection)[0];
+	const selectedOption: SelectOption | undefined = options.find(option => option.value == data?.value?.selection);
 
 	const selectRef = useRef<SelectInstance<SelectOption> | null>(null);
 	useEffect(() => {
@@ -538,7 +538,7 @@ function MultiSelectField({ field, data, update, disabled, breadcrumb, hideHeade
 			<div className='multi-select-next'>
 				{selectedOptions.length > 0 ? (
 					selectedOptions.map((sel) => {
-						const selectedArg = selectArgs.filter(arg => arg.value == sel.value)[0]
+						const selectedArg = selectArgs.find(arg => arg.value == sel.value)
 						if (selectedArg == undefined)
 							return undefined
 
