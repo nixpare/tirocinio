@@ -98,7 +98,7 @@ export function FieldSwitch({ field, data, update, breadcrumb }: {
 			const handleTextInput = (ev: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>): void => {
 				update({
 					type: 'text',
-					value: ev.target.value
+					value: ev.target.value === '' ? undefined : ev.target.value
 				})
 			}
 
@@ -139,7 +139,7 @@ export function FieldSwitch({ field, data, update, breadcrumb }: {
 			const handleNumberInput = (ev: ChangeEvent<HTMLInputElement>): void => {
 				update({
 					type: 'number',
-					value: Number(ev.target.value)
+					value: ev.target.value === '' ? undefined : Number(ev.target.value)
 				})
 			}
 
