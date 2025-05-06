@@ -1,4 +1,5 @@
-export const baseURL = 'http://labanof-backoffice.islab.di.unimi.it/api';
+// @ts-ignore
+export const baseURL = '/cms';
 
 export type StrapiComponent = {
 	id: number

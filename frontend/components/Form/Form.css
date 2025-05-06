@@ -36,21 +36,24 @@
 }
 
 .form-section .images {
+	border-radius: .4em;
+	overflow-x: hidden;
+}
+
+.form-section .images:not(.hidden) {
+	width: fit-content;
+	background-color: rgba(var(--primary-color), .1);
+	margin-left: 1em;
+}
+
+.form-section .images.hidden {
+	width: 0;
+}
+
+.form-section .images img {
 	min-width: 200px;
 	max-width: 350px;
-	background-color: rgba(var(--primary-color), .1);
-	padding: 1em .5em;
-	height: fit-content;
-	border-radius: .4em;
-}
-
-.form-section .image {
-	position: relative;
-}
-
-.form-section .image img {
-	width: 100%;
-	height: fit-content;
+	max-height: 50dvh;
 }
 
 .form-section .starter-field {

@@ -16,11 +16,6 @@ export function Index() {
                 icon: <i className="fa-solid fa-house"></i>
             },
             {
-                segment: 'template',
-                title: 'Template editor',
-                icon: <i className="fa-solid fa-screwdriver-wrench"></i>
-            },
-            {
                 kind: 'divider'
             },
             {

@@ -1,7 +1,6 @@
 import { AnatomStructData } from './AnatomStruct';
 import { Body } from './Body';
 import { FormFieldSelectArgs } from './Form';
-import { templateFieldScopeSelector } from '../frontend/pages/Template/Template';
 
 export type Programmable<T = Object> = (struct: AnatomStructData, body: Body, breadcrum: string[]) => T
 export type ProgrammableElement<T = Object> = {
@@ -35,8 +34,6 @@ export const selectArgsFunctionMap: Record<string, SelectArgsFunction> = {}
 
 function loadSelectArgsFunctions() {
 
-	// template
-	selectArgsFunctionMap[templateFieldScopeSelector.id] = templateFieldScopeSelector.fn
 }
 
 export function loadProgrammableFunctions() {

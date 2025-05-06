@@ -47,7 +47,7 @@ async function fetchQuery<T = any>(url: string, populate: any): Promise<T> {
 }
 
 export async function fetchStrapiDocument(typ: StrapiAnatomStructType, name: string): Promise<StrapiAnatomStruct> {
-	let url = `${baseURL}/${typ}`;
+	let url = `${baseURL}/api/${typ}/`;
 	let response = await fetch(url);
 	if (!response.ok) throw new Error(`Error fetching ${url}: ${await response.text()}`);
 
@@ -56,7 +56,7 @@ export async function fetchStrapiDocument(typ: StrapiAnatomStructType, name: str
 		.filter(doc => doc.Nome.includes(name))
 		.map(doc => doc.documentId)[0];
 
-	url += `/${id}`
+	url += `${id}`
 	const data: StrapiAnatomStruct = await fetchQuery(url, anatomStructQuery);
 
 	return data;

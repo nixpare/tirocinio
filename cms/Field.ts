@@ -1,6 +1,6 @@
 import { convertLabelToID } from "../models/conversion";
 import { formFieldIsExpansion, formFieldIsMultiSelect, formFieldIsNumber, formFieldIsSelect, formFieldIsText, FormFieldSelectArgs, FormFieldTemplate, FormFieldType } from "../models/Form";
-import { StrapiComponent } from "./Strapi";
+import { deepCopy, StrapiComponent } from "./Strapi";
 
 export type StrapiCampo = StrapiComponent & {
 	NomeCampo: string
@@ -14,10 +14,12 @@ export enum StrapiTipoCampo {
 	Select = 'select',
 	MultiSelect = 'select-multi',
 	TextMulti = 'text-multi',
-	ID = 'ID'
+	ID = 'ID',
 
 	// TODO: capire meglio il campo 'reference'
+	Reference = 'reference',
 	// TODO: implementare il campo 'method'
+	Method = 'method'
 }
 
 type StrapiElemento = StrapiComponent & {
@@ -54,6 +56,10 @@ export function rebuildStrapiCampoTree(doc: StrapiCampo[]): StrapiCampoNode[] {
 			nextChar = newNextChar + 1;
 
 			if (needle === '') {
+				if (path[segment]?.selector?.type != undefined) {
+					continue;
+				}
+
 				path[segment].selector = {
 					type: "foreach"
 				}
@@ -165,20 +171,23 @@ export function rebuildStrapiCampoTree(doc: StrapiCampo[]): StrapiCampoNode[] {
 							type: 'text',
 							header: elem.NomeCampo
 						}
-					} else {
-						const group: StrapiCampoNode = {
-							...node,
-							type: 'group',
-							group: campo.ListaElementi.map(elemento => ({
-								id: convertLabelToID(elemento.NomeCampo),
-								type: 'text',
-								header: elemento.NomeCampo,
-							}))
-						}
+
+						nodes.push(node)
+						return;
+					}
+					
+					const group: StrapiCampoNode = {
+						...node,
+						type: 'group',
+						group: campo.ListaElementi.map(elemento => ({
+							id: convertLabelToID(elemento.NomeCampo),
+							type: 'text',
+							header: elemento.NomeCampo,
+						}))
 					}
 
-					nodes.push(node)
-					break;
+					nodes.push(group)
+					return;
 
 				case StrapiTipoCampo.ID:
 					node.incremental = true
@@ -188,17 +197,20 @@ export function rebuildStrapiCampoTree(doc: StrapiCampo[]): StrapiCampoNode[] {
 					}
 
 					nodes.push(node)
-					break;
+					return;
 				
 				default:
 					throw new Error(`field ${campo.TipoCampo} not implemented for expansion field`)
 			}
 
+			throw new Error('unreachable')
 			return;
 		}
 
 		nodes.push(node)
 	})
+
+	console.log('intermediary result:', deepCopy(nodes))
 
 	for (const i in nodes) {
 		if (nodes[i] == undefined)
@@ -230,8 +242,15 @@ function rebuildTree(node: StrapiCampoNode, prev: (FormFieldTemplate | undefined
 
 	const parent = prev.find(el => el?.id === nextKey);
 	if (parent == undefined) {
-		console.error(prev, path, nextKey, selector, prev)
-		throw new Error('parent node should not be undefined');
+		// TODO: this should be fatal
+		console.error('parent node should not be undefined, skipping', prev, path, nextKey, selector, prev)
+		//throw new Error('parent node should not be undefined');
+		return
+	}
+
+	if (formFieldIsText(parent) ||  formFieldIsNumber(parent)) {
+		// TODO: understand the difference between '/' and '//' for number and text fields
+		selector.type = 'any'
 	}
 
 	if (formFieldIsSelect(parent) || formFieldIsMultiSelect(parent)) {
@@ -242,15 +261,6 @@ function rebuildTree(node: StrapiCampoNode, prev: (FormFieldTemplate | undefined
 		}
 
 		switch (selector.type) {
-			case "any":
-				if (parent.nextAnyValue == undefined) {
-					parent.nextAnyValue = []
-				}
-
-				console.log(field, parent)
-
-				rebuildTree({ path: [...path], ...field }, parent.nextAnyValue)
-				break;
 			case "foreach":
 				for (const arg of selectArgs) {
 					let next = parent.nextArgs.find(nextArg => nextArg.options.includes(arg.value))
@@ -286,6 +296,28 @@ function rebuildTree(node: StrapiCampoNode, prev: (FormFieldTemplate | undefined
 		return;
 	}
 
+	if (formFieldIsExpansion(parent)) {
+		switch (selector.type) {
+			case 'value':
+				// TODO: understand the importance and meaning of the :<value> selector for expansion fields (text-multi, ID, ecc.)
+				/* if (selector.value !== 'ID') {
+					throw new Error(`unknown selector value ${selector.value} for expansion field`)
+				} */
+
+				if (parent.next == undefined) {
+					parent.next = []
+				}
+
+				parent.next.push(field)
+				break;
+
+			default:
+				throw new Error(`unknown selector type ${selector.type} for expansion field`)
+		}
+
+		return
+	}
+
 	switch (selector.type) {
 		case "any":
 			if (parent.nextAnyValue == undefined) {
@@ -319,6 +351,12 @@ function convertStrapiTipoCampo(typ: StrapiTipoCampo): FormFieldType {
 			return 'expansion';
 		case StrapiTipoCampo.ID:
 			return 'expansion';
+		case StrapiTipoCampo.Reference:
+			// TODO: to be implemented
+			return 'fixed';
+		case StrapiTipoCampo.Method:
+			// TODO: to be implemented
+			return 'fixed';
 	}
 }
 

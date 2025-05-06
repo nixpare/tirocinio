@@ -59,9 +59,20 @@ export function ConversionSelector() {
 	)
 }
 
+const anatomCache = new Map<string, any>();
+
 export async function conversionLoader({ params }: {
 	params: any
 }) {
+	const cacheKey = JSON.stringify(params)
+	const cachedAnatom = anatomCache.get(cacheKey)
+	if (cachedAnatom != undefined) {
+		console.log('returning anatom struct from cache')
+		return cachedAnatom
+	}
+
+	console.log('fetching anatom struct')
+
 	const { anatomType, anatomName } = params as {
 		anatomType: StrapiAnatomStructType,
 		anatomName: string
@@ -78,6 +89,7 @@ export async function conversionLoader({ params }: {
 		console.error("an unexpected error has occurred at anatom struct");
 	}
 
+	anatomCache.set(cacheKey, anatom)
 	return anatom
 }
 
@@ -104,6 +116,12 @@ export function Conversion() {
 		viscus: {},
 		exteriors: {}
 	})
+
+	const boneData = body.bones[bone.name].form.sections
+
+	useEffect(() => {
+		console.log(boneData)
+	}, [boneData])
 
 	const data = body.bones[bone.name]
 
@@ -136,11 +154,6 @@ function useConversionNavigation() {
 				segment: '',
 				title: 'Home',
 				icon: <i className="fa-solid fa-house"></i>
-			},
-			{
-				segment: 'template',
-				title: 'Template editor',
-				icon: <i className="fa-solid fa-screwdriver-wrench"></i>
 			},
 			{
 				kind: 'divider'

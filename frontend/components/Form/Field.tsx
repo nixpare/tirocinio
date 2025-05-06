@@ -568,7 +568,7 @@ function MultiSelectField({ field, data, update, disabled, breadcrumb, hideHeade
 						}, []) ?? []
 
 						return (
-							<div className="container container-horiz container-align-start no-wrap">
+							<div className="container container-horiz container-align-start no-wrap" key={sel.value}>
 								{!disabled && <button className="delete-row" onClick={deleteSelection}>
 									<i className="fa-solid fa-trash"></i>
 								</button>}
@@ -667,7 +667,7 @@ function ExpansionField({ field, data, update, disabled, breadcrumb, hideHeader 
 			if (data.value == undefined)
 				data.value = []
 
-			data.value.push(fakeData)
+			data.value.push([fakeData])
 		}/* , 'value', 'additional', (additionalRowCount + 1).toString() */)
 		updateFakeData({
 			type: field.expansionArg.type
@@ -692,34 +692,43 @@ function ExpansionField({ field, data, update, disabled, breadcrumb, hideHeader 
 
 				const updateField: UpdateFieldFunc = (updater/* , ...breadcrumb */) => {
 					update(expansionData => {
-						if (expansionData.value == undefined)
-							expansionData.value = []
+						if (expansionData.value == undefined || expansionData.value[rowIdx] == undefined)
+							throw new Error("expansion data value undefined after being added")
 
 						if (typeof updater !== 'function') {
-							expansionData.value[rowIdx] = updater
+							expansionData.value[rowIdx][0] = updater
 							return
 						}
 
-						if (expansionData.value[rowIdx] == undefined)
-							expansionData.value[rowIdx] = { type: field.expansionArg.type }
+						if (expansionData.value[rowIdx][0] == undefined)
+							expansionData.value[rowIdx][0] = { type: field.expansionArg.type }
 
-						updater(expansionData.value[rowIdx])
+						updater(expansionData.value[rowIdx][0])
 					}/* , 'value', 'additional', rowIdx.toString(), argIdx.toString(), ...breadcrumb */)
 				}
 
 				return (
-					<div className="container container-horiz container-align-start no-wrap">
+					<div key={rowIdx}>
 						{!disabled && <button className="delete-row" onClick={deleteAdditional}>
 							<i className="fa-solid fa-trash"></i>
 						</button>}
-						<Paper className="input-fields" key={rowIdx}>
+						<Paper className="input-fields">
 							{field.incremental && <div className="row-counter">
 								<p>{field.prefix ?? '# '}{rowIdx + 1}</p>
 							</div>}
 							<Field field={field.expansionArg}
-								data={additionalData} update={updateField}
+								data={additionalData[0]} update={updateField}
 								breadcrumb={[...breadcrumb, 'value', rowIdx.toString()]}
 							/>
+							{field.next && additionalData.length > 0 && (
+								<ExpansionFieldNext
+									fields={field.next}
+									data={additionalData.slice(1)}
+									update={update}
+									rowIdx={rowIdx}
+									breadcrumb={breadcrumb}
+								/>
+							)}
 						</Paper>
 					</div>
 				)
@@ -741,6 +750,46 @@ function ExpansionField({ field, data, update, disabled, breadcrumb, hideHeader 
 			</div>
 		)}
 	</div>
+}
+
+function ExpansionFieldNext({ fields, data, update, rowIdx, breadcrumb }: {
+	fields: FormFieldTemplate[],
+	data: FormFieldData[],
+	update: UpdateExpansionFieldFunc,
+	rowIdx: number,
+	breadcrumb: string[]
+}) {
+	return (
+		<>
+			{fields.map((field, fieldIdx) => {
+				const updateField: UpdateFieldFunc = (updater/* , ...breadcrumb */) => {
+					update(expansionData => {
+						if (expansionData.value == undefined || expansionData.value[rowIdx] == undefined)
+							throw new Error("expansion data value undefined after being added")
+
+						if (typeof updater !== 'function') {
+							expansionData.value[rowIdx][fieldIdx + 1] = updater
+							return
+						}
+
+						if (expansionData.value[rowIdx][fieldIdx + 1] == undefined)
+							expansionData.value[rowIdx][fieldIdx + 1] = { type: field.type }
+
+						updater(expansionData.value[rowIdx][fieldIdx + 1])
+					}/* , 'value', 'additional', rowIdx.toString(), argIdx.toString(), ...breadcrumb */)
+				}
+
+				return (
+					<Field key={field.id}
+						field={field}
+						data={data[fieldIdx]}
+						update={updateField}
+						breadcrumb={[...breadcrumb, 'additional', rowIdx.toString(), fieldIdx.toString() + 1 ]}
+					/>
+				)
+			})}
+		</>
+	)
 }
 
 function DeductionHint({ hint }: { hint: DeductionTable }) {

@@ -219,16 +219,14 @@ export function FormSection({ section, data, update }: {
 			<button className="toggle-show-images" data-toggled={showImages} onClick={toggleShowImages}>
 				<i className="fa-solid fa-chevron-left"></i>
 			</button>
-			<div className="container">
-				<div className="images" style={showImages ? undefined : { display: 'none' }}>
-					<Carousel>
-						{section.images?.map((image, imageIdx) => {
-							return <div className="image" key={imageIdx}>
-								<img src={image} alt={section.title} />
-							</div>
-						})}
-					</Carousel>
-				</div>
+			<div className={`container images ${showImages ? '' : 'hidden'}`}>
+				<Carousel>
+					{section.images?.map((image, imageIdx) => {
+						return (
+							<img src={image} alt={section.title} key={imageIdx} />
+						)
+					})}
+				</Carousel>
 			</div>
 		</div>
 	</div>

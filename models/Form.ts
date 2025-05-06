@@ -158,7 +158,7 @@ export type FormFieldData = FormFieldBaseData | FormTextFieldData | FormNumberFi
 
 type FormFieldBaseData = {
 	type: FormFieldType
-	value?: string | number | FormSelectFieldValue | FormMultiSelectFieldValue | FormFieldData[] | Record<string, FormFieldData>
+	value?: string | number | FormSelectFieldValue | FormMultiSelectFieldValue | FormFieldData[][] | Record<string, FormFieldData>
 	nextAnyValue?: Record<string, FormFieldData>
 }
 
@@ -180,7 +180,7 @@ export type FormMultiSelectFieldData = FormFieldBaseData & {
 }
 export type FormExpansionFieldData = FormFieldBaseData & {
 	type: 'expansion'
-	value?: FormFieldData[]
+	value?: FormFieldData[][]
 }
 export type FormDeductionFieldData = FormFieldBaseData & {
 	type: 'deduction'
