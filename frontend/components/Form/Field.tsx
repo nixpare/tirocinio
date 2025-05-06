@@ -136,21 +136,20 @@ export function FieldSwitch({ field, data, update, breadcrumb }: {
 				className = 'invalid'
 			}
 
-			const handleNumberInput = (ev: ChangeEvent<HTMLInputElement>): void => {
+			const handleNumberInput = (value: number | undefined): void => {
 				update({
 					type: 'number',
-					value: ev.target.value === '' ? undefined : Number(ev.target.value)
+					value: value
 				})
 			}
 
 			return (
 				<div className="field number-field">
 					{field.header && <p className="field-header">{field.header}</p>}
-					<input
-						type="number"
+					<NumberInput
 						className={className}
 						placeholder='Inserire valore ...'
-						value={(data?.value?.toString() ?? '')}
+						value={data?.value}
 						onChange={handleNumberInput} disabled={!editMode}
 					/>
 				</div>
@@ -283,6 +282,43 @@ function FieldNextAnyValue({ fields, data, update, breadcrumb }: {
 				)
 			})}
 		</>
+	)
+}
+
+function NumberInput({ value, onChange, ...props }: Omit<React.DetailedHTMLProps<React.InputHTMLAttributes<HTMLInputElement>, HTMLInputElement>, 'type' | 'value' | 'onChange'> & {
+	value?: number,
+	onChange?: (value: number | undefined) => void
+}) {
+	const [proxyValue, setProxyValue] = useState(value?.toString() ?? '')
+	const proxyOnChange = (ev: ChangeEvent<HTMLInputElement>): void => {
+		let value = ev.target.value;
+
+		// @ts-ignore
+		if (ev.nativeEvent.inputType === 'insertText' && value === '') {
+			console.log('unchanged forward')
+			value = proxyValue
+		}
+
+		// @ts-ignore
+		if (ev.nativeEvent.inputType === 'deleteContentBackward' && proxyValue.length > 1) {
+			console.log('unchanged backward')
+			value = proxyValue.slice(0, proxyValue.length-1)
+		}
+
+		setProxyValue(ev.target.value);
+		if (!onChange) return;
+
+		console.log(`<${proxyValue}> <${value}> <${Number(value)}>`)
+		onChange(value === '' ? undefined : Number(value))
+	}
+
+	return (
+		<input
+			type="number"
+			value={proxyValue}
+			onChange={proxyOnChange}
+			{ ...props }
+		/>
 	)
 }
 
