@@ -295,20 +295,17 @@ function NumberInput({ value, onChange, ...props }: Omit<React.DetailedHTMLProps
 
 		// @ts-ignore
 		if (ev.nativeEvent.inputType === 'insertText' && value === '') {
-			console.log('unchanged forward')
 			value = proxyValue
 		}
 
 		// @ts-ignore
 		if (ev.nativeEvent.inputType === 'deleteContentBackward' && proxyValue.length > 1) {
-			console.log('unchanged backward')
 			value = proxyValue.slice(0, proxyValue.length-1)
 		}
 
 		setProxyValue(ev.target.value);
 		if (!onChange) return;
 
-		console.log(`<${proxyValue}> <${value}> <${Number(value)}>`)
 		onChange(value === '' ? undefined : Number(value))
 	}
 
