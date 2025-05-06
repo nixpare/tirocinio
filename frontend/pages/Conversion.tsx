@@ -50,7 +50,7 @@ export function ConversionSelector() {
 			{anatomType !== '' && anatomName !== '' && (
 				<Link
 					component={RouterLink}
-					to={`/conversion/${anatomType}/${anatomName}`}
+					to={`/conversion/${anatomType}/${anatomName.trim()}`}
 				>
 					Converti
 				</Link>

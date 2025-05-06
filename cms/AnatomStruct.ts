@@ -52,7 +52,7 @@ export async function fetchStrapiDocument(typ: StrapiAnatomStructType, name: str
 	if (!response.ok) throw new Error(`Error fetching ${url}: ${await response.text()}`);
 
 	const documents = (await response.json()).data as StrapiAnatomStruct[];
-	const id = documents.find(doc => doc.Nome === name)?.documentId
+	const id = documents.find(doc => doc.Nome.trim() === name.trim())?.documentId
 
 	if (id == undefined) throw new Error(`Document ${name} not found`);
 
