@@ -15,7 +15,7 @@ export function convertForm(doc: StrapiAnatomStruct): ValidateObjectResult<FormT
 
 	form.title = doc.Nome;
 	// TODO: remove slice limitation
-	form.sections = doc.Sezioni.map<FormSectionTemplate>(sezione => {
+	form.sections = doc.Sezioni.slice(0, 5).map<FormSectionTemplate>(sezione => {
 		const [formSection, err] = convertFormSection(sezione);
 		if (err) throw err;
 		if (!formSection) throw new Error("an unexpected error has occurred at FormSectionTemplate");

@@ -37,7 +37,8 @@ export type FormSectionTemplate = {
  * Le varie proprietà opzionali sono dedicate alle varie modalità di input
  */
 export type FormFieldTemplate = FormFieldBaseTemplate | FormFixedFieldTemplate | FormTextFieldTemplate | FormNumberFieldTemplate |
-	FormSelectFieldTemplate | FormMultiSelectFieldTemplate | FormExpansionFieldTemplate | FormDeductionFieldTemplate | FormFieldGroupTemplate
+	FormSelectFieldTemplate | FormMultiSelectFieldTemplate | FormExpansionFieldTemplate | FormDeductionFieldTemplate |
+	FormFieldGroupTemplate | FormReferenceFieldTemplate
 
 type FormFieldBaseTemplate = {
 	id: string
@@ -65,7 +66,7 @@ type FormFieldBaseTemplate = {
  *     + `form`: i dati inseriti (`FormData`) presi dalla tabella
  *     + `rowIdx`: l'indice della riga nella tabella, per poter fare calcoli diversi in base alla riga
  */
-export type FormFieldType = 'fixed' | 'text' | 'number' | 'select' | 'multi-select' | 'expansion' | 'deduction' | 'group'
+export type FormFieldType = 'fixed' | 'text' | 'number' | 'select' | 'multi-select' | 'expansion' | 'deduction' | 'group' | 'reference'
 
 export type FormFixedFieldTemplate = FormFieldBaseTemplate & {
 	type: 'fixed'
@@ -108,6 +109,10 @@ export type FormFieldGroupTemplate = FormFieldBaseTemplate & {
 	type: 'group'
 	group: FormFieldTemplate[]
 }
+export type FormReferenceFieldTemplate = FormFieldBaseTemplate & {
+	type: 'reference'
+	referenceID: string
+}
 
 export function formFieldIsFixed(f: FormFieldTemplate): f is FormFixedFieldTemplate {
 	return f.type == 'fixed';
@@ -133,6 +138,9 @@ export function formFieldIsDeduction(f: FormFieldTemplate): f is FormDeductionFi
 export function formFieldIsGroup(f: FormFieldTemplate): f is FormFieldGroupTemplate {
 	return f.type == 'group';
 }
+export function formFieldIsReference(f: FormFieldTemplate): f is FormReferenceFieldTemplate {
+	return f.type == 'reference';
+}
 
 export type FormFieldSelectArgs = {
 	value: string
@@ -154,11 +162,12 @@ export type FormData = {
 export type FormSectionData = Record<string, FormFieldData> | undefined
 
 export type FormFieldData = FormFieldBaseData | FormTextFieldData | FormNumberFieldData |
-	FormSelectFieldData | FormMultiSelectFieldData | FormExpansionFieldData | FormDeductionFieldData | FormFieldGroupData
+	FormSelectFieldData | FormMultiSelectFieldData | FormExpansionFieldData | FormDeductionFieldData |
+	FormFieldGroupData | FormReferenceFieldData
 
 type FormFieldBaseData = {
 	type: FormFieldType
-	value?: string | number | FormSelectFieldValue | FormMultiSelectFieldValue | FormFieldData[][] | Record<string, FormFieldData>
+	value?: string | number | FormSelectFieldValue | FormMultiSelectFieldValue | FormFieldData[][] | Record<string, FormFieldData> | FormReferenceFieldValue
 	nextAnyValue?: Record<string, FormFieldData>
 }
 
@@ -184,10 +193,15 @@ export type FormExpansionFieldData = FormFieldBaseData & {
 }
 export type FormDeductionFieldData = FormFieldBaseData & {
 	type: 'deduction'
+	value?: string
 }
 export type FormFieldGroupData = FormFieldBaseData & {
-	type: 'text'
+	type: 'group'
 	value?: Record<string, FormFieldData>
+}
+export type FormReferenceFieldData = FormFieldBaseData & {
+	type: 'reference'
+	value?: FormReferenceFieldValue
 }
 
 export function formFieldDataIsText(f: FormFieldData): f is FormTextFieldData {
@@ -211,6 +225,9 @@ export function formFieldDataIsDeduction(f: FormFieldData): f is FormDeductionFi
 export function formFieldDataIsGroup(f: FormFieldData): f is FormFieldGroupData {
 	return f.type == 'group';
 }
+export function formFieldDataIsReference(f: FormFieldData): f is FormReferenceFieldData {
+	return f.type == 'reference';
+}
 
 /** FormSelectFieldValue contiene lo stato di una proprietà `Select` */
 export type FormSelectFieldValue = {
@@ -226,4 +243,9 @@ export type FormMultiSelectFieldValue = {
 	selections: string[]
 	/** le `AnatomStructProperty` innestate, opzionale, indica i valori della proprietà derivate dalla selezione corrente */
 	next?: Record<string, Record<string, FormFieldData> | undefined>
+}
+
+export type FormReferenceFieldValue = {
+	field: FormFieldTemplate
+	data?: FormFieldData
 }

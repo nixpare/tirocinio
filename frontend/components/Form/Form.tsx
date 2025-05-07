@@ -2,7 +2,7 @@ import './Form.css'
 
 import { createContext, MouseEvent, SyntheticEvent, useState } from 'react'
 import { FormSectionTemplate, FormData, FormSectionData } from '../../../models/Form'
-import { Field, UpdateFieldFunc } from './Field'
+import { Field, ReferenceFieldContext, ReferenceFieldContextData, UpdateFieldFunc } from './Field'
 import { Carousel } from '../UI/Carousel'
 import Accordion from '@mui/material/Accordion';
 import AccordionDetails from '@mui/material/AccordionDetails';
@@ -15,6 +15,7 @@ import Typography from '@mui/material/Typography';
 import { useSearchParams } from 'react-router'
 import { AccordionSummaryLeft } from '../UI/Accordion'
 import { DeepUpdater } from '../../utils/updater'
+import { useImmer } from 'use-immer'
 
 export const EditModeContext = createContext(false)
 
@@ -59,74 +60,78 @@ export function Form({ form, update, initialEditMode }: {
 		setSearchParams(searchParams)
 	}
 
+	const referenceFieldContextValue = useImmer<Record<string, ReferenceFieldContextData>>({})
+
 	return (
 		<EditModeContext.Provider value={editMode}>
-			<div className="form">
-				<Stack direction="row" spacing={2} sx={{ justifyContent: 'space-between' }}>
-					<h1 className="title">{form.templ.title}</h1>
-					<Stack direction="row" spacing={1} sx={{ alignItems: 'center' }}>
-						<Typography><i className="fa-solid fa-eye"></i></Typography>
-						<Switch
-							checked={editMode}
-							onClick={handleEditModeChange}
-						/>
-						<Typography><i className="fa-solid fa-pen-to-square"></i></Typography>
+			<ReferenceFieldContext.Provider value={referenceFieldContextValue}>
+				<div className="form">
+					<Stack direction="row" spacing={2} sx={{ justifyContent: 'space-between' }}>
+						<h1 className="title">{form.templ.title}</h1>
+						<Stack direction="row" spacing={1} sx={{ alignItems: 'center' }}>
+							<Typography><i className="fa-solid fa-eye"></i></Typography>
+							<Switch
+								checked={editMode}
+								onClick={handleEditModeChange}
+							/>
+							<Typography><i className="fa-solid fa-pen-to-square"></i></Typography>
+						</Stack>
 					</Stack>
-				</Stack>
-				<div className="form-sections">
-					<div>
-						<Paper elevation={6}>
-							<Tabs
-								value={tabIdx}
-								onChange={handleTabChange}
-								variant="scrollable"
-								scrollButtons="auto"
-							>
-								{form.templ.sections.map(section => {
-									return <Tab label={section.title} key={section.title}
-										sx={{ fontSize: '.8em', maxWidth: '30ch' }}
-									/>
-								})}
-							</Tabs>
-						</Paper>
-
-						<Paper elevation={2} sx={{ marginTop: 2 }}>
-							{form.templ.sections.map((section, sectionIdx) => {
-								const updateSection: DeepUpdater<FormSectionData> = (updater, ...breadcrumb) => {
-									update((formData) => {
-										if (formData.sections == undefined)
-											formData.sections = {}
-
-										if (typeof updater !== 'function') {
-											formData.sections[section.id] = updater
-											return
-										}
-
-										if (formData.sections[section.id] == undefined)
-											formData.sections[section.id] = {}
-
-										updater(formData.sections[section.id])
-									}, 'sections', section.id, ...breadcrumb)
-								}
-
-								return (
-									<div key={sectionIdx}
-										role="tabpanel"
-										hidden={tabIdx !== sectionIdx}
-										style={{ display: tabIdx !== sectionIdx ? 'none' : undefined }}
-									>
-										<FormSection
-											section={section}
-											data={form.sections?.[section.id]}
-											update={updateSection}
+					<div className="form-sections">
+						<div>
+							<Paper elevation={6}>
+								<Tabs
+									value={tabIdx}
+									onChange={handleTabChange}
+									variant="scrollable"
+									scrollButtons="auto"
+								>
+									{form.templ.sections.map(section => {
+										return <Tab label={section.title} key={section.title}
+											sx={{ fontSize: '.8em', maxWidth: '30ch' }}
 										/>
-									</div>
-								)
-							})}
-						</Paper>
+									})}
+								</Tabs>
+							</Paper>
+
+							<Paper elevation={2} sx={{ marginTop: 2 }}>
+								{form.templ.sections.map((section, sectionIdx) => {
+									const updateSection: DeepUpdater<FormSectionData> = (updater, ...breadcrumb) => {
+										update((formData) => {
+											if (formData.sections == undefined)
+												formData.sections = {}
+
+											if (typeof updater !== 'function') {
+												formData.sections[section.id] = updater
+												return
+											}
+
+											if (formData.sections[section.id] == undefined)
+												formData.sections[section.id] = {}
+
+											updater(formData.sections[section.id])
+										}, 'sections', section.id, ...breadcrumb)
+									}
+
+									return (
+										<div key={sectionIdx}
+											role="tabpanel"
+											hidden={tabIdx !== sectionIdx}
+											style={{ display: tabIdx !== sectionIdx ? 'none' : undefined }}
+										>
+											<FormSection
+												section={section}
+												data={form.sections?.[section.id]}
+												update={updateSection}
+											/>
+										</div>
+									)
+								})}
+							</Paper>
+						</div>
 					</div>
 				</div>
-			</div>
+			</ReferenceFieldContext.Provider>
 		</EditModeContext.Provider>
 	)
 }
@@ -149,8 +154,50 @@ export function FormSection({ section, data, update }: {
 		ev.preventDefault()
 		setShowImages(!showImages)
 	}
-	
-	const starters = section.starters.map(starter => {
+
+	if (!section.images) {
+		return <div className="form-section">
+			<h3>{section.title}</h3>
+			<FormSectionStarters
+				section={section}
+				data={data}
+				update={update}
+			/>
+		</div>
+	}
+
+	return <div className="form-section">
+		<h3>{section.title}</h3>
+		<div className="section-split">
+			<div className="container container-start container-align-start">
+				<FormSectionStarters
+					section={section}
+					data={data}
+					update={update}
+				/>
+			</div>
+			<button className="toggle-show-images" data-toggled={showImages} onClick={toggleShowImages}>
+				<i className="fa-solid fa-chevron-left"></i>
+			</button>
+			<div className={`container images ${showImages ? '' : 'hidden'}`}>
+				<Carousel>
+					{section.images?.map((image, imageIdx) => {
+						return (
+							<img src={image} alt={section.title} key={imageIdx} />
+						)
+					})}
+				</Carousel>
+			</div>
+		</div>
+	</div>
+}
+
+function FormSectionStarters({ section, data, update }: {
+	section: FormSectionTemplate,
+	data?: FormSectionData
+	update: DeepUpdater<FormSectionData>
+}) {
+	return section.starters.map(starter => {
 		// updateSection è la funzione di produzione sullo stato per la sezione specifica della pagina
 		const updateStarter: UpdateFieldFunc = (updater, ...breadcrumb) => {
 			update(sectionData => {
@@ -203,32 +250,4 @@ export function FormSection({ section, data, update }: {
 			</Accordion>
 		)
 	})
-
-	if (!section.images) {
-		return <div className="form-section">
-			<h3>{section.title}</h3>
-			{starters}
-		</div>
-	}
-
-	return <div className="form-section">
-		<h3>{section.title}</h3>
-		<div className="section-split">
-			<div className="container container-start container-align-start">
-				{starters}
-			</div>
-			<button className="toggle-show-images" data-toggled={showImages} onClick={toggleShowImages}>
-				<i className="fa-solid fa-chevron-left"></i>
-			</button>
-			<div className={`container images ${showImages ? '' : 'hidden'}`}>
-				<Carousel>
-					{section.images?.map((image, imageIdx) => {
-						return (
-							<img src={image} alt={section.title} key={imageIdx} />
-						)
-					})}
-				</Carousel>
-			</div>
-		</div>
-	</div>
 }

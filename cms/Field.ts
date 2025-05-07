@@ -1,5 +1,5 @@
 import { convertLabelToID } from "../models/conversion";
-import { formFieldIsExpansion, formFieldIsMultiSelect, formFieldIsNumber, formFieldIsSelect, formFieldIsText, FormFieldSelectArgs, FormFieldTemplate, FormFieldType } from "../models/Form";
+import { formFieldIsDeduction, formFieldIsExpansion, formFieldIsMultiSelect, formFieldIsNumber, formFieldIsReference, formFieldIsSelect, formFieldIsText, FormFieldSelectArgs, FormFieldTemplate, FormFieldType } from "../models/Form";
 import { deepCopy, StrapiComponent } from "./Strapi";
 
 export type StrapiCampo = StrapiComponent & {
@@ -42,6 +42,15 @@ export function rebuildStrapiCampoTree(doc: StrapiCampo[]): StrapiCampoNode[] {
 	const nodes: (StrapiCampoNode | undefined)[] = []
 
 	doc.forEach(campo => {
+		campo.NomeCampo = campo.NomeCampo.trim()
+		campo.ListaElementi = campo.ListaElementi.map(elemento => {
+			elemento.NomeCampo = elemento.NomeCampo.trim()
+			return elemento
+		})
+		if (campo.TipoCampo == undefined) {
+			campo.TipoCampo = StrapiTipoCampo.Text
+		}
+
 		const path: StrapiCampoNode["path"] = []
 
 		let nextChar = 0;
@@ -95,28 +104,6 @@ export function rebuildStrapiCampoTree(doc: StrapiCampo[]): StrapiCampoNode[] {
 			path: path
 		}
 
-		if (formFieldIsSelect(node) || formFieldIsMultiSelect(node)) {
-			const selectArgs: FormFieldSelectArgs = []
-
-			campo.ListaElementi.forEach(elemento => {
-				if (elemento.NomeCampo === 'Applica a tutti') {
-					//TODO: vedere se aggiungere un modo per attivare/disattivare il 'seleziona tutti'
-					//node.selectAllButton = true;
-					return;
-				}
-
-				selectArgs.push({
-					value: convertLabelToID(elemento.NomeCampo),
-					display: elemento.NomeCampo,
-				})
-			})
-
-			node.selectArgs = selectArgs
-
-			nodes.push(node)
-			return
-		}
-
 		if (formFieldIsText(node)) {
 			if (campo.ListaElementi.length == 0) {
 				nodes.push(node)
@@ -154,6 +141,28 @@ export function rebuildStrapiCampoTree(doc: StrapiCampo[]): StrapiCampoNode[] {
 			}
 
 			nodes.push(group)
+			return
+		}
+
+		if (formFieldIsSelect(node) || formFieldIsMultiSelect(node)) {
+			const selectArgs: FormFieldSelectArgs = []
+
+			campo.ListaElementi.forEach(elemento => {
+				if (elemento.NomeCampo === 'Applica a tutti') {
+					//TODO: vedere se aggiungere un modo per attivare/disattivare il 'seleziona tutti'
+					//node.selectAllButton = true;
+					return;
+				}
+
+				selectArgs.push({
+					value: convertLabelToID(elemento.NomeCampo),
+					display: elemento.NomeCampo,
+				})
+			})
+
+			node.selectArgs = selectArgs
+
+			nodes.push(node)
 			return
 		}
 
@@ -207,7 +216,46 @@ export function rebuildStrapiCampoTree(doc: StrapiCampo[]): StrapiCampoNode[] {
 			return;
 		}
 
-		nodes.push(node)
+		if (formFieldIsReference(node)) {
+			if (campo.ListaElementi.length < 1) {
+				throw new Error('was not expecting empty campo.ListaElementi.length for reference fields')
+			}
+
+			/* if (campo.ListaElementi.length === 1) {
+				node.referenceID = convertLabelToID(campo.ListaElementi[0].NomeCampo)
+				node.header = campo.ListaElementi[0].NomeCampo
+				nodes.push(node)
+				return;
+			} */
+
+			const group: StrapiCampoNode = {
+				...node,
+				type: 'group',
+				header: undefined,
+				group: campo.ListaElementi.map(elemento => ({
+					id: convertLabelToID(elemento.NomeCampo) + "_reference",
+					type: 'reference',
+					header: elemento.NomeCampo,
+					referenceID: convertLabelToID(elemento.NomeCampo)
+				}))
+			}
+
+			nodes.push(group)
+			return;
+		}
+
+		if (formFieldIsDeduction(node)) {
+			if (campo.ListaElementi.length !== 1) {
+				throw new Error('was not expecting campo.ListaElementi.length to differ from 1 for deduction fields')
+			}
+
+			node.deductionID = convertLabelToID(campo.ListaElementi[0].NomeCampo)
+
+			nodes.push(node)
+			return;
+		}
+
+		throw new Error(`unexpected field with type ${node.type}`)
 	})
 
 	console.log('intermediary result:', deepCopy(nodes))
@@ -243,12 +291,12 @@ function rebuildTree(node: StrapiCampoNode, prev: (FormFieldTemplate | undefined
 	const parent = prev.find(el => el?.id === nextKey);
 	if (parent == undefined) {
 		// TODO: this should be fatal
-		console.error('parent node should not be undefined, skipping', prev, path, nextKey, selector, prev)
+		console.error('parent node should not be undefined, skipping', nextKey, deepCopy(field), deepCopy(prev), deepCopy(path), selector)
 		//throw new Error('parent node should not be undefined');
 		return
 	}
 
-	if (formFieldIsText(parent) ||  formFieldIsNumber(parent)) {
+	if (formFieldIsText(parent) || formFieldIsNumber(parent)) {
 		// TODO: understand the difference between '/' and '//' for number and text fields
 		selector.type = 'any'
 	}
@@ -353,10 +401,10 @@ function convertStrapiTipoCampo(typ: StrapiTipoCampo): FormFieldType {
 			return 'expansion';
 		case StrapiTipoCampo.Reference:
 			// TODO: to be implemented
-			return 'fixed';
+			return 'reference';
 		case StrapiTipoCampo.Method:
 			// TODO: to be implemented
-			return 'fixed';
+			return 'deduction';
 	}
 }
 

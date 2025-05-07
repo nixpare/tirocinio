@@ -1,7 +1,7 @@
 import './Field.css'
 
-import { ChangeEvent, MouseEvent, useContext, useEffect, useRef, useState } from "react";
-import { useImmer } from "use-immer";
+import { ChangeEvent, createContext, MouseEvent, useContext, useEffect, useRef, useState } from "react";
+import { Updater, useImmer } from "use-immer";
 import Select, { ActionMeta, MultiValue, SelectInstance, SingleValue, StylesConfig } from 'react-select'
 import {
 	FormFieldData,
@@ -29,6 +29,16 @@ import {
 	formFieldDataIsGroup,
 	FormFieldGroupData,
 	FormFieldGroupTemplate,
+	formFieldIsReference,
+	FormReferenceFieldTemplate,
+	formFieldDataIsReference,
+	FormReferenceFieldData,
+	FormDeductionFieldData,
+	FormDeductionFieldTemplate,
+	formFieldDataIsDeduction,
+	FormSelectFieldValue,
+	FormMultiSelectFieldValue,
+	FormReferenceFieldValue,
 } from "../../../models/Form";
 import { EditModeContext } from "./Form";
 import { DeductionElement, deductionFunctionMap, DeductionTable, selectArgsFunctionMap } from '../../../models/Programmable';
@@ -47,14 +57,50 @@ export type UpdateFieldFunc = DeepUpdater<FormFieldData>
 type UpdateSelectFieldFunc = DeepUpdater<FormSelectFieldData>
 type UpdateMultiSelectFieldFunc = DeepUpdater<FormMultiSelectFieldData>
 type UpdateExpansionFieldFunc = DeepUpdater<FormExpansionFieldData>
+type UpdateDeductionFieldFunc = DeepUpdater<FormDeductionFieldData>
 type UpdateFieldGroupFunc = DeepUpdater<FormFieldGroupData>
+type UpdateReferenceFieldFunc = DeepUpdater<FormReferenceFieldData>
 
-export function Field({ field, data, update, breadcrumb }: {
+export function Field({ field, data, update, breadcrumb, referenceKeys, isReference }: {
 	field: FormFieldTemplate,
 	data?: FormFieldData,
 	update: UpdateFieldFunc,
-	breadcrumb: string[]
+	breadcrumb: string[],
+	referenceKeys?: string[],
+	isReference?: boolean
 }) {
+	const [referenceMap, updateReferenceMap] = useContext(ReferenceFieldContext);
+	const keys = [ field.id, ...(referenceKeys ?? [])]
+
+	useEffect(() => {
+		if (isReference) {
+			return;
+		}
+		
+		const usedKeys: string[] = []
+
+		keys.forEach(key => {
+			const reference = referenceMap[key]
+			if (reference != undefined && reference.field !== field) {
+				return;
+			}
+
+			usedKeys.push(key)
+			updateReferenceMap(referenceMap => {
+				referenceMap[key] = { field, data }
+			})
+		})
+
+		/* return () => {
+			usedKeys.forEach(key => {
+				//console.log('clear', key, field.header)
+				updateReferenceMap(referenceMap => {
+					delete referenceMap[key]
+				})
+			})
+		} */
+	}, [data])
+
 	return (
 		<>
 			<FieldSwitch
@@ -63,7 +109,7 @@ export function Field({ field, data, update, breadcrumb }: {
 				update={update}
 				breadcrumb={breadcrumb}
 			/>
-			{field.nextAnyValue && data && data.value != undefined && (
+			{field.nextAnyValue && !isReference && (
 				<FieldNextAnyValue
 					fields={field.nextAnyValue}
 					data={data}
@@ -108,14 +154,14 @@ export function FieldSwitch({ field, data, update, breadcrumb }: {
 					{!field.multiline ? (
 						<input
 							type="text"
-							placeholder='Inserisci testo ...'
+							placeholder={editMode ? 'Inserisci testo ...' : 'Nessun testo' }
 							value={data?.value ?? ''}
 							onChange={handleTextInput}
 							disabled={!editMode}
 						/>
 					) : (
 						<textarea
-							placeholder='Inserisci testo ...'
+							placeholder={editMode ? 'Inserisci testo ...' : 'Nessun testo'}
 							value={data?.value ?? ''}
 							onChange={handleTextInput}
 							disabled={!editMode}
@@ -148,9 +194,10 @@ export function FieldSwitch({ field, data, update, breadcrumb }: {
 					{field.header && <p className="field-header">{field.header}</p>}
 					<NumberInput
 						className={className}
-						placeholder='Inserire valore ...'
+						placeholder={editMode ? 'Inserisci valore ...' : 'Nessun valore'}
 						value={data?.value}
-						onChange={handleNumberInput} disabled={!editMode}
+						onChange={handleNumberInput}
+						disabled={!editMode}
 					/>
 				</div>
 			)
@@ -188,49 +235,17 @@ export function FieldSwitch({ field, data, update, breadcrumb }: {
 				/>
 			)
 		case formFieldIsDeduction(field):
-			const deduction: DeductionElement | undefined = deductionFunctionMap[field.deductionID];
-			const [result, setResult] = useState('Calcolo ...')
-
-			useEffect(() => {
-				if (!deduction) {
-					const res = `Metodo '${field.deductionID}' non trovato`
-					
-					setResult(res)
-					enqueueSnackbar((
-						<Alert severity='error'>{res}</Alert>
-					))
-				} else {
-					try {
-						const struct = useContext(AnatomStructDataContext)
-						const bodyContext = useContext(BodyContextProvider)
-						if (!struct || !bodyContext) {
-							throw new Error('informazioni sul form corrente non trovate')
-						}
-
-						const { result: res } = deduction.fn(struct, bodyContext.body, breadcrumb)
-						setResult(res)
-
-					} catch (e) {
-						const res = 'Errore nel calcolo'
-						
-						console.error(e)
-						setResult(res)
-						enqueueSnackbar((
-							<Alert severity='error'>{res}</Alert>
-						))
-					}
-				}
-			})
+			if (data != undefined && !formFieldDataIsDeduction(data))
+				data = undefined
 
 			return (
-				<div className="field deduction-field">
-					{field.header && <p className="field-header">{field.header}</p>}
-					<div>
-						<p className="deduction-result">{result}</p>
-						{deduction && deduction.hint && <DeductionHint hint={deduction.hint} />}
-					</div>
-				</div>
+				<DeductionField
+					field={field}
+					data={data} update={update as UpdateDeductionFieldFunc}
+					disabled={!editMode} breadcrumb={breadcrumb}
+				/>
 			)
+			
 		case formFieldIsGroup(field):
 			if (data != undefined && !formFieldDataIsGroup(data))
 				data = undefined
@@ -242,15 +257,35 @@ export function FieldSwitch({ field, data, update, breadcrumb }: {
 					disabled={!editMode} breadcrumb={breadcrumb}
 				/>
 			)
+		case formFieldIsReference(field):
+			if (data != undefined && !formFieldDataIsReference(data))
+				data = undefined
+
+			return (
+				<ReferenceField
+					field={field}
+					data={data}
+					update={update as UpdateReferenceFieldFunc}
+					breadcrumb={breadcrumb}
+				/>
+			)
 	}
 }
 
 function FieldNextAnyValue({ fields, data, update, breadcrumb }: {
 	fields: FormFieldTemplate[],
-	data: FormFieldData,
+	data?: FormFieldData,
 	update: UpdateFieldFunc,
 	breadcrumb: string[]
 }) {
+	if (data == undefined) {
+		return <></>
+	}
+
+	if (data.value == undefined && data.type !== 'fixed') {
+		return <></>
+	}
+
 	return (
 		<>
 			{fields.map(next => {
@@ -285,34 +320,25 @@ function FieldNextAnyValue({ fields, data, update, breadcrumb }: {
 	)
 }
 
-function NumberInput({ value, onChange, ...props }: Omit<React.DetailedHTMLProps<React.InputHTMLAttributes<HTMLInputElement>, HTMLInputElement>, 'type' | 'value' | 'onChange'> & {
+function NumberInput({ value, onChange, ...props }: Omit<React.DetailedHTMLProps<React.InputHTMLAttributes<HTMLInputElement>, HTMLInputElement>, 'type' | 'value' | 'onChange' | 'ref'> & {
 	value?: number,
 	onChange?: (value: number | undefined) => void
 }) {
-	const [proxyValue, setProxyValue] = useState(value?.toString() ?? '')
 	const proxyOnChange = (ev: ChangeEvent<HTMLInputElement>): void => {
-		let value = ev.target.value;
+		let value = ev.target.value
 
 		// @ts-ignore
 		if (ev.nativeEvent.inputType === 'insertText' && value === '') {
-			value = proxyValue
+			return
 		}
-
-		// @ts-ignore
-		if (ev.nativeEvent.inputType === 'deleteContentBackward' && proxyValue.length > 1) {
-			value = proxyValue.slice(0, proxyValue.length-1)
-		}
-
-		setProxyValue(ev.target.value);
-		if (!onChange) return;
-
-		onChange(value === '' ? undefined : Number(value))
+		
+		onChange?.(value === '' ? undefined : Number(value))
 	}
 
 	return (
 		<input
 			type="number"
-			value={proxyValue}
+			value={value?.toString() ?? ''}
 			onChange={proxyOnChange}
 			{ ...props }
 		/>
@@ -422,8 +448,10 @@ function SelectField({ field, data, update, disabled, breadcrumb, hideHeader }: 
 				)}
 			</div>
 			{data && data.value && next.length > 0 && (
-				<SelectNextFields next={next}
-					data={data} update={update}
+				<SelectNextFields
+					next={next}
+					data={data.value}
+					update={update}
 					breadcrumb={breadcrumb}
 				/>
 			)}
@@ -433,7 +461,7 @@ function SelectField({ field, data, update, disabled, breadcrumb, hideHeader }: 
 
 function SelectNextFields({ next, data, update, breadcrumb }: {
 	next: FormFieldTemplate[],
-	data?: FormSelectFieldData, update: UpdateSelectFieldFunc,
+	data: FormSelectFieldValue, update: UpdateSelectFieldFunc,
 	breadcrumb: string[]
 }) {
 	return (
@@ -467,9 +495,10 @@ function SelectNextFields({ next, data, update, breadcrumb }: {
 				return (
 					<Field key={nextField.id}
 						field={nextField}
-						data={data?.value?.next?.[nextField.id]}
+						data={data.next?.[nextField.id]}
 						update={updateNext}
 						breadcrumb={[...breadcrumb, 'value', 'next', nextField.id]}
+						referenceKeys={[data.selection]}
 					/>
 				)
 			})}
@@ -624,9 +653,9 @@ function MultiSelectField({ field, data, update, disabled, breadcrumb, hideHeade
 										<div className='arg-display'>{selectedArg.display}</div>
 									</AccordionSummaryLeft>
 									<AccordionDetails>
-										{next.length > 0 && (
+										{next.length > 0 && data && data.value && (
 											<MultiSelectNextFields selected={sel.value} next={next}
-												data={data} update={update} breadcrumb={[...breadcrumb, sel.value]} />
+												data={data.value} update={update} breadcrumb={[...breadcrumb, sel.value]} />
 										)}
 									</AccordionDetails>
 								</Accordion>
@@ -643,7 +672,7 @@ function MultiSelectField({ field, data, update, disabled, breadcrumb, hideHeade
 
 function MultiSelectNextFields({ selected, next, data, update, breadcrumb }: {
 	selected: string, next: FormFieldTemplate[],
-	data?: FormMultiSelectFieldData, update: UpdateMultiSelectFieldFunc,
+	data: FormMultiSelectFieldValue, update: UpdateMultiSelectFieldFunc,
 	breadcrumb: string[],
 }) {
 	return <div className='next-fields'>
@@ -679,8 +708,11 @@ function MultiSelectNextFields({ selected, next, data, update, breadcrumb }: {
 			return (
 				<Field key={nextField.id}
 					field={nextField}
-					data={data?.value?.next?.[selected]?.[nextField.id]}
-					update={updateNext} breadcrumb={[...breadcrumb, 'value', 'next', selected, nextField.id]} />
+					data={data.next?.[selected]?.[nextField.id]}
+					update={updateNext}
+					breadcrumb={[...breadcrumb, 'value', 'next', selected, nextField.id]}
+					referenceKeys={[selected]}
+				/>
 			)
 		})}
 	</div>
@@ -836,6 +868,83 @@ function ExpansionFieldNext({ fields, data, update, rowIdx, breadcrumb }: {
 	)
 }
 
+function DeductionField({field, data, update, disabled, breadcrumb }: {
+	field: FormDeductionFieldTemplate
+	data?: FormDeductionFieldData
+	update: UpdateDeductionFieldFunc
+	disabled: boolean
+	breadcrumb: string[]
+}) {
+	const deduction: DeductionElement | undefined = deductionFunctionMap[field.deductionID];
+	const [result, setResult] = useState(data?.value ?? disabled
+		? 'Calcolo non eseguito'
+		: 'Calcolo ...'
+	)
+
+	useEffect(() => {
+		if (data == undefined || data.value == undefined) {
+			return
+		}
+
+		setResult(data.value)
+	}, [data])
+
+	useEffect(() => {
+		if (!disabled) {
+			return;
+		}
+
+		if (!deduction) {
+			const res = `Metodo '${field.deductionID}' non trovato`
+
+			update(deductionData => {
+				deductionData.value = undefined
+			})
+			setResult(res)
+			enqueueSnackbar((
+				<Alert severity='error'>{res}</Alert>
+			))
+
+			return;
+		}
+
+		try {
+			const struct = useContext(AnatomStructDataContext)
+			const bodyContext = useContext(BodyContextProvider)
+			if (!struct || !bodyContext) {
+				throw new Error('informazioni sul form corrente non trovate')
+			}
+
+			const { result: res } = deduction.fn(struct, bodyContext.body, breadcrumb)
+			update(deductionData => {
+				deductionData.value = res
+			})
+
+		} catch (e) {
+			const res = 'Errore nel calcolo'
+
+			console.error(e)
+			update(deductionData => {
+				deductionData.value = undefined
+			})
+			setResult(res)
+			enqueueSnackbar((
+				<Alert severity='error'>{res}</Alert>
+			))
+		}
+	})
+
+	return (
+		<div className="field deduction-field">
+			{field.header && <p className="field-header">{field.header}</p>}
+			<div>
+				<p className="deduction-result">{result}</p>
+				{deduction && deduction.hint && <DeductionHint hint={deduction.hint} />}
+			</div>
+		</div>
+	)
+}
+
 function DeductionHint({ hint }: { hint: DeductionTable }) {
 	const [show, setShow] = useState(false)
 	const toggle = (ev: MouseEvent<HTMLButtonElement>) => {
@@ -902,4 +1011,66 @@ function FieldGroup({ field, data, update, breadcrumb, hideHeader }: {
 			})}
 		</div>
 	</div>
+}
+
+export type ReferenceFieldContextData = FormReferenceFieldValue | undefined
+
+export type ReferenceFieldContextType = [
+	Record<string, ReferenceFieldContextData>,
+	Updater<Record<string, ReferenceFieldContextData>>
+]
+
+export const ReferenceFieldContext = createContext<ReferenceFieldContextType>([
+	{},
+	(_) => {}
+])
+
+function ReferenceField({ field, data, update, breadcrumb }: {
+	field: FormReferenceFieldTemplate
+	data?: FormReferenceFieldData
+	update: UpdateReferenceFieldFunc
+	breadcrumb: string[]
+}) {
+	const [referenceMap] = useContext(ReferenceFieldContext);
+	
+	useEffect(() => {
+		const ref = referenceMap[field.referenceID]
+		if (ref == undefined) {
+			update(referenceData => {
+				referenceData.value = undefined
+			})
+			return
+		}
+
+		if (ref.field.type != 'text' && ref.field.type != 'number') {
+			console.error(`reference value type ${ref.field.type} not supported`)
+			update(referenceData => {
+				referenceData.value = undefined
+			})
+			return
+		}
+
+		update(referenceData => {
+			referenceData.value = ref
+		})
+	}, [referenceMap])
+
+	return (
+		<div className="field reference-field">
+			{field.header && <p className="field-header">{field.header}</p>}
+			{data && data.value ? (
+				<EditModeContext.Provider value={false}>
+					<Field
+						field={data.value.field}
+						data={data.value.data}
+						update={(_)=>{}}
+						breadcrumb={[...breadcrumb, 'reference', data.value.field.id]}
+						isReference
+					/>
+				</EditModeContext.Provider>
+			) : (
+				<p className='fixed-value'>Nessun valore presente</p>
+			)}
+		</div>
+	)
 }
