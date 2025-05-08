@@ -20,9 +20,7 @@ type StrapiDocumentList = {
 	exteriors: StrapiAnatomStruct[]
 }
 
-export async function conversionSelectorLoader({ params }: {
-	params: any
-}) {
+export async function conversionSelectorLoader() {
 	const list: StrapiDocumentList = {
 		bones: await fetchStrapiDocumentList(StrapiAnatomStructType.Osso),
 		viscera: await fetchStrapiDocumentList(StrapiAnatomStructType.Viscera),
