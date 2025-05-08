@@ -323,7 +323,7 @@ function rebuildTree(node: StrapiCampoNode, prev: (FormFieldTemplate | undefined
 					rebuildTree({ path: [...path], ...field }, next.next)
 				}
 
-				break;
+				return;
 			case "value":
 				const value = selector.value ? convertLabelToID(selector.value) : undefined
 				if (!value) throw new Error(`value of selector with type "value" is undefined`)
@@ -338,10 +338,8 @@ function rebuildTree(node: StrapiCampoNode, prev: (FormFieldTemplate | undefined
 				}
 
 				rebuildTree({ path: [...path], ...field }, next.next)
-				break;
+				return;
 		}
-
-		return;
 	}
 
 	if (formFieldIsExpansion(parent)) {
@@ -356,14 +354,12 @@ function rebuildTree(node: StrapiCampoNode, prev: (FormFieldTemplate | undefined
 					parent.next = []
 				}
 
-				parent.next.push(field)
-				break;
+				rebuildTree({ path: [...path], ...field }, parent.next)
+				return;
 
 			default:
 				throw new Error(`unknown selector type ${selector.type} for expansion field`)
 		}
-
-		return
 	}
 
 	switch (selector.type) {
@@ -373,15 +369,15 @@ function rebuildTree(node: StrapiCampoNode, prev: (FormFieldTemplate | undefined
 			}
 
 			rebuildTree({ path: [...path], ...field }, parent.nextAnyValue)
-			break;
+			return
 		case "foreach":
 			console.log(`foreach selector not supported for field ${parent.type}, skipping`, parent, field, path, selector)
 			//throw new Error(`foreach selector not supported for field ${parent.type}`)
-			break;
+			return;
 		case "value":
 			console.log(`value selector not supported for field ${parent.type}, skipping`, parent, field, path, selector)
 			//throw new Error(`value selector not supported for field ${parent.type}`)
-			break;
+			return;
 	}
 }
 

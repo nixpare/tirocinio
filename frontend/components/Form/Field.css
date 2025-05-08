@@ -1,5 +1,5 @@
 .field {
-	min-width: 20ch;
+	min-width: 25ch;
 	width: fit-content;
 }
 
@@ -53,11 +53,6 @@
 	border-radius: 2em;
 }
 
-.field.select-field,
-.field.multi-select-field>.select-input {
-	width: fit-content;
-	min-width: 20ch;
-}
 .field.select-field:not(:has(>*)),
 .field.multi-select-field>.select-input:not(:has(>*)) {
 	display: none;
@@ -86,6 +81,11 @@
 .field .multi-select-next .multi-select-arg {
 	padding: 0;
 	background-color: rgba(var(--primary-color), .1);
+}
+.field .multi-select-next .multi-select-arg.no-next {
+	display: flex;
+	gap: 1em;
+	padding: .6em 1em;
 }
 
 .field .multi-select-next .arg-display {
@@ -126,6 +126,9 @@
 	background-color: #b90000;
 	height: fit-content;
 }
+.field .multi-select-next .multi-select-arg.no-next .delete-row {
+	margin-top: .4em;
+}
 
 .field.expansion-field .additional {
 	width: fit-content;
@@ -138,7 +141,6 @@
 	gap: 1em;
 	padding: 1em;
 	min-width: 20ch;
-	background-color: rgba(255, 255, 255, 50%);
 }
 .field.expansion-field .input-fields:not(:has(>*)) {
 	background-color: transparent;
@@ -168,6 +170,10 @@
 	gap: 1em;
 	border-radius: .2em;
 	margin: 1em 0;
+}
+
+.field.expansion-field .expansion-data .expansion-row {
+	background-color: rgba(var(--primary-color), .1);
 }
 
 .field.expansion-field .row-counter {

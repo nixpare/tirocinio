@@ -52,6 +52,7 @@ import Paper from '@mui/material/Paper';
 import Accordion from '@mui/material/Accordion/Accordion';
 import { AccordionSummaryLeft } from '../UI/Accordion';
 import AccordionDetails from '@mui/material/AccordionDetails/AccordionDetails';
+import { convertLabelToID } from '../../../models/conversion';
 
 export type UpdateFieldFunc = DeepUpdater<FormFieldData>
 type UpdateSelectFieldFunc = DeepUpdater<FormSelectFieldData>
@@ -73,7 +74,11 @@ export function Field({ field, data, update, breadcrumb, referenceKeys, isRefere
 	const keys = [ field.id, ...(referenceKeys ?? [])]
 
 	useEffect(() => {
-		if (isReference) {
+		if (isReference || field.type === 'reference') {
+			return;
+		}
+
+		if (data == undefined || data.value == undefined) {
 			return;
 		}
 		
@@ -91,14 +96,13 @@ export function Field({ field, data, update, breadcrumb, referenceKeys, isRefere
 			})
 		})
 
-		/* return () => {
+		return () => {
 			usedKeys.forEach(key => {
-				//console.log('clear', key, field.header)
 				updateReferenceMap(referenceMap => {
 					delete referenceMap[key]
 				})
 			})
-		} */
+		}
 	}, [data])
 
 	return (
@@ -641,24 +645,38 @@ function MultiSelectField({ field, data, update, disabled, breadcrumb, hideHeade
 
 						return (
 							<div className="container container-horiz container-align-start no-wrap" key={sel.value}>
-								{!disabled && <button className="delete-row" onClick={deleteSelection}>
-									<i className="fa-solid fa-trash"></i>
-								</button>}
-								<Accordion key={sel.value}
-									className="multi-select-arg"
-									elevation={4}
-									defaultExpanded
-								>
-									<AccordionSummaryLeft>
-										<div className='arg-display'>{selectedArg.display}</div>
-									</AccordionSummaryLeft>
-									<AccordionDetails>
-										{next.length > 0 && data && data.value && (
-											<MultiSelectNextFields selected={sel.value} next={next}
-												data={data.value} update={update} breadcrumb={[...breadcrumb, sel.value]} />
-										)}
-									</AccordionDetails>
-								</Accordion>
+								{next.length > 0 ? (
+									<>
+										{!disabled && <button className="delete-row" onClick={deleteSelection}>
+											<i className="fa-solid fa-trash"></i>
+										</button>}
+										<Accordion key={sel.value}
+											className="multi-select-arg"
+											elevation={4}
+											defaultExpanded
+										>
+											<AccordionSummaryLeft>
+												<div className='arg-display'>{selectedArg.display}</div>
+											</AccordionSummaryLeft>
+											<AccordionDetails>
+												{data && data.value && (
+													<MultiSelectNextFields selected={sel.value} next={next}
+														data={data.value} update={update} breadcrumb={[...breadcrumb, sel.value]} />
+												)}
+											</AccordionDetails>
+										</Accordion>
+									</>
+								) : (
+									data && data.value && (
+										<Paper className="multi-select-arg no-next" elevation={4}>
+											{!disabled && <button className="delete-row" onClick={deleteSelection}>
+												<i className="fa-solid fa-trash"></i>
+											</button>}
+											<div className='arg-display'>{selectedArg.display}</div>
+										</Paper>
+									)
+								)}
+								
 							</div>
 						)
 					})
@@ -788,24 +806,48 @@ function ExpansionField({ field, data, update, disabled, breadcrumb, hideHeader 
 						{!disabled && <button className="delete-row" onClick={deleteAdditional}>
 							<i className="fa-solid fa-trash"></i>
 						</button>}
-						<Paper className="input-fields">
-							{field.incremental && <div className="row-counter">
-								<p>{field.prefix ?? '# '}{rowIdx + 1}</p>
-							</div>}
-							<Field field={field.expansionArg}
-								data={additionalData[0]} update={updateField}
-								breadcrumb={[...breadcrumb, 'value', rowIdx.toString()]}
-							/>
-							{field.next && additionalData.length > 0 && (
-								<ExpansionFieldNext
-									fields={field.next}
-									data={additionalData.slice(1)}
-									update={update}
-									rowIdx={rowIdx}
-									breadcrumb={breadcrumb}
+						{field.next ? (
+							<Accordion
+								className="expansion-row"
+								elevation={4}
+								defaultExpanded
+							>
+								<AccordionSummaryLeft>
+									{field.incremental && <div className="row-counter">
+										<p>{field.prefix ?? '# '}{rowIdx + 1}</p>
+									</div>}
+									<Field field={field.expansionArg}
+										data={additionalData[0]} update={updateField}
+										breadcrumb={[...breadcrumb, 'value', rowIdx.toString()]}
+									/>
+								</AccordionSummaryLeft>
+								{additionalData.length > 0 && (
+									<AccordionDetails className='input-fields'>
+										<ExpansionFieldNext
+											fields={field.next}
+											data={additionalData}
+											update={update}
+											rowIdx={rowIdx}
+											breadcrumb={breadcrumb}
+										/>
+									</AccordionDetails>
+									
+								)}
+							</Accordion>
+						) : (
+							<Paper
+								className="input-fields"
+								elevation={4}
+							>
+								{field.incremental && <div className="row-counter">
+									<p>{field.prefix ?? '# '}{rowIdx + 1}</p>
+								</div>}
+								<Field field={field.expansionArg}
+									data={additionalData[0]} update={updateField}
+									breadcrumb={[...breadcrumb, 'value', rowIdx.toString()]}
 								/>
-							)}
 						</Paper>
+					)}
 					</div>
 				)
 			}) || (disabled && (
@@ -835,6 +877,25 @@ function ExpansionFieldNext({ fields, data, update, rowIdx, breadcrumb }: {
 	rowIdx: number,
 	breadcrumb: string[]
 }) {
+	const nextData = data.slice(1)
+	
+	const referenceKeys: string[] = []
+	const leaderData = data[0]
+
+	if (leaderData.value != undefined) {
+		switch(true) {
+			case formFieldDataIsText(leaderData):
+				referenceKeys.push(convertLabelToID(leaderData.value))
+				break;
+			case formFieldDataIsNumber(leaderData):
+				referenceKeys.push(convertLabelToID(leaderData.value.toString()))
+				break;
+			case formFieldDataIsSelect(leaderData):
+				referenceKeys.push(convertLabelToID(leaderData.value.selection))
+				break;
+		}
+	}
+
 	return (
 		<>
 			{fields.map((field, fieldIdx) => {
@@ -858,9 +919,10 @@ function ExpansionFieldNext({ fields, data, update, rowIdx, breadcrumb }: {
 				return (
 					<Field key={field.id}
 						field={field}
-						data={data[fieldIdx]}
+						data={nextData[fieldIdx]}
 						update={updateField}
 						breadcrumb={[...breadcrumb, 'additional', rowIdx.toString(), fieldIdx.toString() + 1 ]}
+						referenceKeys={referenceKeys}
 					/>
 				)
 			})}
@@ -890,7 +952,7 @@ function DeductionField({field, data, update, disabled, breadcrumb }: {
 	}, [data])
 
 	useEffect(() => {
-		if (!disabled) {
+		if (disabled) {
 			return;
 		}
 
@@ -903,7 +965,7 @@ function DeductionField({field, data, update, disabled, breadcrumb }: {
 			setResult(res)
 			enqueueSnackbar((
 				<Alert severity='error'>{res}</Alert>
-			))
+			), { key: `${field.id}_not_found`, preventDuplicate: true })
 
 			return;
 		}
@@ -930,7 +992,7 @@ function DeductionField({field, data, update, disabled, breadcrumb }: {
 			setResult(res)
 			enqueueSnackbar((
 				<Alert severity='error'>{res}</Alert>
-			))
+			), { key: `${field.id}_error`, preventDuplicate: true })
 		}
 	})
 

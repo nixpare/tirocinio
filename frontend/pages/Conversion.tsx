@@ -117,7 +117,7 @@ export function Conversion() {
 		exteriors: {}
 	})
 
-	const boneData = body.bones[bone.name].form.sections
+	//const boneData = body.bones[bone.name].form.sections
 
 	/* useEffect(() => {
 		console.log(boneData)
@@ -128,7 +128,7 @@ export function Conversion() {
 	const updateBodyBones = childUpdater(updateBody, 'bones')
 	const updateBodyBone = childUpdater(updateBodyBones, bone.name)
 	const updateBodyBoneDataDeep = rootDeepUpdater(updateBodyBone, (bone, ...breadcrumb) => {
-		const payload = walkObject<any>(bone, breadcrumb.join('.'))
+		/* const payload =  */walkObject<any>(bone, breadcrumb.join('.'))
 		//console.log(payload)
 	})
 	const updateBodyBoneData = childDeepUpdater(updateBodyBoneDataDeep, 'form', 'form')
