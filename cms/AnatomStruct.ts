@@ -46,20 +46,28 @@ async function fetchQuery<T = any>(url: string, populate: any): Promise<T> {
 	return data;
 }
 
-export async function fetchStrapiDocument(typ: StrapiAnatomStructType, name: string): Promise<StrapiAnatomStruct> {
+export async function fetchStrapiDocumentList(typ: StrapiAnatomStructType): Promise<StrapiAnatomStruct[]> {
 	let url = `${baseURL}/api/${typ}/`;
 	let response = await fetch(url + '?status=draft');
 	if (!response.ok) throw new Error(`Error fetching ${url}: ${await response.text()}`);
 
 	const documents = (await response.json()).data as StrapiAnatomStruct[];
-	const id = documents.find(doc => doc.Nome.trim() === name.trim())?.documentId
+	return documents;
+};
 
+export async function fetchStrapiDocument(typ: StrapiAnatomStructType, id: string): Promise<StrapiAnatomStruct> {
+	const url = `${baseURL}/api/${typ}/${id}`
+	const data: StrapiAnatomStruct = await fetchQuery(url, anatomStructQuery);
+	return data;
+};
+
+export async function findStrapiDocument(typ: StrapiAnatomStructType, name: string): Promise<StrapiAnatomStruct> {
+	const documents = await fetchStrapiDocumentList(typ)
+
+	const id = documents.find(doc => doc.Nome.trim() === name.trim())?.documentId
 	if (id == undefined) throw new Error(`Document ${name} not found`);
 
-	url += `${id}`
-	const data: StrapiAnatomStruct = await fetchQuery(url, anatomStructQuery);
-
-	return data;
+	return await fetchStrapiDocument(typ, id)
 };
 
 export function convertStrapi(doc: StrapiAnatomStruct, typ: StrapiAnatomStructType): ValidateObjectResult<AnatomStruct> {

@@ -1,0 +1,68 @@
+.app-content h1 {
+	margin-bottom: 1em;
+}
+
+.search {
+	display: flex;
+	align-items: center;
+	gap: 1em;
+	margin-bottom: 3em;
+}
+
+.search>input {
+	width: 40ch;
+	padding: .5em;
+	border-radius: .4em;
+	background-color: rgba(var(--primary-color), .1);
+}
+
+.document-section {
+	margin-bottom: 3em;
+}
+
+.document-section h2 {
+	font-size: 1.6rem;
+}
+
+.document-list {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 1.4em;
+	padding: 0 2em 1.6em !important;
+}
+
+.document {
+	background-color: rgba(var(--primary-color), .7) !important;
+	border-radius: .4em;
+}
+.document:hover {
+	background-color: rgba(var(--primary-color), .5) !important;
+}
+
+.document>a {
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	position: relative;
+	width: 26ch;
+	height: 100%;
+	text-decoration: none;
+	color: unset;
+	padding: .8em 1em 1.4em;
+}
+.document>a:visited {
+	color: unset;
+}
+
+.document .document-name {
+	justify-self: center;
+	font-weight: bold;
+}
+
+.document .document-update {
+	position: absolute;
+	bottom: .2em;
+	right: .6em;
+	font-size: .75em;
+	text-align: right;
+}

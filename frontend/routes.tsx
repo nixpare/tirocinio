@@ -2,7 +2,7 @@ import { createBrowserRouter } from "react-router";
 import { AppLayout } from "./App";
 import { BodyHome, BodyLoader } from "./pages/Body/Body";
 import { Bones, BoneView } from "./pages/Body/Bones";
-import { Conversion, conversionLoader, ConversionSelector } from "./pages/Conversion";
+import { Conversion, conversionLoader, ConversionSelector, conversionSelectorLoader } from "./pages/Conversion/Conversion";
 import { Index } from "./pages/Index";
 
 const router = createBrowserRouter([
@@ -42,10 +42,11 @@ const router = createBrowserRouter([
 				children: [
 					{
 						index: true,
+						loader: conversionSelectorLoader,
 						Component: ConversionSelector,
 					},
 					{
-						path: ':anatomType/:anatomName',
+						path: ':anatomType/:anatomID',
 						loader: conversionLoader,
 						Component: Conversion,
 					}
