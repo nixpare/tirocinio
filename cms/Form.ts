@@ -14,7 +14,6 @@ export function convertForm(doc: StrapiAnatomStruct): ValidateObjectResult<FormT
 	const form: Partial<FormTemplate> = {};
 
 	form.title = doc.Nome;
-	// TODO: remove slice limitation
 	form.sections = doc.Sezioni.map<FormSectionTemplate>(sezione => {
 		const [formSection, err] = convertFormSection(sezione);
 		if (err) throw err;

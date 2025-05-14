@@ -292,8 +292,8 @@ function rebuildTree(node: StrapiCampoNode, prev: (FormFieldTemplate | undefined
 		return
 	}
 
-	if (formFieldIsText(parent) || formFieldIsNumber(parent)) {
-		// TODO: understand the difference between '/' and '//' for number and text fields
+	if (formFieldIsText(parent) || formFieldIsNumber(parent) && selector.type === 'foreach') {
+		// there is no difference between '/' and '//' for number and text fields
 		selector.type = 'any'
 	}
 
@@ -358,6 +358,8 @@ function rebuildTree(node: StrapiCampoNode, prev: (FormFieldTemplate | undefined
 		}
 	}
 
+	// TODO: see if custom implementations for group, reference and method types as necessary
+
 	switch (selector.type) {
 		case "any":
 			if (parent.nextAnyValue == undefined) {
@@ -392,10 +394,8 @@ function convertStrapiTipoCampo(typ: StrapiTipoCampo): FormFieldType {
 		case StrapiTipoCampo.ID:
 			return 'expansion';
 		case StrapiTipoCampo.Reference:
-			// TODO: to be implemented
 			return 'reference';
 		case StrapiTipoCampo.Method:
-			// TODO: to be implemented
 			return 'deduction';
 	}
 }
