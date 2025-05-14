@@ -1,7 +1,7 @@
 import './AnatomStruct.css'
 
 import { useContext, useEffect, useMemo, useState } from 'react'
-import { Updater, useImmer } from 'use-immer'
+import { useImmer } from 'use-immer'
 import { AnatomStructDataContext, AnatomStructType, AnatomStruct, AnatomStructData } from '../../../models/AnatomStruct'
 import { anatomTypeToBodyField, BodyContextProvider } from '../../../models/Body'
 import Accordion from '@mui/material/Accordion'

@@ -178,7 +178,7 @@ export function Conversion() {
 
 	const updateAnatomStructs = childUpdater(updateBody, anatomKey)
 	const updateAnatomStruct = childUpdater(updateAnatomStructs, anatom.name)
-	const updateAnatomStructDeep = rootDeepUpdater(updateAnatomStruct, (anatom, ...breadcrumb) => {
+	const updateAnatomStructDeep = rootDeepUpdater(updateAnatomStruct, (/* anatom, ...breadcrumb */) => {
 		/* const payload =  walkObject<any>(anatom, breadcrumb.join('.'))
 		console.log(payload) */
 	})

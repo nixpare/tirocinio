@@ -2,7 +2,7 @@ import { createBrowserRouter } from "react-router";
 import { AppLayout } from "./App";
 import { BodyHome, BodyLayout, bodyLayoutLoader } from "./pages/Body/Body";
 import { Conversion, conversionLoader, ConversionSelector, conversionSelectorLoader } from "./pages/Conversion/Conversion";
-import { Index, indexLoader } from "./pages/Index";
+import { Index, indexLoader } from "./pages";
 import { BonesView, bonesViewLoader, BoneView, ExteriorsView, exteriorsViewLoader, ExteriorView, VisceraView, ViscusView, viscusViewLoader } from "./pages/Body/AnatomStruct";
 import { BodiesView, bodiesViewLoader } from "./pages/Body/Bodies";
 
