@@ -602,7 +602,7 @@ function MultiSelectField({ field, data, update, disabled, breadcrumb, hideHeade
 		<div className="field multi-select-field">
 			<div className="select-input">
 				{!hideHeader && field.header && <p className="field-header">{field.header}</p>}
-				{!disabled && <button className="select-all" onClick={selectAll}>SELEZIONA TUTTO</button>}
+				{!disabled && field.selectAllButton && <button className="select-all" onClick={selectAll}>SELEZIONA TUTTO</button>}
 				{!disabled && <Select options={options} isMulti isClearable={false} isDisabled={disabled}
 					ref={selectRef}
 					placeholder={field.header}

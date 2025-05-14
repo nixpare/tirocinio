@@ -15,10 +15,7 @@ export enum StrapiTipoCampo {
 	MultiSelect = 'select-multi',
 	TextMulti = 'text-multi',
 	ID = 'ID',
-
-	// TODO: capire meglio il campo 'reference'
 	Reference = 'reference',
-	// TODO: implementare il campo 'method'
 	Method = 'method'
 }
 
@@ -148,9 +145,8 @@ export function rebuildStrapiCampoTree(doc: StrapiCampo[]): StrapiCampoNode[] {
 			const selectArgs: FormFieldSelectArgs = []
 
 			campo.ListaElementi.forEach(elemento => {
-				if (elemento.NomeCampo === 'Applica a tutti') {
-					//TODO: vedere se aggiungere un modo per attivare/disattivare il 'seleziona tutti'
-					//node.selectAllButton = true;
+				if (elemento.NomeCampo === 'Applica a tutti' && node.type === 'multi-select') {
+					node.selectAllButton = true;
 					return;
 				}
 

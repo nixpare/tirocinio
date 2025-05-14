@@ -93,6 +93,7 @@ export type FormSelectFieldTemplate = FormFieldBaseTemplate & {
 } & FormFieldGenericSelectTemplate
 export type FormMultiSelectFieldTemplate = FormFieldBaseTemplate & {
 	type: 'multi-select'
+	selectAllButton?: boolean
 } & FormFieldGenericSelectTemplate
 export type FormExpansionFieldTemplate = FormFieldBaseTemplate & {
 	type: 'expansion'
