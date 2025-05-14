@@ -1,4 +1,4 @@
-import { AnatomStruct, AnatomStructData, AnatomStructType } from "../../models/AnatomStruct";
+import { AnatomStruct, AnatomStructType } from "../../models/AnatomStruct";
 import { Body } from "../../models/Body";
 import { FilteredAnatomStruct, FilteredBody } from "../../backend/mongodb";
 
@@ -45,7 +45,9 @@ export async function getBody(name: string): Promise<Body> {
 	if (!resp.ok) {
 		throw new Error(`Errore ricezione corpo "${name}": ${await resp.text()}`);
 	}
-	return await resp.json();
+
+	const body = await resp.json();
+	return body;
 }
 
 export async function addBody(body: Body): Promise<string> {
@@ -62,17 +64,28 @@ export async function addBody(body: Body): Promise<string> {
 	return await resp.text();
 }
 
-export async function updateAnatomStructsData<T extends Record<string, AnatomStructData>>(bodyName: string, anatomType: AnatomStructType, anatoms: T): Promise<void> {
-	const resp = await fetch(`/api/bodies/${bodyName}/anatoms/${anatomType}`, {
-		method: 'PUT',
-		body: JSON.stringify(anatoms),
+export async function addBodyAnatomStruct(bodyName: string, anatom: FilteredAnatomStruct): Promise<string> {
+	const resp = await fetch(`/api/bodies/${bodyName}/anatoms`, {
+		method: 'POST',
+		body: JSON.stringify(anatom),
 		headers: {
 			'Content-Type': 'application/json'
 		}
 	})
 	if (!resp.ok) {
-		throw new Error(`Errore salvataggio strutture anatomiche "${anatomType}": ${await resp.text()}`);
+		throw new Error(`Errore aggiunta struttura anatomica: ${await resp.text()}`);
 	}
+	return await resp.text();
+}
+
+export async function removeBodyAnatomStruct(bodyName: string, anatom: FilteredAnatomStruct): Promise<string> {
+	const resp = await fetch(`/api/bodies/${bodyName}/anatoms/${anatom.type}/${anatom.name}`, {
+		method: 'DELETE',
+	})
+	if (!resp.ok) {
+		throw new Error(`Errore rimozione struttura anatomica: ${await resp.text()}`);
+	}
+	return await resp.text();
 }
 
 export async function updateAnatomStructData(bodyName: string, anatomType: AnatomStructType, anatomName: string, payload: any, breadcrumb: string[]): Promise<void> {

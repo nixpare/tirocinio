@@ -4,7 +4,7 @@ import ProxyServer from 'http-proxy';
 import { createProxyMiddleware } from 'http-proxy-middleware';
 import morgan from 'morgan';
 import { devMode } from './main';
-import { getAnatomStructs, getBodies, getAnatomStruct, getBody, updateBodyAnatomStruct, updateBodyAnatomStructs, addBody, saveAnatomStruct } from './mongodb';
+import { getAnatomStructs, getBodies, getAnatomStruct, getBody, updateBodyAnatomStruct, addBody, saveAnatomStruct, addBodyAnatomStruct, removeBodyAnatomStruct } from './mongodb';
 
 export function setupRoutes(app: express.Express, proxy: ProxyServer) {
 	setupCommonRoutes(app);
@@ -45,8 +45,9 @@ function setupCommonRoutes(app: express.Express) {
 	app.get('/api/bodies/:bodyName', getBody)
 
 	app.post('/api/bodies', addBody)
-
-	app.put('/api/bodies/:bodyName/anatoms/:anatomType', updateBodyAnatomStructs)
+	
+	app.post('/api/bodies/:bodyName/anatoms', addBodyAnatomStruct)
+	app.delete('/api/bodies/:bodyName/anatoms/:anatomType/:anatomName', removeBodyAnatomStruct)
 	app.put('/api/bodies/:bodyName/anatoms/:anatomType/:anatomName', updateBodyAnatomStruct)
 
 	//

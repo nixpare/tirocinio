@@ -11,15 +11,16 @@ import Divider from '@mui/material/Divider'
 import Link from '@mui/material/Link'
 import Paper from '@mui/material/Paper'
 import Typography from '@mui/material/Typography'
-import { Link as RouterLink, useLoaderData, useParams, useSearchParams } from 'react-router'
+import { Link as RouterLink, useLoaderData, useParams, useRevalidator, useSearchParams } from 'react-router'
 import { childDeepUpdater, childUpdater, rootDeepUpdater } from '../../utils/updater'
-import { getAnatomStructs, updateAnatomStructData, updateAnatomStructsData } from '../../utils/api'
+import { addBodyAnatomStruct, getAnatomStructs, removeBodyAnatomStruct, updateAnatomStructData } from '../../utils/api'
 import Alert from '@mui/material/Alert'
 import { enqueueSnackbar } from 'notistack'
 import { walkObject } from '../../../models/Programmable'
 import { AccordionSummaryLeft } from '../../components/UI/Accordion'
 import { Form } from '../../components/Form/Form'
 import { useBodyNavigation } from './Body'
+import { FilteredAnatomStruct } from '../../../backend/mongodb'
 
 export async function anatomStructsViewLoader(type: AnatomStructType) {
 	return await getAnatomStructs(type)
@@ -41,15 +42,6 @@ function AnatomStructsView({ anatomType, displayName }: {
 	const { body } = bodyContext;
 
 	useAnatomStructsViewNavigation(body.generals.name)
-
-	useEffect(() => {
-		console.log('UPDATE', body[anatomsKey])
-		updateAnatomStructsData(body.generals.name, anatomType, body[anatomsKey]).catch((err: Error) => {
-			enqueueSnackbar((
-				<Alert severity='error'>{err.message}</Alert>
-			), { key: 'anatoms-loading', preventDuplicate: true })
-		})
-	}, [body[anatomsKey]])
 
 	return (
 		<div className="anatoms">
@@ -78,21 +70,26 @@ function AnatomStructsView({ anatomType, displayName }: {
 				{displayName}
 			</h1>
 			<SelectAnatomStructs
+				bodyName={body.generals.name}
 				anatoms={anatoms}
 				anatomsData={body[anatomsKey]}
 			/>
 			<Divider variant="middle" sx={{ marginTop: '1em', marginBottom: '1em' }} />
 			<EditAnatoms
+				bodyName={body.generals.name}
 				anatomsData={body[anatomsKey]}
 			/>
 		</div>
 	)
 }
 
-function SelectAnatomStructs<T extends Record<string, AnatomStructData>>({ anatoms, anatomsData }: {
-	anatoms: AnatomStruct[]
+function SelectAnatomStructs<T extends Record<string, AnatomStructData>>({ bodyName, anatoms, anatomsData }: {
+	bodyName: string
+	anatoms: FilteredAnatomStruct[]
 	anatomsData: T
 }) {
+	const revalidator = useRevalidator()
+
 	const [selectedAnatoms, updateSelectedAnatoms] = useImmer<AnatomStructData[]>([])
 	useEffect(() => {
 		updateSelectedAnatoms(Object.values(anatomsData))
@@ -126,8 +123,9 @@ function SelectAnatomStructs<T extends Record<string, AnatomStructData>>({ anato
 				<div className="options">
 					{searchResults.length > 0 ? (
 						searchResults.map((anatom) => {
-							const addAnatom = () => {
-								// TODO: make an add endpoint to optimize
+							const addAnatom = async () => {
+								await addBodyAnatomStruct(bodyName, anatom)
+								revalidator.revalidate()
 							}
 
 							return (
@@ -146,7 +144,8 @@ function SelectAnatomStructs<T extends Record<string, AnatomStructData>>({ anato
 	)
 }
 
-function EditAnatoms<T extends Record<string, AnatomStructData>>({ anatomsData }: {
+function EditAnatoms<T extends Record<string, AnatomStructData>>({ bodyName, anatomsData }: {
+	bodyName: string
 	anatomsData: T
 }) {
 	const anatoms = Object.values(anatomsData)
@@ -172,6 +171,7 @@ function EditAnatoms<T extends Record<string, AnatomStructData>>({ anatomsData }
 				{searchResults.length > 0 ? (
 					searchResults.map((anatom) => (
 						<EditAnatom key={anatom.name}
+							bodyName={bodyName}
 							anatom={anatom}
 						/>
 					))
@@ -181,11 +181,15 @@ function EditAnatoms<T extends Record<string, AnatomStructData>>({ anatomsData }
 	)
 }
 
-function EditAnatom<T extends AnatomStructData>({ anatom }: {
+function EditAnatom<T extends AnatomStructData>({ bodyName, anatom }: {
+	bodyName: string
 	anatom: T,
 }) {
-	const deleteAnatom = () => {
-		// TODO: make a delete endpoint to optimize
+	const revalidator = useRevalidator()
+
+	const deleteAnatom = async () => {
+		await removeBodyAnatomStruct(bodyName, anatom)
+		revalidator.revalidate()
 	}
 
 	return (

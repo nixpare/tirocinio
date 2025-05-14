@@ -28,13 +28,13 @@ export function BodyLayout() {
 	if (!loadedBody) throw new Error('BodyLayout did not receve body')
 
 	const [body, updateBody] = useImmer(loadedBody);
-	console.log(body)
 
 	useEffect(() => {
 		enqueueSnackbar((
 			<Alert severity='info'>Corpo {body.generals.name} caricato</Alert>
 		), { key: 'body-loading', preventDuplicate: true })
-	}, [])
+		updateBody(loadedBody)
+	}, [loadedBody])
 
 	return (
 		<BodyContextProvider.Provider value={{ body, updateBody }}>

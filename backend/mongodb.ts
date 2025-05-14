@@ -42,13 +42,15 @@ export async function getAnatomStructs(req: Request<{ anatomType: AnatomStructTy
 
 export async function getAnatomStruct(req: Request<{ anatomType: AnatomStructType, anatomName: string }>, res: Response) {
 	try {
-		const bone = await services.anatomStructs.findOne({
+		const result = await services.anatomStructs.findOne({
 			type: req.params.anatomType,
 			name: req.params.anatomName
 		});
 
-		if (!bone) throw new Error("not found");
-		res.status(200).send(bone);
+		result
+			? res.status(200).json(result)
+			: res.status(404).send(`Anatom struct "${req.params.anatomName}" not found`);
+
 	} catch (err: any) {
 		res.status(404).send(`Unable to find matching anamtom struct "${req.params.anatomName}": ${err.message}`);
 	}
@@ -81,7 +83,7 @@ export async function getBodies(_: Request, res: Response) {
 			.project<FilteredBody>({ generals: 1, updatedAt: 1 })
 			.toArray();
 
-		res.status(200).send(bodies);
+		res.status(200).json(bodies);
 	} catch (err: any) {
 		res.status(500).send(err.message);
 	}
@@ -95,8 +97,9 @@ export async function getBody(req: Request<{ bodyName: string }>, res: Response)
 			"generals.name": req.params.bodyName
 		});
 
-		if (!body) throw new Error("not found");
-		res.status(200).send(body);
+		body
+			? res.status(200).json(body)
+			: res.status(404).send(`Unable to find matching body "${req.params.bodyName}"`)
 	} catch (err: any) {
 		res.status(404).send(`Unable to find matching body "${req.params.bodyName}": ${err.message}`);
 	}
@@ -116,32 +119,55 @@ export async function addBody(req: Request<{}, any, Body>, res: Response) {
 	}
 }
 
-export async function updateBodyAnatomStructs(req: Request<
-	{ bodyName: string, anatomType: AnatomStructType },
-	any,
-	Record<string, AnatomStructData>
->, res: Response) {
-	const anatoms = req.body;
-	const anatomKey = anatomTypeToBodyField(req.params.anatomType)
+export async function addBodyAnatomStruct(req: Request<{ bodyName: string }, any, FilteredAnatomStruct>, res: Response) {
+	const filteredAnatom = req.body;
 
 	try {
-
-
-		const result = await services.bodies.updateOne({
-			// TODO: discuss about "_id" or "name"-like primary keys usage
-			// _id: new ObjectId(id)
-			"generals.name": req.params.bodyName
-		}, {
-			$set: {
-				[anatomKey as string]: anatoms
-			}
+		const anatom = await services.anatomStructs.findOne({
+			type: filteredAnatom.type,
+			name: filteredAnatom.name
 		});
 
+		if (!anatom) {
+			res.status(404).send(`Anatom struct "${filteredAnatom.name}" not found`);
+			return
+		}
+
+		const anatomData = createNewAnatomStructData(anatom)
+		
+		const result = await services.bodies.updateOne(
+			// TODO: discuss about "_id" or "name"-like primary keys usage
+			// _id: new ObjectId(id)
+			{ "generals.name": req.params.bodyName },
+			{ $set: { [`${anatomTypeToBodyField(anatom.type)}.${anatom.name}`]: anatomData } }
+		);
+
 		result
-			? res.status(200).send(`Successfully updated body ${req.params.bodyName}`)
-			: res.status(304).send(`Body "${req.params.bodyName}" not updated`);
+			? res.status(200).send(`Successfully added anatom struct ${anatom.name}`)
+			: res.status(304).send(`Anatom struct "${anatom.name}" not updated`);
 	} catch (err: any) {
-		res.status(404).send(`Unable to update body "${req.params.bodyName}" anatoms "${anatomKey}": ${err.message}`);
+		res.status(404).send(`Unable to add anatom struct "${filteredAnatom.name}": ${err.message}`);
+	}
+}
+
+export async function removeBodyAnatomStruct(req: Request<{
+	bodyName: string,
+	anatomType: AnatomStructType,
+	anatomName: string
+}>, res: Response) {
+	try {
+		const result = await services.bodies.updateOne(
+			// TODO: discuss about "_id" or "name"-like primary keys usage
+			// _id: new ObjectId(id)
+			{ "generals.name": req.params.bodyName },
+			{ $unset: { [`${anatomTypeToBodyField(req.params.anatomType)}.${req.params.anatomName}`]: "" } }
+		);
+
+		result
+			? res.status(200).send(`Successfully removed anatom struct ${req.params.anatomName}`)
+			: res.status(304).send(`Anatom struct "${req.params.anatomName}" not updated`);
+	} catch (err: any) {
+		res.status(404).send(`Unable to add anatom struct "${req.params.anatomName}": ${err.message}`);
 	}
 }
 
@@ -171,5 +197,17 @@ export async function updateBodyAnatomStruct(req: Request<
 			: res.status(304).send(`Body "${req.params.bodyName}" not updated`);
 	} catch (err: any) {
 		res.status(404).send(`Unable to find matching document with id "${req.params.bodyName}": ${err.message}`);
+	}
+}
+
+export function createNewAnatomStructData(anatom: AnatomStruct): AnatomStructData {
+	return {
+		type: anatom.type,
+		name: anatom.name,
+		form: {
+			templ: anatom.form,
+		},
+		templateDate: anatom.templateDate,
+		updatedAt: new Date()
 	}
 }
