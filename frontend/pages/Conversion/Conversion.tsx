@@ -1,18 +1,17 @@
 import { useLoaderData } from 'react-router';
 import { convertStrapi, fetchStrapiDocument, fetchStrapiDocumentList, StrapiAnatomStruct, StrapiAnatomStructType } from '../../../cms/AnatomStruct'
-import { Body, BodyContextProvider } from '../../../models/Body';
-import { AnatomStructDataContext, Bone } from '../../../models/AnatomStruct';
+import { anatomTypeToBodyField, Body, BodyContextProvider } from '../../../models/Body';
+import { AnatomStruct, AnatomStructDataContext } from '../../../models/AnatomStruct';
 import { useImmer } from 'use-immer';
 import { Form } from '../../components/Form/Form';
 import { childDeepUpdater, childUpdater, rootDeepUpdater } from '../../utils/updater';
-import { walkObject } from '../../../models/Programmable';
 import { useContext, useEffect, useState } from 'react';
 import { NavigationContextProvider } from '../../App';
 import { Accordion, AccordionDetails, Link, Paper } from '@mui/material';
 import { Link as RouterLink } from 'react-router';
-
-import './Conversion.css';
 import { AccordionSummaryLeft } from '../../components/UI/Accordion';
+import './Conversion.css';
+import { saveAnatomStruct } from '../../utils/api';
 
 type StrapiDocumentList = {
 	bones: StrapiAnatomStruct[]
@@ -135,29 +134,39 @@ export async function conversionLoader({ params }: {
 export function Conversion() {
 	useConversionNavigation()
 
-	const bone = useLoaderData<Bone>();
-	console.log(bone)
+	const anatom = useLoaderData<AnatomStruct>();
+	console.log(anatom)
 
-	const [body, updateBody] = useImmer<Body>({
+	const anatomKey = anatomTypeToBodyField(anatom.type)
+	if (!anatomKey) throw new Error("unknown anatom key")
+
+	const fakeBody = {
 		generals: {
 			name: 'Test body',
 			age: 20
 		},
-		bones: {
-			[bone.name]: {
-				type: 'bone',
-				name: bone.name,
-				form: {
-					templ: bone.form
-				},
-				templateDate: new Date(),
-				updatedAt: new Date()
-			}
-		},
+		bones: {},
 		viscus: {},
 		exteriors: {},
 		updatedAt: new Date()
-	})
+	}
+
+	// @ts-ignore
+	fakeBody[anatomKey][anatom.name] = {
+		type: anatom.type,
+		name: anatom.name,
+		form: {
+			templ: anatom.form
+		},
+		templateDate: new Date(),
+		updatedAt: new Date()
+	}
+
+	const [body, updateBody] = useImmer<Body>(fakeBody)
+
+	const onClickSave = () => {
+		saveAnatomStruct(anatom)
+	}
 
 	//const boneData = body.bones[bone.name].form.sections
 
@@ -165,26 +174,31 @@ export function Conversion() {
 		console.log(boneData)
 	}, [boneData]) */
 
-	const data = body.bones[bone.name]
+	const data = body.bones[anatom.name]
 
-	const updateBodyBones = childUpdater(updateBody, 'bones')
-	const updateBodyBone = childUpdater(updateBodyBones, bone.name)
-	const updateBodyBoneDataDeep = rootDeepUpdater(updateBodyBone, (bone, ...breadcrumb) => {
-		/* const payload =  */walkObject<any>(bone, breadcrumb.join('.'))
-		//console.log(payload)
+	const updateAnatomStructs = childUpdater(updateBody, anatomKey)
+	const updateAnatomStruct = childUpdater(updateAnatomStructs, anatom.name)
+	const updateAnatomStructDeep = rootDeepUpdater(updateAnatomStruct, (anatom, ...breadcrumb) => {
+		/* const payload =  walkObject<any>(anatom, breadcrumb.join('.'))
+		console.log(payload) */
 	})
-	const updateBodyBoneData = childDeepUpdater(updateBodyBoneDataDeep, 'form', 'form')
+	const updateForm = childDeepUpdater(updateAnatomStructDeep, 'form', 'form')
 
 	return (
-		<BodyContextProvider.Provider value={{ body, updateBody }}>
-			<AnatomStructDataContext.Provider value={data}>
-				<Form
-					form={data.form}
-					update={updateBodyBoneData}
-					initialEditMode={true}
-				/>
-			</AnatomStructDataContext.Provider>
-		</BodyContextProvider.Provider>
+		<>
+			<button onClick={onClickSave}>
+				Salva nel database
+			</button>
+			<BodyContextProvider.Provider value={{ body, updateBody }}>
+				<AnatomStructDataContext.Provider value={data}>
+					<Form
+						form={data.form}
+						update={updateForm}
+						initialEditMode={true}
+					/>
+				</AnatomStructDataContext.Provider>
+			</BodyContextProvider.Provider>
+		</>
 	)
 }
 

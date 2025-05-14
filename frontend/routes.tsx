@@ -2,8 +2,9 @@ import { createBrowserRouter } from "react-router";
 import { AppLayout } from "./App";
 import { BodyHome, BodyLayout, bodyLayoutLoader } from "./pages/Body/Body";
 import { Conversion, conversionLoader, ConversionSelector, conversionSelectorLoader } from "./pages/Conversion/Conversion";
-import { bodiesLoader, Index } from "./pages/Index";
+import { Index, indexLoader } from "./pages/Index";
 import { BonesView, bonesViewLoader, BoneView, ExteriorsView, exteriorsViewLoader, ExteriorView, VisceraView, ViscusView, viscusViewLoader } from "./pages/Body/AnatomStruct";
+import { BodiesView, bodiesViewLoader } from "./pages/Body/Bodies";
 
 const router = createBrowserRouter([
 	{
@@ -12,57 +13,67 @@ const router = createBrowserRouter([
 		children: [
 			{
 				index: true,
-				loader: bodiesLoader,
+				loader: indexLoader,
 				Component: Index
 			},
 			{
-				path: 'body/:bodyName',
-				loader: bodyLayoutLoader,
-				Component: BodyLayout,
+				path: 'body',
 				children: [
 					{
 						index: true,
-						Component: BodyHome,
+						loader: bodiesViewLoader,
+						Component: BodiesView
 					},
 					{
-						path: 'bones',
+						path: ':bodyName',
+						loader: bodyLayoutLoader,
+						Component: BodyLayout,
 						children: [
 							{
 								index: true,
-								loader: bonesViewLoader,
-								Component: BonesView
+								Component: BodyHome,
 							},
 							{
-								path: ':anatomName',
-								Component: BoneView
-							}
-						]
-					},
-					{
-						path: 'viscus',
-						children: [
-							{
-								index: true,
-								loader: viscusViewLoader,
-								Component: ViscusView
+								path: 'bones',
+								children: [
+									{
+										index: true,
+										loader: bonesViewLoader,
+										Component: BonesView
+									},
+									{
+										path: ':anatomName',
+										Component: BoneView
+									}
+								]
 							},
 							{
-								path: ':anatomName',
-								Component: VisceraView
-							}
-						]
-					},
-					{
-						path: 'exteriors',
-						children: [
-							{
-								index: true,
-								loader: exteriorsViewLoader,
-								Component: ExteriorsView
+								path: 'viscus',
+								children: [
+									{
+										index: true,
+										loader: viscusViewLoader,
+										Component: ViscusView
+									},
+									{
+										path: ':anatomName',
+										Component: VisceraView
+									}
+								]
 							},
 							{
-								path: ':anatomName',
-								Component: ExteriorView
+								path: 'exteriors',
+								children: [
+									{
+										index: true,
+										loader: exteriorsViewLoader,
+										Component: ExteriorsView
+									},
+									{
+										path: ':anatomName',
+										Component: ExteriorView
+									}
+								]
 							}
 						]
 					}

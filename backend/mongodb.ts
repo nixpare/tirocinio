@@ -54,6 +54,24 @@ export async function getAnatomStruct(req: Request<{ anatomType: AnatomStructTyp
 	}
 }
 
+export async function saveAnatomStruct(req: Request<{}, any, AnatomStruct>, res: Response) {
+	const anatom = req.body;
+
+	try {
+		const result = await services.anatomStructs.replaceOne(
+			{ name: anatom.name },
+			anatom,
+			{ upsert: true }
+		);
+
+		result
+			? res.status(200).send(`Successfully updated anatom struct ${anatom.name}`)
+			: res.status(304).send(`Anatom struct "${anatom.name}" not updated`);
+	} catch (err: any) {
+		res.status(404).send(`Unable to update anatom struct "${anatom.name}": ${err.message}`);
+	}
+}
+
 export type FilteredBody = Pick<Body, '_id' | 'generals' | 'updatedAt'>
 
 export async function getBodies(_: Request, res: Response) {

@@ -18,6 +18,20 @@ export async function getAnatomStruct(type: AnatomStructType, name: string): Pro
 	return await resp.json();
 }
 
+export async function saveAnatomStruct(anatom: AnatomStruct): Promise<string> {
+	const resp = await fetch(`/api/anatoms/${anatom.type}/${anatom.name}`, {
+		method: 'POST',
+		body: JSON.stringify(anatom),
+		headers: {
+			'Content-Type': 'application/json'
+		}
+	})
+	if (!resp.ok) {
+		throw new Error(`Errore aggiornamento struttura anatomica: ${await resp.text()}`);
+	}
+	return await resp.text();
+}
+
 export async function getBodies(): Promise<FilteredBody[]> {
 	const resp = await fetch(`/api/bodies`)
 	if (!resp.ok) {

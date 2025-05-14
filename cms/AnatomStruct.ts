@@ -35,7 +35,7 @@ const anatomStructQuery = {
 async function fetchQuery<T = any>(url: string, populate: any): Promise<T> {
 	const compiledQuery = qs.stringify({
 		populate: populate,
-		status: 'draft'
+		/* status: 'draft' */
 	}, { encodeValuesOnly: true });
 
 	const queryUrl = url + `?${compiledQuery}`;
@@ -48,7 +48,7 @@ async function fetchQuery<T = any>(url: string, populate: any): Promise<T> {
 
 export async function fetchStrapiDocumentList(typ: StrapiAnatomStructType): Promise<StrapiAnatomStruct[]> {
 	let url = `${baseURL}/api/${typ}/`;
-	let response = await fetch(url + '?status=draft');
+	let response = await fetch(url + '?pagination[pageSize]=1000');
 	if (!response.ok) throw new Error(`Error fetching ${url}: ${await response.text()}`);
 
 	const documents = (await response.json()).data as StrapiAnatomStruct[];

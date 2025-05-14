@@ -28,6 +28,7 @@ export function BodyLayout() {
 	if (!loadedBody) throw new Error('BodyLayout did not receve body')
 
 	const [body, updateBody] = useImmer(loadedBody);
+	console.log(body)
 
 	useEffect(() => {
 		enqueueSnackbar((
@@ -97,21 +98,26 @@ export function BodyHome() {
 	)
 }
 
-function useBodyNavigation(bodyName: string) {
+export function useBodyNavigation(bodyName: string) {
 	const navigationContext = useContext(NavigationContextProvider);
 
 	useEffect(() => {
 		navigationContext?.([
 			{
-				segment: './..',
-				title: 'Home',
+				segment: 'body',
+				title: 'Corpi',
 				icon: <i className="fa-solid fa-house"></i>
+			},
+			{
+				segment: 'conversion',
+				title: 'Conversione',
+				icon: <i className="fa-solid fa-screwdriver-wrench"></i>
 			},
 			{
 				kind: 'divider'
 			},
 			{
-				segment: '.',
+				segment: encodeURI(`body/${bodyName}`),
 				title: bodyName,
 				icon: <i className="fa-solid fa-user"></i>
 			},
@@ -119,18 +125,18 @@ function useBodyNavigation(bodyName: string) {
 				kind: 'divider'
 			},
 			{
-				segment: 'bones',
+				segment: encodeURI(`body/${bodyName}/bones`),
 				title: 'Ossa',
 				icon: <i className="fa-solid fa-bone"></i>
 			},
 			{
-				segment: 'viscus',
+				segment: encodeURI(`body/${bodyName}/viscus`),
 				title: 'Visceri',
 				icon: <i className="fa-solid fa-lungs"></i>
 			},
 			{
-				segment: 'exteriors',
-				title: 'Esterno',
+				segment: encodeURI(`body/${bodyName}/exteriors`),
+				title: 'Esterni',
 				icon: <i className="fa-solid fa-shield"></i>
 			}
 		])

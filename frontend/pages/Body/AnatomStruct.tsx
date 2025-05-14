@@ -19,6 +19,7 @@ import { enqueueSnackbar } from 'notistack'
 import { walkObject } from '../../../models/Programmable'
 import { AccordionSummaryLeft } from '../../components/UI/Accordion'
 import { Form } from '../../components/Form/Form'
+import { useBodyNavigation } from './Body'
 
 export async function anatomStructsViewLoader(type: AnatomStructType) {
 	return await getAnatomStructs(type)
@@ -37,10 +38,12 @@ function AnatomStructsView({ anatomType, displayName }: {
 		throw new Error('Invalid anatomType: cannot resolve anatomsKey');
 	}
 	
-	const { body, updateBody } = bodyContext;
-	const updateBodyAnatoms = childUpdater(updateBody, anatomsKey);
+	const { body } = bodyContext;
+
+	useAnatomStructsViewNavigation(body.generals.name)
 
 	useEffect(() => {
+		console.log('UPDATE', body[anatomsKey])
 		updateAnatomStructsData(body.generals.name, anatomType, body[anatomsKey]).catch((err: Error) => {
 			enqueueSnackbar((
 				<Alert severity='error'>{err.message}</Alert>
@@ -77,21 +80,18 @@ function AnatomStructsView({ anatomType, displayName }: {
 			<SelectAnatomStructs
 				anatoms={anatoms}
 				anatomsData={body[anatomsKey]}
-				updateAnatomsData={updateBodyAnatoms}
 			/>
 			<Divider variant="middle" sx={{ marginTop: '1em', marginBottom: '1em' }} />
 			<EditAnatoms
 				anatomsData={body[anatomsKey]}
-				updateAnatomsData={updateBodyAnatoms}
 			/>
 		</div>
 	)
 }
 
-function SelectAnatomStructs<T extends Record<string, AnatomStructData>>({ anatoms, anatomsData, updateAnatomsData }: {
+function SelectAnatomStructs<T extends Record<string, AnatomStructData>>({ anatoms, anatomsData }: {
 	anatoms: AnatomStruct[]
 	anatomsData: T
-	updateAnatomsData: Updater<T>
 }) {
 	const [selectedAnatoms, updateSelectedAnatoms] = useImmer<AnatomStructData[]>([])
 	useEffect(() => {
@@ -127,19 +127,7 @@ function SelectAnatomStructs<T extends Record<string, AnatomStructData>>({ anato
 					{searchResults.length > 0 ? (
 						searchResults.map((anatom) => {
 							const addAnatom = () => {
-								updateAnatomsData(data => {
-									Object.assign(data, {
-										[anatom.name]: {
-											type: anatom.type,
-											name: anatom.name,
-											form: {
-												templ: anatom.form
-											},
-											templateDate: new Date(),
-											updatedAt: new Date()
-										}
-									})
-								})
+								// TODO: make an add endpoint to optimize
 							}
 
 							return (
@@ -158,9 +146,8 @@ function SelectAnatomStructs<T extends Record<string, AnatomStructData>>({ anato
 	)
 }
 
-function EditAnatoms<T extends Record<string, AnatomStructData>>({ anatomsData, updateAnatomsData }: {
+function EditAnatoms<T extends Record<string, AnatomStructData>>({ anatomsData }: {
 	anatomsData: T
-	updateAnatomsData: Updater<T>
 }) {
 	const anatoms = Object.values(anatomsData)
 
@@ -186,7 +173,6 @@ function EditAnatoms<T extends Record<string, AnatomStructData>>({ anatomsData, 
 					searchResults.map((anatom) => (
 						<EditAnatom key={anatom.name}
 							anatom={anatom}
-							updateAnatomsData={updateAnatomsData}
 						/>
 					))
 				) : 'Nessuna'}
@@ -195,14 +181,11 @@ function EditAnatoms<T extends Record<string, AnatomStructData>>({ anatomsData, 
 	)
 }
 
-function EditAnatom<T extends AnatomStructData, M extends Record<string, AnatomStructData>>({ anatom, updateAnatomsData }: {
+function EditAnatom<T extends AnatomStructData>({ anatom }: {
 	anatom: T,
-	updateAnatomsData: Updater<M>
 }) {
 	const deleteAnatom = () => {
-		updateAnatomsData(anatomsData => {
-			delete anatomsData[anatom.name]
-		})
+		// TODO: make a delete endpoint to optimize
 	}
 
 	return (
@@ -229,6 +212,10 @@ function EditAnatom<T extends AnatomStructData, M extends Record<string, AnatomS
 	)
 }
 
+function useAnatomStructsViewNavigation(bodyName: string) {
+	useBodyNavigation(bodyName)
+}
+
 function AnatomStructView({ anatomType, displayName }: {
 	anatomType: AnatomStructType
 	displayName: string
@@ -240,6 +227,8 @@ function AnatomStructView({ anatomType, displayName }: {
 	if (!bodyContext) throw new Error('AnatomStructView must be used within a BodyContext')
 
 	const { body, updateBody } = bodyContext;
+
+	useAnatomStructViewNavigation(body.generals.name)
 
 	const anatomKey = anatomTypeToBodyField(anatomType)
 	if (!anatomKey) {
@@ -296,6 +285,10 @@ function AnatomStructView({ anatomType, displayName }: {
 			</AnatomStructDataContext.Provider>
 		</div>
 	)
+}
+
+function useAnatomStructViewNavigation(bodyName: string) {
+	useBodyNavigation(bodyName)
 }
 
 //
