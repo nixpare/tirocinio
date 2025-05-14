@@ -11,6 +11,8 @@ type AnatomStructBase = {
 	type: AnatomStructType
 	name: string
 	form: FormTemplate
+	templateDate: Date
+	updatedAt: Date
 }
 
 export type AnatomStructData = BoneData | VisceraData | ExteriorData
@@ -19,6 +21,8 @@ export type AnatomStructDataBase = {
 	type: AnatomStructType
 	name: string
 	form: FormData
+	templateDate: Date
+	updatedAt: Date
 }
 
 export const AnatomStructDataContext = createContext<AnatomStructData | undefined>(undefined)

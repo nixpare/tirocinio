@@ -3,7 +3,7 @@ import { DraftFunction, Updater } from "use-immer"
 
 export type DeepUpdater<S> = (arg: S | DraftFunction<S>, ...breadcrumb: string[]) => void;
 
-type NonFunctionChilds<T extends object> = {
+export type NonFunctionChilds<T extends object> = {
 	[K in keyof T]: T[K] extends Function ? never : K
 }[keyof T]
 

@@ -1,0 +1,18 @@
+.add-body {
+	padding: 1em 1em;
+}
+
+.add-body-title {
+	margin-bottom: 2em;
+}
+
+.add-body-fields {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 3em 1em;
+	margin-bottom: 2em;
+}
+
+.add-body-field>label {
+	margin-right: 1em;
+}

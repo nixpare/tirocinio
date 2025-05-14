@@ -1,39 +1,39 @@
-.bones,
-.bone {
+.anatoms,
+.anatom {
 	padding: 2em;
 	padding-left: 4em;
 }
 
-.bones h1 {
+.anatoms h1 {
 	margin-bottom: 1em;
 }
 
-.edit-bones {
+.edit-anatoms {
 	padding: 1em;
 }
 
-.select-bones i {
+.select-anatoms i {
 	color: rgb(var(--primary-color));
 }
 
-.select-bones .search,
-.edit-bones .search {
+.select-anatoms .search,
+.edit-anatoms .search {
 	display: flex;
 	align-items: center;
 	gap: 1em;
 	margin-bottom: 1em;
 }
 
-.select-bones .search>input,
-.edit-bones .search>input {
+.select-anatoms .search>input,
+.edit-anatoms .search>input {
 	width: 40ch;
 	padding: .5em;
 	border-radius: .4em;
 	background-color: rgba(var(--primary-color), .1);
 }
 
-.select-bones .options,
-.edit-bones .options {
+.select-anatoms .options,
+.edit-anatoms .options {
 	min-width: min(350px, 100%);
 	max-height: 12em;
 	overflow-y: auto;
@@ -46,22 +46,22 @@
 	gap: 1em;
 }
 
-.select-bones .options>*,
-.edit-bones .options>* {
+.select-anatoms .options>*,
+.edit-anatoms .options>* {
 	flex-basis: 16em;
 }
 
-.edit-bones>ul {
+.edit-anatoms>ul {
 	flex-direction: column;
 }
 
-.select-bones p,
-.edit-bones p {
+.select-anatoms p,
+.edit-anatoms p {
 	font-size: 1.2em;
 }
 
-.select-bone,
-.edit-bone {
+.select-anatom,
+.edit-anatom {
 	display: flex;
 	align-items: center;
 	justify-content: center;
@@ -72,11 +72,11 @@
 	position: relative;
 }
 
-.select-bone:not(:hover)>.show-on-hover {
+.select-anatom:not(:hover)>.show-on-hover {
 	opacity: 0;
 }
 
-.select-bone>.show-on-hover {
+.select-anatom>.show-on-hover {
 	position: absolute;
 	inset: 0;
 	background-color: rgba(0, 0, 0, .5);
@@ -89,21 +89,21 @@
 	transition: opacity .2s ease-in-out;
 }
 
-.edit-bone {
+.edit-anatom {
 	padding-left: 1em;
 	justify-content: space-between;
 }
 
-.edit-bone > div {
+.edit-anatom > div {
 	display: flex;
 	gap: .5em;
 }
 
-.edit-bone > div > button.delete-button {
+.edit-anatom > div > button.delete-button {
 	background-color: rgb(230, 55, 55);
 }
 
-.edit-bone-popup {
+.edit-anatom-popup {
 	background-color: #ddd;
 	padding: 1em;
 	border-radius: .6em;
@@ -113,7 +113,7 @@
 	overflow: auto;
 }
 
-.edit-bone-popup > button {
+.edit-anatom-popup > button {
 	position: fixed;
 	top: 2em;
 	right: 2em;
@@ -122,7 +122,7 @@
 	background-color: #e57676;
 }
 
-.edit-bone-popup>button>i {
+.edit-anatom-popup>button>i {
 	font-size: 1.2em;
 }
 

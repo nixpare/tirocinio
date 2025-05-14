@@ -1,9 +1,9 @@
 import { createBrowserRouter } from "react-router";
 import { AppLayout } from "./App";
-import { BodyHome, BodyLoader } from "./pages/Body/Body";
-import { Bones, BoneView } from "./pages/Body/Bones";
+import { BodyHome, BodyLayout, bodyLayoutLoader } from "./pages/Body/Body";
 import { Conversion, conversionLoader, ConversionSelector, conversionSelectorLoader } from "./pages/Conversion/Conversion";
-import { Index } from "./pages/Index";
+import { bodiesLoader, Index } from "./pages/Index";
+import { BonesView, bonesViewLoader, BoneView, ExteriorsView, exteriorsViewLoader, ExteriorView, VisceraView, ViscusView, viscusViewLoader } from "./pages/Body/AnatomStruct";
 
 const router = createBrowserRouter([
 	{
@@ -12,11 +12,13 @@ const router = createBrowserRouter([
 		children: [
 			{
 				index: true,
+				loader: bodiesLoader,
 				Component: Index
 			},
 			{
-				path: 'body/:name',
-				Component: BodyLoader,
+				path: 'body/:bodyName',
+				loader: bodyLayoutLoader,
+				Component: BodyLayout,
 				children: [
 					{
 						index: true,
@@ -27,11 +29,40 @@ const router = createBrowserRouter([
 						children: [
 							{
 								index: true,
-								Component: Bones
+								loader: bonesViewLoader,
+								Component: BonesView
 							},
 							{
-								path: ':id',
+								path: ':anatomName',
 								Component: BoneView
+							}
+						]
+					},
+					{
+						path: 'viscus',
+						children: [
+							{
+								index: true,
+								loader: viscusViewLoader,
+								Component: ViscusView
+							},
+							{
+								path: ':anatomName',
+								Component: VisceraView
+							}
+						]
+					},
+					{
+						path: 'exteriors',
+						children: [
+							{
+								index: true,
+								loader: exteriorsViewLoader,
+								Component: ExteriorsView
+							},
+							{
+								path: ':anatomName',
+								Component: ExteriorView
 							}
 						]
 					}

@@ -362,16 +362,16 @@ function SelectField({ field, data, update, disabled, breadcrumb, hideHeader }: 
 	let selectArgs: FormFieldSelectArgs = [];
 	
 	const struct = useContext(AnatomStructDataContext)
-	const bodyContext = useContext(BodyContextProvider)
+	const body = useContext(BodyContextProvider)?.body
 
 	if (typeof field.selectArgs === 'string') {
 		try {
-			if (!struct || !bodyContext) {
+			if (!struct || !body) {
 				throw new Error('informazioni sul form corrente non trovate')
 			}
 
 			const f = selectArgsFunctionMap[field.selectArgs]
-			selectArgs = f(struct, bodyContext.body, breadcrumb)
+			selectArgs = f(struct, body, breadcrumb)
 		} catch (e: any) {
 			console.error(e)
 			enqueueSnackbar((
@@ -518,18 +518,18 @@ function MultiSelectField({ field, data, update, disabled, breadcrumb, hideHeade
 	let selectArgs: FormFieldSelectArgs = []
 
 	const struct = useContext(AnatomStructDataContext)
-	const bodyContext = useContext(BodyContextProvider)
+	const body = useContext(BodyContextProvider)?.body
 
 	if (typeof field.selectArgs !== 'string') {
 		selectArgs = field.selectArgs
 	} else {
 		try {
-			if (!struct || !bodyContext) {
+			if (!struct || !body) {
 				throw new Error('informazioni sul form corrente non trovate')
 			}
 
 			const f = selectArgsFunctionMap[field.selectArgs]
-			selectArgs = f(struct, bodyContext.body, breadcrumb)
+			selectArgs = f(struct, body, breadcrumb)
 		} catch (e: any) {
 			console.error(e)
 			enqueueSnackbar((
@@ -972,12 +972,12 @@ function DeductionField({field, data, update, disabled, breadcrumb }: {
 
 		try {
 			const struct = useContext(AnatomStructDataContext)
-			const bodyContext = useContext(BodyContextProvider)
-			if (!struct || !bodyContext) {
+			const body = useContext(BodyContextProvider)?.body
+			if (!struct || !body) {
 				throw new Error('informazioni sul form corrente non trovate')
 			}
 
-			const { result: res } = deduction.fn(struct, bodyContext.body, breadcrumb)
+			const { result: res } = deduction.fn(struct, body, breadcrumb)
 			update(deductionData => {
 				deductionData.value = res
 			})

@@ -1,64 +1,34 @@
 import './Body.css'
 
-import { useQuery } from '@tanstack/react-query'
-import { Body, BodyContextProvider, BodyContext } from '../../../models/Body'
-import { Link, Outlet, useParams } from 'react-router';
+import { Body, BodyContextProvider } from '../../../models/Body'
+import { Outlet, useLoaderData } from 'react-router';
 import Box from '@mui/material/Box';
 import Breadcrumbs from '@mui/material/Breadcrumbs';
 import Typography from '@mui/material/Typography';
 import { useContext, useEffect } from 'react';
-import { Updater, useImmer } from 'use-immer';
 import { enqueueSnackbar } from 'notistack';
 import Alert from '@mui/material/Alert';
 import { NavigationContextProvider } from '../../App';
+import { Link as RouterLink } from 'react-router';
+import Link from '@mui/material/Link/Link';
+import { getBody } from '../../utils/api';
+import { useImmer } from 'use-immer';
 
-export function BodyLoader() {
-	const [body, updateBody] = useImmer<Body | null>(null);
-	const { name } = useParams();
-	if (!name) {
-		return <h3>Nome non specificato</h3>;
-	}
-
-	const url = `/api/bodies/${name}`
-	const { isLoading, error } = useQuery({
-		queryKey: [url],
-		queryFn: async () => {
-			const res = await fetch(url)
-			if (!res.ok)
-				throw new Error(await res.text())
-
-			const data: Body = await res.json();
-			updateBody(data);
-			return data;
-		},
-		retry: false
-	})
-
-	if (isLoading)
-		return (
-			<div>
-				<h3>Caricamento</h3>
-			</div>
-		)
-
-	if (error || !body) {
-		const errMessage = error ? error.message : 'Errore durante il caricamento del corpo'
-
-		return (
-			<div>
-				<h3>Errore</h3>
-				<p>{errMessage}</p>
-			</div>
-		)
-	}
-
-	return (
-		<BodyContent body={body} updateBody={updateBody as Updater<Body>} />
-	);
+export async function bodyLayoutLoader({ params }: {
+	params: any
+}) {
+	const { bodyName } = params;
+	if (!bodyName) throw new Error('Body name must be provided')
+		
+	return await getBody(bodyName)
 }
 
-function BodyContent({ body, updateBody }: { body: Body, updateBody: Updater<Body> }) {
-	const context: BodyContext = { body, updateBody }
+export function BodyLayout() {
+	const loadedBody = useLoaderData<Body>();
+	if (!loadedBody) throw new Error('BodyLayout did not receve body')
+
+	const [body, updateBody] = useImmer(loadedBody);
+
 	useEffect(() => {
 		enqueueSnackbar((
 			<Alert severity='info'>Corpo {body.generals.name} caricato</Alert>
@@ -66,21 +36,74 @@ function BodyContent({ body, updateBody }: { body: Body, updateBody: Updater<Bod
 	}, [])
 
 	return (
-		<BodyContextProvider.Provider value={context}>
+		<BodyContextProvider.Provider value={{ body, updateBody }}>
 			<Outlet />
 		</BodyContextProvider.Provider>
 	)
 }
 
 export function BodyHome() {
-	const bodyContext = useContext(BodyContextProvider);
+	const body = useContext(BodyContextProvider)?.body;
+	if (!body) throw new Error('BodyHome must be used within a BodyContextProvider')
+
+	useBodyNavigation(body.generals.name)
+
+	return (
+		<Box sx={{ padding: '2em 4em' }}>
+			<Breadcrumbs separator="›" aria-label="breadcrumb">
+				<Link
+					to="./.."
+					underline="hover"
+					component={RouterLink}
+					sx={{ ":visited": { color: 'unset' }}}
+				>
+					<Typography>
+						<i className="fa-solid fa-home"></i>
+					</Typography>
+				</Link>
+				<Typography sx={{ color: 'text.primary' }}>{body.generals.name}</Typography>
+			</Breadcrumbs>
+			<h1>{body.generals.name}</h1>
+			<div className="anatom-struct-links">
+				<Link
+					to="bones"
+					underline="hover"
+					className='anatom-struct-link'
+					component={RouterLink}
+				>
+					Ossa
+					<i className="fa-solid fa-bone"></i>
+				</Link>
+				<Link
+					to="viscus"
+					underline="hover"
+					className='anatom-struct-link'
+					component={RouterLink}
+				>
+					Visceri
+					<i className="fa-solid fa-lungs"></i>
+				</Link>
+				<Link
+					to="exteriors"
+					underline="hover"
+					className='anatom-struct-link'
+					component={RouterLink}
+				>
+					Esterno
+					<i className="fa-solid fa-shield"></i>
+				</Link>
+			</div>
+		</Box>
+	)
+}
+
+function useBodyNavigation(bodyName: string) {
 	const navigationContext = useContext(NavigationContextProvider);
 
 	useEffect(() => {
-		const baseURL = `body/${encodeURIComponent(body.generals.name)}`
 		navigationContext?.([
 			{
-				segment: '',
+				segment: './..',
 				title: 'Home',
 				icon: <i className="fa-solid fa-house"></i>
 			},
@@ -88,55 +111,28 @@ export function BodyHome() {
 				kind: 'divider'
 			},
 			{
-				segment: baseURL,
-				title: body.generals.name,
+				segment: '.',
+				title: bodyName,
 				icon: <i className="fa-solid fa-user"></i>
 			},
 			{
 				kind: 'divider'
 			},
 			{
-				segment: baseURL + '/bones',
+				segment: 'bones',
 				title: 'Ossa',
 				icon: <i className="fa-solid fa-bone"></i>
 			},
 			{
-				segment: baseURL + '/viscus',
+				segment: 'viscus',
 				title: 'Visceri',
 				icon: <i className="fa-solid fa-lungs"></i>
 			},
 			{
-				segment: baseURL + '/exteriors',
+				segment: 'exteriors',
 				title: 'Esterno',
 				icon: <i className="fa-solid fa-shield"></i>
 			}
 		])
 	}, [])
-
-	if (!bodyContext) throw new Error('BodyHome must be used within a BodyContextProvider')
-
-	const { body } = bodyContext;
-
-	return (
-		<Box sx={{ padding: '2em 4em' }}>
-			<Breadcrumbs separator="›" aria-label="breadcrumb">
-				<Typography sx={{ color: 'text.primary' }}>{body.generals.name}</Typography>
-			</Breadcrumbs>
-			<h1>{body.generals.name}</h1>
-			<div className="anatom-struct-links">
-				<Link to="bones" className='anatom-struct-link'>
-					Ossa
-					<i className="fa-solid fa-bone"></i>
-				</Link>
-				<Link to="viscus" className='anatom-struct-link'>
-					Visceri
-					<i className="fa-solid fa-lungs"></i>
-				</Link>
-				<Link to="exteriors" className='anatom-struct-link'>
-					Esterno
-					<i className="fa-solid fa-shield"></i>
-				</Link>
-			</div>
-		</Box>
-	)
 }

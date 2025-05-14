@@ -149,11 +149,14 @@ export function Conversion() {
 				name: bone.name,
 				form: {
 					templ: bone.form
-				}
+				},
+				templateDate: new Date(),
+				updatedAt: new Date()
 			}
 		},
 		viscus: {},
-		exteriors: {}
+		exteriors: {},
+		updatedAt: new Date()
 	})
 
 	//const boneData = body.bones[bone.name].form.sections

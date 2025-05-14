@@ -4,11 +4,11 @@ import ProxyServer from 'http-proxy';
 import { createProxyMiddleware } from 'http-proxy-middleware';
 import morgan from 'morgan';
 import { devMode } from './main';
-import { getAllBodies, getAllBones, getBody, getBone, updateBodyBone, updateBodyBones } from './mongodb';
+import { getAnatomStructs, getBodies, getAnatomStruct, getBody, updateBodyAnatomStruct, updateBodyAnatomStructs, addBody } from './mongodb';
 
 export function setupRoutes(app: express.Express, proxy: ProxyServer) {
 	setupCommonRoutes(app);
-    devMode ? setupDevRoutes(app, proxy) : setupProdRoutes(app);
+	devMode ? setupDevRoutes(app, proxy) : setupProdRoutes(app);
 }
 
 function setupDevRoutes(app: express.Express, proxy: ProxyServer) {
@@ -33,61 +33,34 @@ function setupCommonRoutes(app: express.Express) {
 	//
 	// Bones
 	//
-	app.get('/api/bones', getAllBones)
-	app.get('/api/bones/:id', getBone)
+	app.get('/api/anatoms/:anatomType', getAnatomStructs)
+	app.get('/api/anatoms/:anatomType/:anatomName', getAnatomStruct)
 
 	//
 	// Body
 	//
-	app.get('/api/bodies', getAllBodies)
-	app.get('/api/bodies/:id', getBody)
+	app.get('/api/bodies', getBodies)
+	app.get('/api/bodies/:bodyName', getBody)
+
+	app.post('/api/bodies', addBody)
+
+	app.put('/api/bodies/:bodyName/anatoms/:anatomType', updateBodyAnatomStructs)
+	app.put('/api/bodies/:bodyName/anatoms/:anatomType/:anatomName', updateBodyAnatomStruct)
 
 	//
 	// CMS Reverse Proxy
 	//
 
-	/* app.get('/cms/:path(*)', async (req, res) => {
-		const path = req.params.path;
-		const query = req.url.split('?')[1] || '';
-		const target = `http://labanof-backoffice.islab.di.unimi.it/${path}${query ? '?' + query : ''}`;
-
-		console.log(`[Proxy] → ${target}`);
-
-		const resp = await fetch(target)
-			.catch((err: Error) => console.error(`Reverse Proxy error: ${err.message}`))
-
-		if (!resp) {
-			res.status(502).send('Reverse Proxy error')
-			return;
-		}
-		
-		if (!resp.ok) {
-			const message = `Reverse Proxy error: ${await resp.text() }`
-			console.error(message)
-			res.status(502).send(message)
-			return
-		}
-
-		res.setHeaders(resp.headers)
-
-		res.status(resp.status).send(await resp.text());
-	}); */
-
 	app.use('/cms', createProxyMiddleware({
-		target: 'http://labanof-backoffice.islab.di.unimi.it',     // backend HTTP non sicuro
+		target: 'http://labanof-backoffice.islab.di.unimi.it',
 		changeOrigin: true,
 		pathRewrite: {
-			'^/cms': '',                // riscrive /cms/abc → /api/abc
+			'^/cms': '', // replace /cms/* → /api/*
 		},
 		on: {
 			proxyReq: (proxyReq, req, _) => {
-				// facoltativo: puoi loggare o modificare le intestazioni
 				console.log(`[Proxy] ${req.method} ${req.url} → ${proxyReq.path}`);
 			}
 		}
 	}));
-
-	// TODO: replace with an insert for new bones
-	app.put('/api/bodies/:id/bones', updateBodyBones)
-	app.put('/api/bodies/:id/bones/:boneId', updateBodyBone)
 }

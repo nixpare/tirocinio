@@ -1,7 +1,7 @@
-import mongoDB, { ObjectId } from "mongodb";
+import mongoDB from "mongodb";
 import { Request, Response } from "express";
-import { AnatomStruct, BoneData } from "../models/AnatomStruct";
-import { Body } from "../models/Body";
+import { AnatomStruct, AnatomStructData, AnatomStructType } from "../models/AnatomStruct";
+import { anatomTypeToBodyField, Body } from "../models/Body";
 import { services } from "./main";
 
 export async function connectToMongoDB(): Promise<{
@@ -25,11 +25,14 @@ export async function connectToMongoDB(): Promise<{
 	}
 }
 
-export async function getAllBones(_: Request, res: Response) {
+export type FilteredAnatomStruct = Pick<AnatomStruct, '_id' | 'type' | 'name'>
+
+export async function getAnatomStructs(req: Request<{ anatomType: AnatomStructType }>, res: Response) {
 	try {
-		const bones = await services.anatomStructs.find({
-			type: 'bone'
-		}).toArray();
+		const bones = await services.anatomStructs
+			.find({ type: req.params.anatomType })
+			.project({ type: 1, name: 1 })
+			.toArray();
 
 		res.status(200).send(bones);
 	} catch (err: any) {
@@ -37,25 +40,28 @@ export async function getAllBones(_: Request, res: Response) {
 	}
 }
 
-export async function getBone(req: Request, res: Response) {
-	const id = req?.params.id;
-
+export async function getAnatomStruct(req: Request<{ anatomType: AnatomStructType, anatomName: string }>, res: Response) {
 	try {
 		const bone = await services.anatomStructs.findOne({
-			_id: new ObjectId(id),
-			type: 'bone'
+			type: req.params.anatomType,
+			name: req.params.anatomName
 		});
 
 		if (!bone) throw new Error("not found");
 		res.status(200).send(bone);
 	} catch (err: any) {
-		res.status(404).send(`Unable to find matching document with id "${req.params.id}": ${err.message}`);
+		res.status(404).send(`Unable to find matching anamtom struct "${req.params.anatomName}": ${err.message}`);
 	}
 }
 
-export async function getAllBodies(_: Request, res: Response) {
+export type FilteredBody = Pick<Body, '_id' | 'generals' | 'updatedAt'>
+
+export async function getBodies(_: Request, res: Response) {
 	try {
-		const bodies = await services.bodies.find({}).toArray();
+		const bodies = await services.bodies
+			.find({})
+			.project<FilteredBody>({ generals: 1, updatedAt: 1 })
+			.toArray();
 
 		res.status(200).send(bodies);
 	} catch (err: any) {
@@ -63,74 +69,89 @@ export async function getAllBodies(_: Request, res: Response) {
 	}
 }
 
-export async function getBody(req: Request, res: Response) {
-	const id = req?.params.id;
-
+export async function getBody(req: Request<{ bodyName: string }>, res: Response) {
 	try {
 		const body = await services.bodies.findOne({
 			// TODO: discuss about "_id" or "name"-like primary keys usage
 			// _id: new ObjectId(id)
-			"generals.name": id
+			"generals.name": req.params.bodyName
 		});
 
 		if (!body) throw new Error("not found");
 		res.status(200).send(body);
 	} catch (err: any) {
-		res.status(404).send(`Unable to find matching document with id "${req.params.id}": ${err.message}`);
+		res.status(404).send(`Unable to find matching body "${req.params.bodyName}": ${err.message}`);
 	}
 }
 
-export async function updateBodyBones(req: Request, res: Response) {
-	const id = req.params.id;
-	
+export async function addBody(req: Request<{}, any, Body>, res: Response) {
+	const body = req.body;
+
 	try {
-		const bones = req.body as Record<string, BoneData>;
-		
-		const result = await services.bodies.updateOne({
-			// TODO: discuss about "_id" or "name"-like primary keys usage
-			// _id: new ObjectId(id)
-			"generals.name": id
-		}, {
-			$set: {
-				"bones": bones
-			}
-		});
+		const result = await services.bodies.insertOne(body);
 
 		result
-			? res.status(200).send(`Successfully updated body ${id}`)
-			: res.status(304).send(`Body "${id}" not updated`);
+			? res.status(200).send(`Successfully added body ${body.generals.name}`)
+			: res.status(304).send(`Body "${body.generals.name}" not updated`);
 	} catch (err: any) {
-		res.status(404).send(`Unable to find matching document with id "${req.params.id}": ${err.message}`);
+		res.status(404).send(`Unable to insert body "${body.generals.name}": ${err.message}`);
 	}
 }
 
-export async function updateBodyBone(req: Request, res: Response) {
-	const id = req.params.id;
-	const boneId = req.params.boneId;
+export async function updateBodyAnatomStructs(req: Request<
+	{ bodyName: string, anatomType: AnatomStructType },
+	any,
+	Record<string, AnatomStructData>
+>, res: Response) {
+	const anatoms = req.body;
+	const anatomKey = anatomTypeToBodyField(req.params.anatomType)
 
 	try {
-		const { payload, breadcrumb } = req.body as {
-			payload: any,
-			breadcrumb: string[]
-		};
-		if (!payload || !breadcrumb) throw new Error("invalid payload provided")
 
-		const query = ['bones', boneId, ...breadcrumb].join('.');
 
 		const result = await services.bodies.updateOne({
 			// TODO: discuss about "_id" or "name"-like primary keys usage
 			// _id: new ObjectId(id)
-			"generals.name": id
+			"generals.name": req.params.bodyName
 		}, {
 			$set: {
-				[query]: payload
+				[anatomKey as string]: anatoms
 			}
 		});
 
 		result
-			? res.status(200).send(`Successfully updated body ${id}`)
-			: res.status(304).send(`Body "${id}" not updated`);
+			? res.status(200).send(`Successfully updated body ${req.params.bodyName}`)
+			: res.status(304).send(`Body "${req.params.bodyName}" not updated`);
 	} catch (err: any) {
-		res.status(404).send(`Unable to find matching document with id "${req.params.id}": ${err.message}`);
+		res.status(404).send(`Unable to update body "${req.params.bodyName}" anatoms "${anatomKey}": ${err.message}`);
+	}
+}
+
+export async function updateBodyAnatomStruct(req: Request<
+	{ bodyName: string, anatomType: AnatomStructType, anatomName: string },
+	any,
+	{ payload: any, breadcrumb: string[] }
+>, res: Response) {
+	try {
+		if (!req.body.payload || !req.body.breadcrumb) throw new Error("invalid payload provided")
+
+		const anatomKey = anatomTypeToBodyField(req.params.anatomType)
+		const query = [anatomKey, req.params.anatomName, ...req.body.breadcrumb].join('.');
+
+		const result = await services.bodies.updateOne({
+			// TODO: discuss about "_id" or "name"-like primary keys usage
+			// _id: new ObjectId(id)
+			"generals.name": req.params.bodyName
+		}, {
+			$set: {
+				[query]: req.body.payload
+			}
+		});
+
+		result
+			? res.status(200).send(`Successfully updated body ${req.params.bodyName}`)
+			: res.status(304).send(`Body "${req.params.bodyName}" not updated`);
+	} catch (err: any) {
+		res.status(404).send(`Unable to find matching document with id "${req.params.bodyName}": ${err.message}`);
 	}
 }
