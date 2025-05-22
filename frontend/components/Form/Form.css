@@ -63,6 +63,12 @@
 	background-color: rgba(var(--primary-color), .1);
 }
 
-.form-section .starter-field .MuiAccordion-heading .field-header {
+.form-section .starter-field .starter-field-header {
 	font-size: 1.1em;
+}
+
+.form-section .starter-field .starter-field-details {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 1em;
 }

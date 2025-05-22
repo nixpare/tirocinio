@@ -62,11 +62,13 @@ type UpdateDeductionFieldFunc = DeepUpdater<FormDeductionFieldData>
 type UpdateFieldGroupFunc = DeepUpdater<FormFieldGroupData>
 type UpdateReferenceFieldFunc = DeepUpdater<FormReferenceFieldData>
 
-export function Field({ field, data, update, breadcrumb, referenceKeys, isReference }: {
+export function Field({ field, data, update, breadcrumb, hideHeader, hideNext, referenceKeys, isReference }: {
 	field: FormFieldTemplate,
 	data?: FormFieldData,
 	update: UpdateFieldFunc,
 	breadcrumb: string[],
+	hideHeader?: boolean,
+	hideNext?: boolean,
 	referenceKeys?: string[],
 	isReference?: boolean
 }) {
@@ -112,10 +114,12 @@ export function Field({ field, data, update, breadcrumb, referenceKeys, isRefere
 				data={data}
 				update={update}
 				breadcrumb={breadcrumb}
+				hideHeader={hideHeader}
+				hideNext={hideNext}
 			/>
-			{field.nextAnyValue && !isReference && (
+			{!hideNext && !isReference && (
 				<FieldNextAnyValue
-					fields={field.nextAnyValue}
+					field={field}
 					data={data}
 					update={update}
 					breadcrumb={breadcrumb}
@@ -125,11 +129,13 @@ export function Field({ field, data, update, breadcrumb, referenceKeys, isRefere
 	)
 }
 
-export function FieldSwitch({ field, data, update, breadcrumb }: {
+export function FieldSwitch({ field, data, update, breadcrumb, hideHeader, hideNext }: {
 	field: FormFieldTemplate,
 	data?: FormFieldData,
 	update: UpdateFieldFunc,
 	breadcrumb: string[],
+	hideHeader?: boolean,
+	hideNext?: boolean
 }) {
 	const editMode = useContext(EditModeContext)
 
@@ -137,7 +143,7 @@ export function FieldSwitch({ field, data, update, breadcrumb }: {
 		case formFieldIsFixed(field):
 			return field.value && (
 				<div className="field fixed-field">
-					{field.header && <p className="field-header">{field.header}</p>}
+					{!hideHeader && field.header && <p className="field-header">{field.header}</p>}
 					<p className="fixed-value">{field.value}</p>
 				</div>
 			)
@@ -154,7 +160,7 @@ export function FieldSwitch({ field, data, update, breadcrumb }: {
 
 			return (
 				<div className="field text-field">
-					{field.header && <p className="field-header">{field.header}</p>}
+					{!hideHeader && field.header && <p className="field-header">{field.header}</p>}
 					{!field.multiline ? (
 						<input
 							type="text"
@@ -195,7 +201,7 @@ export function FieldSwitch({ field, data, update, breadcrumb }: {
 
 			return (
 				<div className="field number-field">
-					{field.header && <p className="field-header">{field.header}</p>}
+					{!hideHeader && field.header && <p className="field-header">{field.header}</p>}
 					<NumberInput
 						className={className}
 						placeholder={editMode ? 'Inserisci valore ...' : 'Nessun valore'}
@@ -212,8 +218,12 @@ export function FieldSwitch({ field, data, update, breadcrumb }: {
 			return (
 				<SelectField
 					field={field}
-					data={data} update={update as UpdateSelectFieldFunc}
-					disabled={!editMode} breadcrumb={breadcrumb}
+					data={data}
+					update={update as UpdateSelectFieldFunc}
+					disabled={!editMode}
+					breadcrumb={breadcrumb}
+					hideHeader={hideHeader}
+					hideNext={hideNext}
 				/>
 			)
 		case formFieldIsMultiSelect(field):
@@ -223,8 +233,12 @@ export function FieldSwitch({ field, data, update, breadcrumb }: {
 			return (
 				<MultiSelectField
 					field={field}
-					data={data} update={update as UpdateMultiSelectFieldFunc}
-					disabled={!editMode} breadcrumb={breadcrumb}
+					data={data}
+					update={update as UpdateMultiSelectFieldFunc}
+					disabled={!editMode}
+					breadcrumb={breadcrumb}
+					hideHeader={hideHeader}
+					hideNext={hideNext}
 				/>
 			)
 		case formFieldIsExpansion(field):
@@ -234,8 +248,11 @@ export function FieldSwitch({ field, data, update, breadcrumb }: {
 			return (
 				<ExpansionField
 					field={field}
-					data={data} update={update as UpdateExpansionFieldFunc}
-					disabled={!editMode} breadcrumb={breadcrumb}
+					data={data}
+					update={update as UpdateExpansionFieldFunc}
+					disabled={!editMode}
+					breadcrumb={breadcrumb}
+					hideHeader={hideHeader}
 				/>
 			)
 		case formFieldIsDeduction(field):
@@ -245,8 +262,11 @@ export function FieldSwitch({ field, data, update, breadcrumb }: {
 			return (
 				<DeductionField
 					field={field}
-					data={data} update={update as UpdateDeductionFieldFunc}
-					disabled={!editMode} breadcrumb={breadcrumb}
+					data={data}
+					update={update as UpdateDeductionFieldFunc}
+					disabled={!editMode}
+					breadcrumb={breadcrumb}
+					hideHeader={hideHeader}
 				/>
 			)
 			
@@ -257,8 +277,12 @@ export function FieldSwitch({ field, data, update, breadcrumb }: {
 			return (
 				<FieldGroup
 					field={field}
-					data={data} update={update as UpdateFieldGroupFunc}
-					disabled={!editMode} breadcrumb={breadcrumb}
+					data={data}
+					update={update as UpdateFieldGroupFunc}
+					disabled={!editMode}
+					breadcrumb={breadcrumb}
+					hideHeader={hideHeader}
+					hideNext={hideNext}
 				/>
 			)
 		case formFieldIsReference(field):
@@ -271,28 +295,59 @@ export function FieldSwitch({ field, data, update, breadcrumb }: {
 					data={data}
 					update={update as UpdateReferenceFieldFunc}
 					breadcrumb={breadcrumb}
+					hideHeader={hideHeader}
 				/>
 			)
 	}
 }
 
-function FieldNextAnyValue({ fields, data, update, breadcrumb }: {
-	fields: FormFieldTemplate[],
+function fieldDataHasValue(field: FormFieldTemplate, data: FormFieldData | undefined): boolean {
+	if (data == undefined) {
+		return false
+	}
+
+	if (data.type === 'fixed') {
+		return true
+	}
+
+	if (data.value == undefined) {
+		return false
+	}
+
+	if (formFieldIsGroup(field)) {
+		if (!formFieldDataIsGroup(data)) {
+			return false
+		}
+
+		for (const elem of field.group) {
+			if (!fieldDataHasValue(elem, data.value[elem.id])) {
+				return false
+			}
+		}
+
+		return true
+	}
+
+	return true
+}
+
+function FieldNextAnyValue({ field, data, update, breadcrumb }: {
+	field: FormFieldTemplate,
 	data?: FormFieldData,
 	update: UpdateFieldFunc,
 	breadcrumb: string[]
 }) {
-	if (data == undefined) {
-		return <></>
+	if (field.nextAnyValue == undefined) {
+		return undefined
 	}
 
-	if (data.value == undefined && data.type !== 'fixed') {
-		return <></>
+	if (!fieldDataHasValue(field, data)) {
+		return undefined
 	}
 
 	return (
 		<>
-			{fields.map(next => {
+			{field.nextAnyValue.map(next => {
 				const updateNext: UpdateFieldFunc = (updater, ...breadcrumb) => {
 					update(fieldData => {
 						if (fieldData.nextAnyValue == undefined)
@@ -328,21 +383,37 @@ function NumberInput({ value, onChange, ...props }: Omit<React.DetailedHTMLProps
 	value?: number,
 	onChange?: (value: number | undefined) => void
 }) {
-	const proxyOnChange = (ev: ChangeEvent<HTMLInputElement>): void => {
-		let value = ev.target.value
-
-		// @ts-ignore
-		if (ev.nativeEvent.inputType === 'insertText' && value === '') {
+	const [proxyValue, setProxyValue] = useState<string | undefined>(undefined);
+	useEffect(() => {
+		if (value == proxyValue) {
 			return
 		}
+
+		setProxyValue(value?.toString())
+	}, [value])
+
+	const proxyOnChange = (ev: ChangeEvent<HTMLInputElement>): void => {
+		let inputValue = ev.target.value
+
+		// @ts-ignore
+		if (ev.nativeEvent.inputType === 'insertText' && inputValue === '') {
+			return
+		}
+
+		setProxyValue(inputValue === '' ? undefined : inputValue)
 		
-		onChange?.(value === '' ? undefined : Number(value))
+		const newValue = inputValue === '' ? undefined : Number(inputValue)
+		if (newValue == value) {
+			return
+		}
+
+		onChange?.(newValue)
 	}
 
 	return (
 		<input
 			type="number"
-			value={value?.toString() ?? ''}
+			value={proxyValue ?? ''}
 			onChange={proxyOnChange}
 			{ ...props }
 		/>
@@ -354,10 +425,14 @@ type SelectOption = {
 	label: string
 }
 
-function SelectField({ field, data, update, disabled, breadcrumb, hideHeader }: {
+function SelectField({ field, data, update, disabled, breadcrumb, hideHeader, hideNext }: {
 	field: FormSelectFieldTemplate,
-	data?: FormSelectFieldData, update: UpdateSelectFieldFunc,
-	disabled: boolean, breadcrumb: string[], hideHeader?: boolean
+	data?: FormSelectFieldData,
+	update: UpdateSelectFieldFunc,
+	disabled: boolean,
+	breadcrumb: string[],
+	hideHeader?: boolean,
+	hideNext?: boolean
 }) {
 	let selectArgs: FormFieldSelectArgs = [];
 	
@@ -451,7 +526,7 @@ function SelectField({ field, data, update, disabled, breadcrumb, hideHeader }: 
 					)
 				)}
 			</div>
-			{data && data.value && next.length > 0 && (
+			{!hideNext && data && data.value && next.length > 0 && (
 				<SelectNextFields
 					next={next}
 					data={data.value}
@@ -465,7 +540,8 @@ function SelectField({ field, data, update, disabled, breadcrumb, hideHeader }: 
 
 function SelectNextFields({ next, data, update, breadcrumb }: {
 	next: FormFieldTemplate[],
-	data: FormSelectFieldValue, update: UpdateSelectFieldFunc,
+	data: FormSelectFieldValue,
+	update: UpdateSelectFieldFunc,
 	breadcrumb: string[]
 }) {
 	return (
@@ -510,10 +586,14 @@ function SelectNextFields({ next, data, update, breadcrumb }: {
 	)
 }
 
-function MultiSelectField({ field, data, update, disabled, breadcrumb, hideHeader }: {
+function MultiSelectField({ field, data, update, disabled, breadcrumb, hideHeader, hideNext }: {
 	field: FormMultiSelectFieldTemplate,
-	data?: FormMultiSelectFieldData, update: UpdateMultiSelectFieldFunc,
-	disabled: boolean, breadcrumb: string[], hideHeader?: boolean
+	data?: FormMultiSelectFieldData,
+	update: UpdateMultiSelectFieldFunc,
+	disabled: boolean,
+	breadcrumb: string[],
+	hideHeader?: boolean,
+	hideNext?: boolean
 }) {
 	let selectArgs: FormFieldSelectArgs = []
 
@@ -659,7 +739,7 @@ function MultiSelectField({ field, data, update, disabled, breadcrumb, hideHeade
 												<div className='arg-display'>{selectedArg.display}</div>
 											</AccordionSummaryLeft>
 											<AccordionDetails>
-												{data && data.value && (
+												{!hideNext && data && data.value && (
 													<MultiSelectNextFields selected={sel.value} next={next}
 														data={data.value} update={update} breadcrumb={[...breadcrumb, sel.value]} />
 												)}
@@ -689,8 +769,10 @@ function MultiSelectField({ field, data, update, disabled, breadcrumb, hideHeade
 }
 
 function MultiSelectNextFields({ selected, next, data, update, breadcrumb }: {
-	selected: string, next: FormFieldTemplate[],
-	data: FormMultiSelectFieldValue, update: UpdateMultiSelectFieldFunc,
+	selected: string,
+	next: FormFieldTemplate[],
+	data: FormMultiSelectFieldValue,
+	update: UpdateMultiSelectFieldFunc,
 	breadcrumb: string[],
 }) {
 	return <div className='next-fields'>
@@ -739,8 +821,11 @@ function MultiSelectNextFields({ selected, next, data, update, breadcrumb }: {
 // TODO: optimize update logic
 function ExpansionField({ field, data, update, disabled, breadcrumb, hideHeader }: {
 	field: FormExpansionFieldTemplate,
-	data?: FormExpansionFieldData, update: UpdateExpansionFieldFunc,
-	disabled: boolean, breadcrumb: string[], hideHeader?: boolean
+	data?: FormExpansionFieldData,
+	update: UpdateExpansionFieldFunc,
+	disabled: boolean,
+	breadcrumb: string[],
+	hideHeader?: boolean
 }) {
 	const [fakeData, updateFakeData] = useImmer<FormFieldData>({
 		type: field.expansionArg.type
@@ -818,7 +903,7 @@ function ExpansionField({ field, data, update, disabled, breadcrumb, hideHeader 
 									</div>}
 									<Field field={field.expansionArg}
 										data={additionalData[0]} update={updateField}
-										breadcrumb={[...breadcrumb, 'value', rowIdx.toString()]}
+										breadcrumb={[...breadcrumb, 'value', rowIdx.toString(), '0']}
 									/>
 								</AccordionSummaryLeft>
 								{additionalData.length > 0 && (
@@ -844,7 +929,7 @@ function ExpansionField({ field, data, update, disabled, breadcrumb, hideHeader 
 								</div>}
 								<Field field={field.expansionArg}
 									data={additionalData[0]} update={updateField}
-									breadcrumb={[...breadcrumb, 'value', rowIdx.toString()]}
+									breadcrumb={[...breadcrumb, 'value', rowIdx.toString(), '0']}
 								/>
 						</Paper>
 					)}
@@ -857,9 +942,12 @@ function ExpansionField({ field, data, update, disabled, breadcrumb, hideHeader 
 		{!disabled && (
 			<div className="additional">
 				<Paper className="input-fields">
-					<Field field={field.expansionArg}
-						data={fakeData} update={updateFakeData}
+					<Field
+						field={field.expansionArg}
+						data={fakeData}
+						update={updateFakeData}
 						breadcrumb={[...breadcrumb, 'fake-field']}
+						hideNext={true}
 					/>
 				</Paper>
 				{!disabled && <button className='add-row' onClick={addRow} disabled={disabled}>
@@ -921,7 +1009,7 @@ function ExpansionFieldNext({ fields, data, update, rowIdx, breadcrumb }: {
 						field={field}
 						data={nextData[fieldIdx]}
 						update={updateField}
-						breadcrumb={[...breadcrumb, 'additional', rowIdx.toString(), fieldIdx.toString() + 1 ]}
+						breadcrumb={[...breadcrumb, 'value', rowIdx.toString(), (fieldIdx + 1).toString() ]}
 						referenceKeys={referenceKeys}
 					/>
 				)
@@ -930,12 +1018,13 @@ function ExpansionFieldNext({ fields, data, update, rowIdx, breadcrumb }: {
 	)
 }
 
-function DeductionField({field, data, update, disabled, breadcrumb }: {
+function DeductionField({ field, data, update, disabled, breadcrumb, hideHeader }: {
 	field: FormDeductionFieldTemplate
 	data?: FormDeductionFieldData
 	update: UpdateDeductionFieldFunc
 	disabled: boolean
-	breadcrumb: string[]
+	breadcrumb: string[],
+	hideHeader?: boolean
 }) {
 	const deduction: DeductionElement | undefined = deductionFunctionMap[field.deductionID];
 	const [result, setResult] = useState(data?.value ?? disabled
@@ -998,7 +1087,7 @@ function DeductionField({field, data, update, disabled, breadcrumb }: {
 
 	return (
 		<div className="field deduction-field">
-			{field.header && <p className="field-header">{field.header}</p>}
+			{!hideHeader && field.header && <p className="field-header">{field.header}</p>}
 			<div>
 				<p className="deduction-result">{result}</p>
 				{deduction && deduction.hint && <DeductionHint hint={deduction.hint} />}
@@ -1035,44 +1124,52 @@ function DeductionHint({ hint }: { hint: DeductionTable }) {
 	</div>
 }
 
-function FieldGroup({ field, data, update, breadcrumb, hideHeader }: {
+function FieldGroup({ field, data, update, breadcrumb, hideHeader, hideNext }: {
 	field: FormFieldGroupTemplate,
-	data?: FormFieldGroupData, update: UpdateFieldGroupFunc,
-	disabled: boolean, breadcrumb: string[], hideHeader?: boolean
+	data?: FormFieldGroupData,
+	update: UpdateFieldGroupFunc,
+	disabled: boolean,
+	breadcrumb: string[],
+	hideHeader?: boolean,
+	hideNext?: boolean
 }) {
-	return <div className="field field-group">
-		{!hideHeader && field.header && <p className="field-header">{field.header}</p>}
-		<div className='group'>
-			{field.group.map(groupField => {
-				const updateField: UpdateFieldFunc = (updater, ...breadcrumb) => {
-					update(groupData => {
-						if (groupData.value == undefined) {
-							groupData.value = {}
-						}
+	return (
+		<div className="field field-group">
+			{!hideHeader && field.header && <p className="field-header">{field.header}</p>}
+			<div className='group'>
+				{field.group.map(groupField => {
+					const updateField: UpdateFieldFunc = (updater, ...breadcrumb) => {
+						update(groupData => {
+							if (groupData.value == undefined) {
+								groupData.value = {}
+							}
 
-						if (typeof updater !== 'function') {
-							groupData.value[groupField.id] = updater
-							return
-						}
+							if (typeof updater !== 'function') {
+								groupData.value[groupField.id] = updater
+								return
+							}
 
-						if (groupData.value[groupField.id] == undefined) {
-							groupData.value[groupField.id] = { type: groupField.type }
-						}
+							if (groupData.value[groupField.id] == undefined) {
+								groupData.value[groupField.id] = { type: groupField.type }
+							}
 
-						updater(groupData.value[groupField.id])
-					}, 'value', groupField.id, ...breadcrumb)
-				}
+							updater(groupData.value[groupField.id])
+						}, 'value', groupField.id, ...breadcrumb)
+					}
 
-				return (
-					<Field key={groupField.id}
-						field={groupField}
-						data={data?.value?.[groupField.id]}
-						update={updateField} breadcrumb={[...breadcrumb, 'value', groupField.id]}
-					/>
-				)
-			})}
+					return (
+						<Field key={groupField.id}
+							field={groupField}
+							data={data?.value?.[groupField.id]}
+							update={updateField}
+							breadcrumb={[...breadcrumb, 'value', groupField.id]}
+							hideNext={hideNext}
+						/>
+					)
+				})}
+			</div>
 		</div>
-	</div>
+	)
 }
 
 export type ReferenceFieldContextData = FormReferenceFieldValue | undefined
@@ -1087,11 +1184,12 @@ export const ReferenceFieldContext = createContext<ReferenceFieldContextType>([
 	(_) => {}
 ])
 
-function ReferenceField({ field, data, update, breadcrumb }: {
+function ReferenceField({ field, data, update, breadcrumb, hideHeader }: {
 	field: FormReferenceFieldTemplate
 	data?: FormReferenceFieldData
 	update: UpdateReferenceFieldFunc
-	breadcrumb: string[]
+	breadcrumb: string[],
+	hideHeader?: boolean
 }) {
 	const [referenceMap] = useContext(ReferenceFieldContext);
 	
@@ -1119,7 +1217,7 @@ function ReferenceField({ field, data, update, breadcrumb }: {
 
 	return (
 		<div className="field reference-field">
-			{field.header && <p className="field-header">{field.header}</p>}
+			{!hideHeader && field.header && <p className="field-header">{field.header}</p>}
 			{data && data.value ? (
 				<EditModeContext.Provider value={false}>
 					<Field

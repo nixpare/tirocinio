@@ -222,9 +222,12 @@ function FormSectionStarters({ section, data, update }: {
 		if (!starter.header) {
 			return (
 				<div className="starter-field" key={starter.id}>
-					<Field field={starter}
-						data={data?.[starter.id]} update={updateStarter}
+					<Field
+						field={starter}
+						data={data?.[starter.id]}
+						update={updateStarter}
 						breadcrumb={[section.id, starter.id]}
+						hideHeader
 					/>
 				</div>
 			)
@@ -237,14 +240,17 @@ function FormSectionStarters({ section, data, update }: {
 				defaultExpanded
 			>
 				<AccordionSummaryLeft>
-					<Typography className="field-header">
+					<Typography className="starter-field-header">
 						{starter.header}
 					</Typography>
 				</AccordionSummaryLeft>
-				<AccordionDetails>
-					<Field field={starter}
-						data={data?.[starter.id]} update={updateStarter}
+				<AccordionDetails className="starter-field-details">
+					<Field
+						field={starter}
+						data={data?.[starter.id]}
+						update={updateStarter}
 						breadcrumb={[section.id, starter.id]}
+						hideHeader
 					/>
 				</AccordionDetails>
 			</Accordion>

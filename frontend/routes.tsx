@@ -1,15 +1,17 @@
 import { createBrowserRouter } from "react-router";
-import { AppLayout } from "./App";
+import { AppErrorBoundary, AppLayout } from "./App";
 import { BodyHome, BodyLayout, bodyLayoutLoader } from "./pages/Body/Body";
 import { Conversion, conversionLoader, ConversionSelector, conversionSelectorLoader } from "./pages/Conversion/Conversion";
 import { Index, indexLoader } from "./pages/Index";
 import { BonesView, bonesViewLoader, BoneView, ExteriorsView, exteriorsViewLoader, ExteriorView, VisceraView, ViscusView, viscusViewLoader } from "./pages/Body/AnatomStruct";
 import { BodiesView, bodiesViewLoader } from "./pages/Body/Bodies";
+import { TemplateHome } from "./pages/Template/Template";
 
 const router = createBrowserRouter([
 	{
 		path: '/',
 		Component: AppLayout,
+		ErrorBoundary: AppErrorBoundary,
 		children: [
 			{
 				index: true,
@@ -93,6 +95,10 @@ const router = createBrowserRouter([
 						Component: Conversion,
 					}
 				]
+			},
+			{
+				path: 'template',
+				Component: TemplateHome
 			}
 		]
 	}
